@@ -1,0 +1,8 @@
+name: MythicRod
+version: '1.0.1'
+main: com.mythicrod.mythicRod.MythicRod
+api-version: '1.21'
+authors: [ LethalX ]
+description: Custom Fishing Plugin with Customizable Drop Tables
+
+
