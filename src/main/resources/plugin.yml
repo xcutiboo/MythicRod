@@ -1,8 +1,46 @@
 name: MythicRod
-version: '1.0.1'
+version: "2.0.0"
 main: com.mythicrod.mythicRod.MythicRod
-api-version: '1.21'
-authors: [ LethalX ]
-description: Custom Fishing Plugin with Customizable Drop Tables
+api-version: "1.21"
+authors: [LethalX]
+description: Advanced Fishing Plugin with Customizable Drops, Biome-Specific Items, and Statistics
 
+commands:
+  mythicrod:
+    description: Main command for MythicRod plugin
+    usage: /mythicrod <reload|stats|top|drops|help>
+    aliases: [mrod, mfish]
+    permission: mythicrod.command
 
+permissions:
+  mythicrod.command:
+    description: Allows usage of the main MythicRod command
+    default: true
+
+  mythicrod.admin.reload:
+    description: Allows reloading the plugin configuration
+    default: op
+
+  mythicrod.stats:
+    description: Allows viewing fishing statistics
+    default: true
+
+  mythicrod.stats.top:
+    description: Allows viewing top fishers
+    default: true
+
+  mythicrod.drops:
+    description: Allows viewing available drops
+    default: true
+
+  mythicrod.drops.global:
+    description: Allows access to global drops
+    default: true
+
+  mythicrod.drops.rare:
+    description: Allows access to rare drops
+    default: op
+
+  mythicrod.drops.legendary:
+    description: Allows access to legendary drops
+    default: op

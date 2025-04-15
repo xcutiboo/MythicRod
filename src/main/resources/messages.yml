@@ -1,0 +1,36 @@
+# MythicRod Messages Configuration
+# All customizable messages for the plugin
+
+prefix:
+  default: "&6&l<MythicRod> &r"
+
+general:
+  no-permission: "&cYou don't have permission to use this command."
+  reload-success: "&aConfiguration reloaded successfully!"
+  command-not-found: "&cUnknown command. Use &6/mythicrod help &cfor help."
+
+fishing:
+  # Message shown when a player catches a rare item (low chance)
+  rare-catch: "&b&lRARE CATCH! &fYou caught: &e{item}&f!"
+  # Message shown when a player catches a legendary item (extremely low chance)
+  legendary-catch: "&d&lLEGENDARY CATCH! &fYou caught: &e{item}&f!"
+  # Message shown when a player catches a normal item
+  normal-catch: "&fYou caught: &e{item}&f"
+  stats-recorded: "&7+1 Fishing Stat Recorded"
+
+stats:
+  player-not-found: "&cPlayer &e{player}&c not found or has never played before."
+  console-usage: "&cYou must specify a player name when using this command from console."
+  disabled: "&cStatistics tracking is disabled in the configuration."
+  no-stats: "&cNo fishing statistics available yet."
+
+drops:
+  category-not-found: "&cDrop category &e{category}&c not found."
+
+commands:
+  reload:
+    success: "&aConfiguration reloaded successfully!"
+    error: "&cAn error occurred while reloading the configuration."
+
+  no-permission: "&cYou don't have permission to use this command."
+  player-not-found: "&cPlayer &e{player}&c not found or has never played before."

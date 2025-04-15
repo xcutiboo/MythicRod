@@ -1,0 +1,87 @@
+# MythicRod Drops Configuration
+# This file contains all customizable drops for the plugin
+
+# Global drops are available to all players
+drops:
+  global:
+    - "DIAMOND,5,1"
+    - "IRON_INGOT,30,1"
+    - "GOLD_INGOT,20,1"
+    - "EMERALD,15,1"
+    - "NETHERITE_INGOT,1,1"
+
+  # Permission-based drops
+  # Players need 'mythicrod.drops.rare' permission to get these
+  rare:
+    - "ANCIENT_DEBRIS,3,1"
+    - "NETHERITE_SCRAP,5,1"
+    - "DIAMOND_BLOCK,1,1"
+    - "NETHER_STAR,1,1"
+
+  # Advanced drops with full customization
+  legendary:
+    excalibur:
+      material: NETHERITE_SWORD
+      chance: 1
+      amount: 1
+      name: "&b&lExcalibur"
+      lore:
+        - "&7A legendary sword pulled from the depths"
+        - "&7of the ancient lake."
+        - ""
+        - "&bLegendary Fishing Artifact"
+      enchantments:
+        sharpness: 10
+        sweeping: 3
+        unbreaking: 5
+      item-flags:
+        - HIDE_ATTRIBUTES
+        - HIDE_ENCHANTS
+      glowing: true
+      permission: mythicrod.drops.legendary
+
+    neptunes_crown:
+      material: GOLDEN_HELMET
+      chance: 2
+      amount: 1
+      name: "&b&lNeptune's Crown"
+      lore:
+        - "&7The crown of the sea god himself."
+        - "&7Grants the wearer water breathing."
+        - ""
+        - "&bLegendary Fishing Artifact"
+      enchantments:
+        respiration: 10
+        protection: 4
+        unbreaking: 5
+      item-flags:
+        - HIDE_ATTRIBUTES
+      glowing: true
+      permission: mythicrod.drops.legendary
+
+# Biome-specific drops
+# These will only be available in the specified biomes
+biome-drops:
+  ocean:
+    - "PRISMARINE_CRYSTALS,20,1"
+    - "PRISMARINE_SHARD,30,1"
+    - "HEART_OF_THE_SEA,5,1"
+    - "NAUTILUS_SHELL,15,1"
+
+  desert:
+    - "GOLD_NUGGET,30,3"
+    - "DEAD_BUSH,40,1"
+    - "CACTUS,30,1"
+    - "RABBIT_HIDE,20,1"
+
+  jungle:
+    - "COCOA_BEANS,30,2"
+    - "BAMBOO,40,3"
+    - "TROPICAL_FISH,25,1"
+    - "PARROT_SPAWN_EGG,3,1"
+
+  mushroom_fields:
+    - "RED_MUSHROOM,30,3"
+    - "BROWN_MUSHROOM,30,3"
+    - "MYCELIUM,15,1"
+    - "MOOSHROOM_SPAWN_EGG,2,1"
