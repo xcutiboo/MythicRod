@@ -117,6 +117,10 @@ plugins/MythicRod/data/
 *.db
 *.sqlite
 
+# Marketplace and artwork assets
+marketplace/
+artwork/
+
 # Windows Installer files
 *.cab
 *.msi
