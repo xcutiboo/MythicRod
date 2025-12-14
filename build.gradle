@@ -2,8 +2,9 @@ plugins {
     id 'java'
 }
 
-group = 'com.mythicrod'
-version = '1.0.1'
+group = 'io.xcutiboo'
+// Read version from gradle.properties for single-source truth
+version = project.findProperty('version') ?: '1.0.0'
 
 repositories {
     mavenCentral()
@@ -33,6 +34,7 @@ java {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
 
     if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
         options.release.set(targetJavaVersion)
@@ -43,7 +45,18 @@ processResources {
     def props = [version: version]
     inputs.properties props
     filteringCharset 'UTF-8'
-    filesMatching('plugin.yml') {
+    filesMatching(['plugin.yml', 'paper-plugin.yml']) {
         expand props
+    }
+}
+
+// Ensure JAR manifest includes version metadata
+tasks.named('jar') {
+    manifest {
+        attributes(
+                'Implementation-Title': 'MythicRod',
+                'Implementation-Version': version,
+                'Implementation-Vendor': 'xcutiboo'
+        )
     }
 }

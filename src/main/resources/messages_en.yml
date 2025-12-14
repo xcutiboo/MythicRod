@@ -1,0 +1,73 @@
+################################################################################
+# MythicRod English Messages (Base/Fallback Language)
+################################################################################
+# This is the primary/default language file for MythicRod.
+# All missing keys in other languages will fall back to English translations.
+#
+# Color Code Reference:
+#   &0-&9 = Colors | &a=Green &b=Cyan &c=Red &d=Pink &e=Yellow &f=White
+#   &l=Bold | &o=Italic | &n=Underline | &r=Reset
+#
+################################################################################
+
+prefix:
+  default: '&6&l<MythicRod> &r'
+
+general:
+  no-permission: "&cYou don't have permission to use this command."
+  reload-success: '&aConfiguration reloaded successfully!'
+  command-not-found: '&cUnknown command. Use &6/mythicrod help &cfor help.'
+  error: '&cAn error occurred while executing this command.'
+
+gui:
+  players-only: '&cOnly players can use the GUI!'
+  language-changed: '&aLanguage changed to &f{language}&a!'
+
+fishing:
+  catch-rare: '&b&l✦ RARE CATCH! &fYou reeled in &e{amount}× {item}&f!'
+  catch-legendary: '&d&l✦ LEGENDARY! &fYou discovered &e{amount}× {item}&f!'
+  catch-normal: '&a✓ &aCaught &e{amount}× {item}&a!'
+  stats-recorded: '&7+1 Fishing Stat Recorded'
+
+stats:
+  header: "&6----- &e{player}'s Fishing Stats &6-----"
+  total-catches: '&eTotal Catches: &f{total}'
+  rare-catches: '&eRare Catches: &f{rare}'
+  legendary-catches: '&eLegendary Catches: &f{legendary}'
+  top-materials: '&6----- &eTop Materials Caught &6-----'
+  material-count: '&e{material}: &f{count}'
+  player-not-found: '&cPlayer &e{player}&c not found or has never fished yet.'
+  console-usage: '&cYou must specify a player name when using this command from console.'
+  disabled: '&cStatistics tracking is disabled in the configuration.'
+  no-stats: '&cNo fishing statistics are available yet.'
+  top-header: '&6----- &eTop {limit} Fishers &6-----'
+  top-entry: '&e#{rank}: &f{player} &7- &f{catches} catches'
+  invalid-number: '&cInvalid number: &f{number}'
+
+drops:
+  header: '&6----- &eMythicRod Drop Categories &6-----'
+  category-entry: '&e{category}: &f{count} items'
+  usage: '&7Use &f/mythicrod drops <category>&7 to view items in a category.'
+  category-header: '&6----- &eMythicRod Drops: {category} &6-----'
+  category-not-found: '&cDrop category &e{category}&c not found.'
+  available-categories: '&6Available categories: &e{categories}'
+  drop-entry: '&e{name} &7- &fChance: {chance}%, Amount: {amount}'
+
+commands:
+  reload:
+    success: '&aConfiguration reloaded successfully!'
+    error: '&cAn error occurred while reloading the configuration.'
+  no-permission: "&cYou don't have permission to use this command."
+  player-not-found: '&cPlayer &e{player}&c not found or has never fished yet.'
+  help-header: '&6----- &eMythicRod Commands &6-----'
+  help-gui: '&e/mythicrod &7or &e/mythicrod gui &7- Open GUI menu'
+  help-reload: '&e/mythicrod reload &7- Reload the plugin configuration'
+  help-stats: '&e/mythicrod stats [player] &7- View fishing stats'
+  help-top: '&e/mythicrod top [limit] &7- View top fishers'
+  help-drops: '&e/mythicrod drops [category] &7- View available drops'
+  help-help: '&e/mythicrod help &7- Show this help message'
+
+language:
+  en: '&fEnglish'
+  jp: '&f日本語 (Japanese)'
+  current: '&eCurrently Speaking: {language}'

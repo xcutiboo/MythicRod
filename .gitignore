@@ -10,6 +10,15 @@ out/
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# VS Code
+.vscode/
+
 # JIRA plugin
 atlassian-ide-plugin.xml
 
@@ -89,6 +98,24 @@ ehthumbs_vista.db
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# clj-kondo
+.clj-kondo/
+
+# Local test servers
+server/
+test-server/
+run/
+
+# Plugin data
+plugins/MythicRod/data/
+*.db
+*.sqlite
 
 # Windows Installer files
 *.cab

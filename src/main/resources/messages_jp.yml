@@ -1,0 +1,66 @@
+################################################################################
+# MythicRod 日本語メッセージ（オプション言語）
+# 注意: 不足しているキーは英語にフォールバックします
+################################################################################
+
+prefix:
+  default: '&6&l<MythicRod> &r'
+
+general:
+  no-permission: '&c権限がありません。'
+  reload-success: '&a設定の再読み込みが完了しました！'
+  command-not-found: '&c不明なコマンドです。&6/mythicrod help &cでヘルプを確認してください。'
+  error: '&cエラーが発生しました。'
+
+gui:
+  players-only: '&cプレイヤーのみがGUIを使用できます！'
+  language-changed: '&a言語を &f{language}&a に変更しました！'
+
+fishing:
+  catch-rare: '&b&l✦ レアアイテム！&f &e{item} × {amount}個&f を釣り上げた！'
+  catch-legendary: '&d&l✦ 伝説級！&f &e{item} × {amount}個&f を発見した！'
+  catch-normal: '&a✓ &a&e{item} × {amount}個&a を釣り上げた！'
+  stats-recorded: '&7釣り統計に+1記録しました'
+
+stats:
+  header: '&6━━━ &e{player}さんの釣果 &6━━━'
+  total-catches: '&e総釣獲数: &f{total}回'
+  rare-catches: '&eレア: &f{rare}回'
+  legendary-catches: '&e伝説: &f{legendary}回'
+  top-materials: '&6━━━ &e人気のアイテム &6━━━'
+  material-count: '&e{material}: &f{count}個'
+  player-not-found: '&cプレイヤー &e{player}&c が見つかりません。'
+  console-usage: '&cコンソールから使用する場合はプレイヤー名を指定してください。'
+  disabled: '&c統計機能は無効です。'
+  no-stats: '&c統計データがありません。'
+  top-header: '&6━━━ &eトップ漁師 &f({limit}位まで) &6━━━'
+  top-entry: '&e#{rank}位: &f{player} &7→ &f{catches}回'
+  invalid-number: '&c数値が無効です: &f{number}'
+
+drops:
+  header: '&6━━━ &eドロップカテゴリ一覧 &6━━━'
+  category-entry: '&e{category}: &f{count}種類'
+  usage: '&7&f/mythicrod drops <カテゴリ>&7 で詳細を表示'
+  category-header: '&6━━━ &e{category} カテゴリ &6━━━'
+  category-not-found: '&cカテゴリ &e{category}&c が見つかりません。'
+  available-categories: '&6利用可能: &e{categories}'
+  drop-entry: '&e{name} &7→ &f確率{chance}% / 数量{amount}'
+
+commands:
+  reload:
+    success: '&a再読み込み完了！'
+    error: '&c再読み込みに失敗しました。'
+  no-permission: '&c権限がありません。'
+  player-not-found: '&cプレイヤー &e{player}&c が見つかりません。'
+  help-header: '&6━━━ &eMythicRod コマンド &6━━━'
+  help-gui: '&e/mythicrod &7または &e/mythicrod gui &7→ GUIを開く'
+  help-reload: '&e/mythicrod reload &7→ 設定を再読み込み'
+  help-stats: '&e/mythicrod stats [プレイヤー] &7→ 統計を表示'
+  help-top: '&e/mythicrod top [件数] &7→ ランキングを表示'
+  help-drops: '&e/mythicrod drops [カテゴリ] &7→ ドロップ一覧を表示'
+  help-help: '&e/mythicrod help &7→ このヘルプを表示'
+
+language:
+  en: '&fEnglish'
+  jp: '&f日本語 (Japanese)'
+  current: '&e現在の言語: {language}'

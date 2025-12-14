@@ -1,37 +1,37 @@
 # MythicRod
 
-## Advanced Fishing Plugin for Minecraft Paper Servers
-
-MythicRod is a comprehensive fishing plugin that replaces vanilla Minecraft fishing with a fully customizable drop system. It features biome-specific drops, permission-based rewards, statistics tracking, and much more.
-
-![MythicRod Banner](https://via.placeholder.com/800x200?text=MythicRod+Advanced+Fishing)
+A fishing plugin for Minecraft Paper servers with custom drops, biome-specific loot, and player statistics.
 
 ## Features
 
-- **Fully Customizable Drops**: Configure what items players can catch, their chances, and amounts
-- **Advanced Item Customization**: Add custom names, lore, enchantments, and visual effects to dropped items
-- **Biome-Specific Drops**: Set different items to appear in different biomes for immersive gameplay
-- **Permission-Based Drops**: Reward players with special items based on their permissions
-- **Statistics Tracking**: Keep track of player fishing stats, rare catches, and more
-- **Custom Sound & Visual Effects**: Enhance the fishing experience with custom sounds and particles
-- **In-Game Commands**: Manage the plugin directly from in-game
-- **Developer API**: Integrate MythicRod with your own plugins
+- Custom fishing drops with configurable chances and amounts
+- Biome-specific loot tables
+- Permission-based drops for VIP players
+- Statistics tracking and leaderboards
+- Item customization (names, lore, enchantments, glow effects)
+- Sound and particle effects
+- In-game GUI for managing settings and viewing stats
+- Multi-language support (English and Japanese included)
+- Developer API for integrations
+- Built for Paper 1.21.4+ with no deprecated API usage
 
 ## Commands
 
-| Command                       | Description                     | Permission               |
-| ----------------------------- | ------------------------------- | ------------------------ |
-| `/mythicrod reload`           | Reload the plugin configuration | `mythicrod.admin.reload` |
-| `/mythicrod stats [player]`   | View fishing statistics         | `mythicrod.stats`        |
-| `/mythicrod top [limit]`      | View top fishers on the server  | `mythicrod.stats.top`    |
-| `/mythicrod drops [category]` | View available fishing drops    | `mythicrod.drops`        |
-| `/mythicrod help`             | Display help information        | `mythicrod.command`      |
+| Command                          | Description                     | Permission               |
+| -------------------------------- | ------------------------------- | ------------------------ |
+| `/mythicrod` or `/mythicrod gui` | Open the main GUI menu          | `mythicrod.gui`          |
+| `/mythicrod reload`              | Reload the plugin configuration | `mythicrod.admin.reload` |
+| `/mythicrod stats [player]`      | View fishing statistics         | `mythicrod.stats`        |
+| `/mythicrod top [limit]`         | View top fishers on the server  | `mythicrod.stats.top`    |
+| `/mythicrod drops [category]`    | View available fishing drops    | `mythicrod.drops`        |
+| `/mythicrod help`                | Display help information        | `mythicrod.command`      |
 
 ## Permissions
 
 | Permission                  | Description                  | Default |
 | --------------------------- | ---------------------------- | ------- |
 | `mythicrod.command`         | Access to basic commands     | `true`  |
+| `mythicrod.gui`             | Access to GUI menus          | `true`  |
 | `mythicrod.admin.reload`    | Ability to reload the plugin | `op`    |
 | `mythicrod.stats`           | View fishing statistics      | `true`  |
 | `mythicrod.stats.top`       | View top fishers             | `true`  |
@@ -50,7 +50,7 @@ Contains basic plugin settings:
 
 ```yaml
 # Visual settings
-prefix: "&6&l<MythicRod> &r"
+prefix: '&6&l<MythicRod> &r'
 use-sounds: true
 use-particles: true
 
@@ -68,8 +68,8 @@ Defines all custom drops:
 # Global drops are available to all players
 drops:
   global:
-    - "DIAMOND,5,1"
-    - "IRON_INGOT,30,1"
+    - 'DIAMOND,5,1'
+    - 'IRON_INGOT,30,1'
 
   # Advanced drops with full customization
   legendary:
@@ -77,9 +77,9 @@ drops:
       material: NETHERITE_SWORD
       chance: 1
       amount: 1
-      name: "&b&lExcalibur"
+      name: '&b&lExcalibur'
       lore:
-        - "&7A legendary sword pulled from the depths"
+        - '&7A legendary sword pulled from the depths'
       enchantments:
         sharpness: 10
       glowing: true
@@ -88,8 +88,8 @@ drops:
 # Biome-specific drops
 biome-drops:
   ocean:
-    - "PRISMARINE_CRYSTALS,20,1"
-    - "HEART_OF_THE_SEA,5,1"
+    - 'PRISMARINE_CRYSTALS,20,1'
+    - 'HEART_OF_THE_SEA,5,1'
 ```
 
 ### messages.yml
@@ -98,8 +98,8 @@ Contains all plugin messages:
 
 ```yaml
 fishing:
-  rare-catch: "&b&lRARE CATCH! &fYou caught: &e{item}&f!"
-  legendary-catch: "&d&lLEGENDARY CATCH! &fYou caught: &e{item}&f!"
+  rare-catch: '&b&lRARE CATCH! &fYou caught: &e{item}&f!'
+  legendary-catch: '&d&lLEGENDARY CATCH! &fYou caught: &e{item}&f!'
 ```
 
 ## For Developers
@@ -130,30 +130,21 @@ Map<String, Object> stats = api.getPlayerStatistics(player);
 
 ## Requirements
 
-- Minecraft 1.21.4 or newer
-- Paper server
+- Paper 1.21.4+ or Spigot/Purpur 1.21.1+
+- Java 21+
 
-## Changelog
+## Building
 
-### Version 2.0.0
+```bash
+./gradlew clean build
+```
 
-- Complete rewrite with modular architecture
-- Added biome-specific drops
-- Added permission-based drops
-- Added statistics tracking
-- Added advanced item customization
-- Added in-game commands
-- Added developer API
-- Improved performance and stability
-
-### Version 1.0.1
-
-- Initial release
+The compiled JAR will be in `build/libs/`.
 
 ## Support
 
-For support, please open an issue on our GitHub repository or join our Discord server.
+Open an issue on GitHub or join the Discord server.
 
 ## License
 
-MythicRod is licensed under the MIT License - see the LICENSE file for details.
+MIT License - see LICENSE file for details.

@@ -1,0 +1,179 @@
+
+[CENTER]
+[IMG]https://i.ibb.co/LDw9gbXb/mythicrodheaderbanner.png[/IMG]
+[SIZE=5][COLOR=#6b7a8b][I]Advanced Custom Fishing System[/I][/COLOR][/SIZE]
+[SIZE=4][COLOR=#23313f]Custom drops, biome-aware rewards, stats, and GUIs for staff and players.[/COLOR][/SIZE]
+[/CENTER]
+
+[CENTER][SIZE=6][COLOR=#f6c45f]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/COLOR][/SIZE][/CENTER]
+
+[CENTER][IMG]https://i.ibb.co/gLGBTN9v/ABOUT.png[/IMG][/CENTER]
+[CENTER][COLOR=#23313f]MythicRod replaces vanilla fishing with configurable loot tables, legendary items, biome-specific drops, live statistics, and an intuitive in-game GUI.[/COLOR][/CENTER]
+
+[CENTER][SIZE=6][COLOR=#f6c45f]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/COLOR][/SIZE][/CENTER]
+
+[CENTER][IMG]https://i.ibb.co/4ZHZmWwr/FEATURES.png[/IMG][/CENTER]
+[LIST]
+[*][B][COLOR=#f6c45f]Unlimited Custom Drops[/COLOR][/B] — Materials, weights, and amounts per table.
+[*][B][COLOR=#f6c45f]Biome-Specific Loot[/COLOR][/B] — Unique rewards per biome to encourage exploration.
+[*][B][COLOR=#f6c45f]Legendary Items[/COLOR][/B] — Custom names, lore, enchants, and glow.
+[*][B][COLOR=#f6c45f]Statistics & Leaderboards[/COLOR][/B] — Track catches, rares, legends, and top fishers.
+[*][B][COLOR=#f6c45f]In-Game GUI[/COLOR][/B] — Intuitive configuration menus, statistics viewers, and language selector.
+[*][B][COLOR=#f6c45f]Multi-Language Support[/COLOR][/B] — English and Japanese built-in with modern language selector GUI (flag-textured heads).
+[*][B][COLOR=#f6c45f]Permissions[/COLOR][/B] — Gate drops by rank or group.
+[*][B][COLOR=#f6c45f]Effects[/COLOR][/B] — Sounds and particles for rare/legendary catches.
+[*][B][COLOR=#f6c45f]Performance[/COLOR][/B] — Async handling, optimized hook tracking, and memory-efficient design for large servers.
+[*][B][COLOR=#f6c45f]Modern Paper API[/COLOR][/B] — Built for Paper 1.21.4+ with zero deprecated APIs and modern player profile system.
+[*][B][COLOR=#f6c45f]Developer API[/COLOR][/B] — Extensible plugin API for third-party integrations.
+[/LIST]
+
+[CENTER][SIZE=6][COLOR=#f6c45f]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/COLOR][/SIZE][/CENTER]
+
+[CENTER][IMG]https://i.ibb.co/KcBFYxkQ/SCREENSHOTS.png[/IMG][/CENTER]
+[CENTER][SPOILER="Screenshots & GIFs"][IMG]https://i.ibb.co/Y4ZjVWNM/guishowcase.gif[/IMG]
+[IMG]https://i.ibb.co/dwyfDR87/fishingshowcase.gif[/IMG]
+[IMG]https://s12.gifyu.com/images/bEuah.png[/IMG]
+[IMG]https://s12.gifyu.com/images/bEua3.png[/IMG]
+[IMG]https://s12.gifyu.com/images/bEua9.png[/IMG]
+[IMG]https://s12.gifyu.com/images/bEuaE.png[/IMG][/SPOILER][/CENTER]
+
+[CENTER][SIZE=6][COLOR=#f6c45f]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/COLOR][/SIZE][/CENTER]
+
+[CENTER][IMG]https://i.ibb.co/DfRrCyxS/CONFIGURATION.png[/IMG][/CENTER]
+[CENTER][SIZE=4][B][COLOR=#23313f]Clean, readable YAML with live reload — quick to tweak and test.[/COLOR][/B][/SIZE][/CENTER]
+[CENTER][SIZE=3][COLOR=#6b7a8b]Below are concise examples you can copy/paste.[/COLOR][/SIZE][/CENTER]
+[CENTER][SIZE=3][COLOR=#6b7a8b]Showcase[/COLOR][/SIZE][/CENTER]
+[CENTER][IMG]https://i.ibb.co/dwyfDR87/fishingshowcase.gif[/IMG] [IMG]https://i.ibb.co/Y4ZjVWNM/guishowcase.gif[/IMG][/CENTER]
+[CODE]drops:
+  global:
+    - 'DIAMOND,5,1'
+    - 'IRON_INGOT,30,1'
+    - 'GOLD_INGOT,20,1'
+
+  legendary:
+    excalibur:
+      material: NETHERITE_SWORD
+      name: '&b&lExcalibur'
+      lore:
+        - '&7A legendary blade'
+      enchantments:
+        sharpness: 10
+      glowing: true
+
+biome-drops:
+  ocean:
+    - 'PRISMARINE_CRYSTALS,20,1'
+    - 'HEART_OF_THE_SEA,5,1'
+  desert:
+    - 'GOLD_NUGGET,30,3'
+  jungle:
+    - 'COCOA_BEANS,30,2'[/CODE]
+
+[CENTER][SIZE=6][COLOR=#f6c45f]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/COLOR][/SIZE][/CENTER]
+
+[CENTER][IMG]https://i.ibb.co/zWG6XKPQ/COMMANDSANDPERMISSION.png[/IMG][/CENTER]
+[CENTER][B][COLOR=#f6c45f]Commands[/COLOR][/B][/CENTER]
+[CENTER]
+[TABLE]
+[TR]
+  [TD][SIZE=4][B][COLOR=#f6c45f]Command[/COLOR][/B][/SIZE][/TD]
+  [TD][SIZE=4][B][COLOR=#f6c45f]Description[/COLOR][/B][/SIZE][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f]/mythicrod[/COLOR][/TD]
+  [TD][COLOR=#23313f]Open main GUI[/COLOR][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f]/mythicrod reload[/COLOR][/TD]
+  [TD][COLOR=#23313f]Reload configuration[/COLOR][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f]/mythicrod stats [player][/COLOR][/TD]
+  [TD][COLOR=#23313f]View fishing statistics[/COLOR][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f]/mythicrod top[/COLOR][/TD]
+  [TD][COLOR=#23313f]View leaderboard[/COLOR][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f]/mythicrod drops[/COLOR][/TD]
+  [TD][COLOR=#23313f]List available drops[/COLOR][/TD]
+[/TR]
+[/TABLE]
+[/CENTER]
+
+[CENTER][B][COLOR=#f6c45f]Permissions[/COLOR][/B][/CENTER]
+[CENTER]
+[TABLE]
+[TR]
+  [TD][SIZE=4][B][COLOR=#f6c45f]Permission[/COLOR][/B][/SIZE][/TD]
+  [TD][SIZE=4][B][COLOR=#f6c45f]Description[/COLOR][/B][/SIZE][/TD]
+  [TD][SIZE=4][B][COLOR=#f6c45f]Default[/COLOR][/B][/SIZE][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f][B]mythicrod.*[/B][/COLOR][/TD]
+  [TD][COLOR=#23313f]All features[/COLOR][/TD]
+  [TD][COLOR=#e74c3c]OP[/COLOR][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f][B]mythicrod.gui[/B][/COLOR][/TD]
+  [TD][COLOR=#23313f]Access GUI[/COLOR][/TD]
+  [TD][COLOR=#52c39a]TRUE[/COLOR][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f][B]mythicrod.stats[/B][/COLOR][/TD]
+  [TD][COLOR=#23313f]View statistics[/COLOR][/TD]
+  [TD][COLOR=#52c39a]TRUE[/COLOR][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f][B]mythicrod.admin.reload[/B][/COLOR][/TD]
+  [TD][COLOR=#23313f]Reload plugin configuration[/COLOR][/TD]
+  [TD][COLOR=#e74c3c]OP[/COLOR][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f][B]mythicrod.drops.rare[/B][/COLOR][/TD]
+  [TD][COLOR=#23313f]Catch rare drops[/COLOR][/TD]
+  [TD][COLOR=#e74c3c]OP[/COLOR][/TD]
+[/TR]
+[TR]
+  [TD][COLOR=#23313f][B]mythicrod.drops.legendary[/B][/COLOR][/TD]
+  [TD][COLOR=#23313f]Catch legendary items[/COLOR][/TD]
+  [TD][COLOR=#e74c3c]OP[/COLOR][/TD]
+[/TR]
+[/TABLE]
+[/CENTER]
+
+[CENTER][SIZE=6][COLOR=#f6c45f]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/COLOR][/SIZE][/CENTER]
+
+[CENTER][B][COLOR=#52c39a]Why MythicRod[/COLOR][/B][/CENTER]
+[LIST]
+[*]Zero dependencies; optional LuckPerms, Vault, PlaceholderAPI.
+[*]GUI plus YAML for fast tweaks.
+[*]Actively developed with community feedback.
+[*]Lightweight and tuned for large servers.
+[*]Fully customizable drop experiences.
+[/LIST]
+
+[CENTER][SIZE=6][COLOR=#f6c45f]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/COLOR][/SIZE][/CENTER]
+
+[CENTER][B][COLOR=#3aaed8]Compatibility[/COLOR][/B][/CENTER]
+[LIST]
+[*]Paper 1.21.4+ (recommended for best experience)
+[*]Spigot, Purpur 1.21.1+ (fully supported)
+[*]Java 21+
+[*]Zero deprecated APIs - fully modern codebase
+[/LIST]
+
+[CENTER][SIZE=6][COLOR=#f6c45f]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/COLOR][/SIZE][/CENTER]
+
+[CENTER][B][COLOR=#e67e22]Support & Links[/COLOR][/B][/CENTER]
+[CENTER][URL='https://discord.gg/MDwtUgxX9U'][COLOR=#5865F2]Discord[/COLOR][/URL] • [URL='https://github.com/xcutiboo'][COLOR=#171515]GitHub[/COLOR][/URL] • [URL='https://ko-fi.com/xcutiboo'][COLOR=#FF5E5B]Ko-Fi[/COLOR][/URL][/CENTER]
+[CENTER][COLOR=#23313f]Bug reports: [URL='https://github.com/xcutiboo/issues'][COLOR=#171515]GitHub Issues[/COLOR][/URL][/COLOR][/CENTER]
+
+[CENTER][SIZE=6][COLOR=#f6c45f]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/COLOR][/SIZE][/CENTER]
+
+[CENTER][B][COLOR=#f6c45f]Support Development[/COLOR][/B][/CENTER]
+[CENTER][URL='https://ko-fi.com/S6S413NHH8'][IMG]https://storage.ko-fi.com/cdn/kofi2.png?v=6[/IMG][/URL][/CENTER]
+
+[CENTER][SIZE=4][COLOR=#6b7a8b][I]Made with care for the Minecraft community[/I][/COLOR][/SIZE]
+[CENTER][SIZE=6][COLOR=#f6c45f]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/COLOR][/SIZE][/CENTER]

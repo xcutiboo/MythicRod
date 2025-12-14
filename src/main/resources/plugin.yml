@@ -1,10 +1,29 @@
+################################################################################
+#                                                                              #
+#                      MythicRod Plugin Configuration                          #
+#                 Bukkit Plugin Manifest for Paper Servers                     #
+#                                                                              #
+#  This file is required by Bukkit/Paper and defines basic plugin info.      #
+#  For game configuration, see: config.yml                                   #
+#  For drop configuration, see: drops.yml                                    #
+#  For message customization, see: messages.yml                              #
+#                                                                              #
+################################################################################
+
+################################################################################
+# PLUGIN INFORMATION
+################################################################################
 name: MythicRod
-version: "2.0.0"
-main: com.mythicrod.mythicRod.MythicRod
-api-version: "1.21"
-authors: [LethalX]
+version: '${version}'
+api-version: '1.21'
+main: io.xcutiboo.mythicrod.MythicRod
+authors: [xcutiboo]
 description: Advanced Fishing Plugin with Customizable Drops, Biome-Specific Items, and Statistics
 
+################################################################################
+# COMMANDS
+################################################################################
+# Main plugin command with multiple subcommands
 commands:
   mythicrod:
     description: Main command for MythicRod plugin
@@ -12,35 +31,95 @@ commands:
     aliases: [mrod, mfish]
     permission: mythicrod.command
 
+################################################################################
+# PERMISSIONS
+################################################################################
+# Permission nodes control what players can do
+# Format:
+#   permission.node:
+#     description: What this permission allows
+#     default: true/false/op/not op
+#       - true = all players have this by default
+#       - false = no players have this by default
+#       - op = only operators have this by default
+#       - not op = everyone except operators by default
+
 permissions:
+  # ============================================================================
+  # BASIC COMMAND & GUI PERMISSIONS
+  # ============================================================================
   mythicrod.command:
-    description: Allows usage of the main MythicRod command
+    description: Allows usage of the main /mythicrod command
     default: true
 
+  mythicrod.gui:
+    description: Allows opening the MythicRod GUI menu
+    default: true
+
+  # ============================================================================
+  # ADMINISTRATIVE PERMISSIONS
+  # ============================================================================
   mythicrod.admin.reload:
-    description: Allows reloading the plugin configuration
+    description: Allows reloading the plugin configuration without restart
     default: op
 
+  # ============================================================================
+  # STATISTICS PERMISSIONS
+  # ============================================================================
   mythicrod.stats:
     description: Allows viewing fishing statistics
     default: true
 
   mythicrod.stats.top:
-    description: Allows viewing top fishers
+    description: Allows viewing top fishers leaderboard
     default: true
 
+  # ============================================================================
+  # DROP PERMISSIONS
+  # ============================================================================
+  # These control which drop categories players can receive
+
   mythicrod.drops:
-    description: Allows viewing available drops
+    description: Allows viewing available drops and categories
     default: true
 
   mythicrod.drops.global:
-    description: Allows access to global drops
+    description: Allows receiving drops from the global category
     default: true
 
   mythicrod.drops.rare:
-    description: Allows access to rare drops
+    description: Allows receiving drops from the rare category (restricted)
     default: op
 
   mythicrod.drops.legendary:
-    description: Allows access to legendary drops
+    description: Allows receiving drops from the legendary category (restricted)
     default: op
+################################################################################
+# USAGE GUIDE
+################################################################################
+#
+# To use this plugin:
+#
+#   1. CONFIGURATION
+#      - Edit config.yml for main settings (sounds, particles, etc.)
+#      - Edit drops.yml to define custom fishing drops
+#      - Edit messages.yml to customize player messages
+#
+#   2. COMMANDS
+#      - /mythicrod = Open GUI (main menu)
+#      - /mythicrod reload = Reload configuration
+#      - /mythicrod stats [player] = View player statistics
+#      - /mythicrod top [limit] = View leaderboard
+#      - /mythicrod drops = View available drops
+#      - /mythicrod help = Show help
+#
+#   3. PERMISSIONS
+#      - Use permission nodes to control access
+#      - Examples:
+#        * Grant player rare drops: mythicrod.drops.rare
+#        * Grant player config reload: mythicrod.admin.reload
+#        * Give operator all permissions: mythicrod.*
+#
+# For detailed documentation, see: CONFIG_GUIDE.md
+#
+################################################################################
