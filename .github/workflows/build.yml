@@ -39,6 +39,9 @@ jobs:
         with:
           cache-read-only: ${{ !startsWith(github.ref, 'refs/heads/main') && !startsWith(github.ref, 'refs/heads/master') }} # only main/master refresh cache to avoid branch churn
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
       - name: Build with Gradle
         run: ./gradlew build --no-daemon
 
