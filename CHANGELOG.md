@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2025-12-14
+
+- Fixed fishing edge case where waiting after a bite could bypass custom drops and return vanilla fish by restoring hook state and cleaning it up correctly.
+
 ## [1.0.0] - 2025-12-13
 
 Initial release with:

@@ -54,18 +54,19 @@ public class FishingListener implements Listener {
             plugin.getLogger().info("========================================");
             plugin.getLogger().info("CAUGHT_FISH event fired for " + player.getName());
         }
-        FishingState state = activeFishing.get(hookId);
+        // Ensure we always have state for this hook. In some edge cases (e.g. fish pulls
+        // the bobber down and the player waits), the hook state can be cleared before the
+        // CAUGHT_FISH event fires. We recreate the state to keep custom drops consistent.
+        FishingState state = activeFishing.computeIfAbsent(
+            hookId,
+            id -> new FishingState(player.getUniqueId(), hook.getLocation())
+        );
         // Prevent duplicate processing
-        if (state == null) {
-            if (debugMode) {
-                plugin.getLogger().warning("  State is NULL for hook " + hookId);
-            }
-            return;
-        }
         if (state.hasReceivedReward()) {
             if (debugMode) {
                 plugin.getLogger().info("  Already received reward - skipping");
             }
+            activeFishing.remove(hookId);
             return;
         }
         // Mark as processed
@@ -92,6 +93,8 @@ public class FishingListener implements Listener {
                 plugin.getLogger().warning("  Drop is NULL - letting vanilla handle");
                 plugin.getLogger().info("========================================");
             }
+            // Clean up to avoid leaking state between casts
+            activeFishing.remove(hookId);
             // Don't cancel event, let vanilla handle it
             return;
         }
@@ -140,6 +143,8 @@ public class FishingListener implements Listener {
             plugin.getLogger().info("  SUCCESS - Custom drop given!");
             plugin.getLogger().info("========================================");
         }
+        // Cleanup hook state after successful processing
+        activeFishing.remove(hookId);
     }
     private void handleReelIn(UUID hookId) {
         // Clean up fishing state
