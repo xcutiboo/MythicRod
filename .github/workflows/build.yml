@@ -60,13 +60,14 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  # Publish release when a version tag is pushed
+  # Publish release when a version tag (v*) is pushed
+  # This job only runs after a successful build and when github.ref is a tag like v1.0.0
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # Required to create and push releases
 
     steps:
       - name: Download build artifact
@@ -79,6 +80,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/libs/*.jar
-          # Automatically generate release notes from merged PRs
+          # Auto-generate changelog from PR titles since the last tag
           generate_release_notes: true
           fail_on_unmatched_files: true
