@@ -163,6 +163,26 @@ The CI workflow will automatically:
 4. Upload the JAR
 5. Generate release notes from merged pull requests
 
+### Testing the Release Workflow
+
+To verify the release workflow is properly configured, run:
+
+```bash
+./test-release-workflow.sh
+```
+
+## Repository Configuration
+
+### Branch Protection
+
+The `master` branch should be protected to prevent accidental force pushes or deletions. See [BRANCH_PROTECTION.md](BRANCH_PROTECTION.md) for detailed setup instructions.
+
+Recommended protection settings:
+- ✅ Require pull request reviews before merging
+- ✅ Require status checks to pass (build must succeed)
+- ✅ Block force pushes
+- ✅ Prevent branch deletion
+
 ## Support
 
 Open an issue on GitHub or join the Discord server.
