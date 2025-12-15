@@ -36,9 +36,9 @@ public class DropManager {
     public void loadDrops() {
         dropCategories.clear();
         FileConfiguration config = plugin.getConfigManager().getDropsConfig();
-        plugin.getLogger().info("========================================");
+
         plugin.getLogger().info("Loading MythicRod drops configuration...");
-        plugin.getLogger().info("========================================");
+
         // Load global drops
         if (config.contains("drops.global")) {
             List<CustomDrop> globalDrops = parseDrops(config.getStringList("drops.global"));
@@ -88,12 +88,12 @@ public class DropManager {
                 }
             }
         }
-        plugin.getLogger().info("========================================");
+
         plugin.getLogger().info("Total: " + getTotalDropCount() + " drops across " +
             dropCategories.size() + " categories");
         plugin.getLogger().info("Permission mode: " +
             (plugin.getConfigManager().usePermissions() ? "ENABLED" : "DISABLED"));
-        plugin.getLogger().info("========================================");
+
         // Print detailed category information
         for (Map.Entry<String, List<CustomDrop>> entry : dropCategories.entrySet()) {
             plugin.getLogger().info("  [" + entry.getKey() + "]: " + entry.getValue().size() + " drops");

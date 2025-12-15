@@ -52,8 +52,8 @@ public final class MythicRod extends JavaPlugin {
                 cleanupIntervalTicks
             );
             long loadTime = System.currentTimeMillis() - startTime;
-            getLogger().info("✨ MythicRod " + getPluginMeta().getVersion() +
-                " enabled in " + loadTime + "ms ✨");
+            getLogger().info("MythicRod " + getPluginMeta().getVersion() +
+                " enabled in " + loadTime + "ms");
             getLogger().info("Loaded " + dropManager.getTotalDropCount() + " custom drops");
 
         } catch (RuntimeException e) {
@@ -77,7 +77,7 @@ public final class MythicRod extends JavaPlugin {
             getServer().getScheduler().cancelTasks(this);
 
             instance = null;
-            getLogger().info("⚡ MythicRod has been disabled! ⚡");
+            getLogger().info("MythicRod has been disabled");
 
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Error during plugin shutdown", e);

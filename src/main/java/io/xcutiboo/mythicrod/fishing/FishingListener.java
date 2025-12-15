@@ -54,9 +54,8 @@ public class FishingListener implements Listener {
             plugin.getLogger().info("========================================");
             plugin.getLogger().info("CAUGHT_FISH event fired for " + player.getName());
         }
-        // Ensure we always have state for this hook. In some edge cases (e.g. fish pulls
-        // the bobber down and the player waits), the hook state can be cleared before the
-        // CAUGHT_FISH event fires. We recreate the state to keep custom drops consistent.
+        // Handle edge case: if fish bites and player waits, hook state may be cleared
+        // before CAUGHT_FISH event fires. Recreate state to ensure custom drops work.
         FishingState state = activeFishing.computeIfAbsent(
             hookId,
             id -> new FishingState(player.getUniqueId(), hook.getLocation())
@@ -93,9 +92,8 @@ public class FishingListener implements Listener {
                 plugin.getLogger().warning("  Drop is NULL - letting vanilla handle");
                 plugin.getLogger().info("========================================");
             }
-            // Clean up to avoid leaking state between casts
+            // Let vanilla fishing handle this case
             activeFishing.remove(hookId);
-            // Don't cancel event, let vanilla handle it
             return;
         }
         if (debugMode) {

@@ -1,19 +1,12 @@
 ################################################################################
-#                                                                              #
 #                 MythicRod Messages Configuration (Legacy)                    #
 #           This file is kept for backwards compatibility only.               #
 #                                                                              #
-#  IMPORTANT: This file is DEPRECATED. New installations should use:          #
+#  DEPRECATED: New installations should use language-specific files:          #
 #  - messages_en.yml for English                                             #
 #  - messages_jp.yml for Japanese                                            #
-#  - Add more language files as needed                                        #
 #                                                                              #
-#  Color Codes:                                                               #
-#    &0-&9 = Colors (0=Black, 1=Blue, 2=Green, etc.)                        #
-#    &a = Light Green  &b = Cyan  &c = Red  &d = Pink  &e = Yellow &f=White #
-#    &l = Bold  &o = Italic  &n = Underline  &m = Strikethrough             #
-#    &r = Reset (removes all previous formatting)                            #
-#                                                                              #
+#  Color Codes: &0-&9, &a-&f (colors), &l (bold), &o (italic), &r (reset)   #
 ################################################################################
 
 ################################################################################

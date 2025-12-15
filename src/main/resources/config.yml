@@ -1,13 +1,8 @@
 ################################################################################
-#                                                                              #
 #                       MythicRod Configuration File                           #
-#                   Advanced Fishing Plugin for Paper Servers                  #
 #                                                                              #
-#  This file contains all settings for customizing MythicRod behavior.        #
-#  For detailed explanations of each setting, visit the documentation:        #
-#  - In-game: /mythicrod (opens the GUI configuration menu)                  #
-#  - File: CONFIG_GUIDE.md for detailed explanations                         #
-#                                                                              #
+#  Customize MythicRod behavior and features for your server.                 #
+#  Docs: /mythicrod (in-game GUI) or CONFIG_GUIDE.md                          #
 ################################################################################
 
 ################################################################################
