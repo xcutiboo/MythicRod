@@ -141,6 +141,28 @@ Map<String, Object> stats = api.getPlayerStatistics(player);
 
 The compiled JAR will be in `build/libs/`.
 
+## Releases
+
+Downloads for compiled JARs are available on the [Releases](https://github.com/xcutiboo/MythicRod/releases) page.
+
+**To create a new release**, use Git tags:
+
+```bash
+# Create a tag for your version
+git tag v1.0.1
+
+# Push the tag to GitHub
+git push origin v1.0.1
+```
+
+The CI workflow will automatically:
+
+1. Compile the plugin
+2. Run all tests
+3. Create a GitHub Release
+4. Upload the JAR
+5. Generate release notes from merged pull requests
+
 ## Support
 
 Open an issue on GitHub or join the Discord server.
