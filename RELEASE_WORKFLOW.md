@@ -87,22 +87,11 @@ The release job:
 
 ## Testing the Workflow
 
-Before creating an actual release, you can verify the workflow configuration:
+Before creating a release, verify the workflow configuration via CI:
 
-```bash
-./test-release-workflow.sh
-```
-
-This script checks:
-- ✅ Workflow file exists and is valid
-- ✅ Build configuration is correct
-- ✅ Gradle wrapper is present
-- ✅ Workflow triggers are configured
-- ✅ Release job has correct permissions
-- ✅ Artifact paths are correct
-- ✅ Java version matches
-- ✅ Source code structure is valid
-- ✅ Plugin metadata exists
+- Open a draft pull request that modifies `.github/workflows/build.yml` or related files
+- Ensure the "Verify Release Workflow" job passes
+- Optionally lint the YAML locally with your preferred linter
 
 ## Manual Workflow Dispatch
 

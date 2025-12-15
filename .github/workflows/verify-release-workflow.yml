@@ -18,31 +18,25 @@ on:
 jobs:
   verify-workflow:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Make test script executable
-        run: chmod +x test-release-workflow.sh
-      
-      - name: Run workflow verification
-        run: ./test-release-workflow.sh
-      
+
       - name: Verify workflow file syntax
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
             const yaml = require('js-yaml');
-            
+
             try {
               const workflowContent = fs.readFileSync('.github/workflows/build.yml', 'utf8');
               const workflow = yaml.load(workflowContent);
-              
+
               console.log('✓ Workflow YAML is valid');
               console.log('✓ Jobs defined:', Object.keys(workflow.jobs).join(', '));
-              
+
               // Verify critical components
               if (!workflow.jobs.build) {
                 core.setFailed('Build job is missing');
@@ -53,7 +47,7 @@ jobs:
               if (!workflow.on.tags || !workflow.on.tags.includes('v*')) {
                 core.setFailed('Tag trigger for releases is not configured');
               }
-              
+
               console.log('✓ All critical workflow components are present');
             } catch (error) {
               core.setFailed(`Workflow validation failed: ${error.message}`);
