@@ -1,4 +1,4 @@
-name: Build MythicRod
+name: Build and Release
 
 on:
   push:
@@ -8,10 +8,12 @@ on:
     branches: ['main', 'master']
   workflow_dispatch:
 
+# Cancel outdated workflow runs when new commits are pushed
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Restrict default permissions to read-only
 permissions:
   contents: read
 
@@ -23,7 +25,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # keep full history for version plugins and changelog tools
+          # Fetch full history for accurate version calculation and changelog generation
+          fetch-depth: 0
 
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v4
@@ -37,7 +40,8 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-read-only: ${{ !startsWith(github.ref, 'refs/heads/main') && !startsWith(github.ref, 'refs/heads/master') }} # only main/master refresh cache to avoid branch churn
+          # Only write cache from main/master to prevent cache pollution from feature branches
+          cache-read-only: ${{ !startsWith(github.ref, 'refs/heads/main') && !startsWith(github.ref, 'refs/heads/master') }}
 
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
@@ -45,7 +49,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build --no-daemon
 
-      - name: Upload plugin jar
+      - name: Upload plugin artifact
         uses: actions/upload-artifact@v4
         with:
           name: mythicrod
@@ -56,6 +60,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  # Publish release when a version tag is pushed
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/')
@@ -74,5 +79,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/libs/*.jar
+          # Automatically generate release notes from merged PRs
           generate_release_notes: true
           fail_on_unmatched_files: true
