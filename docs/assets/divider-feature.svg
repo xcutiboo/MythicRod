@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 72" width="1200" height="72" role="img" aria-labelledby="mr-feature-title">
+  <title id="mr-feature-title">MythicRod feature divider</title>
+  <defs>
+    <filter id="mr-feature-shadow" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="72" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#mr-feature-shadow)">
+    <rect x="120" y="34" width="450" height="3" rx="1.5" fill="#DCA13A" opacity=".7"/>
+    <rect x="630" y="34" width="450" height="3" rx="1.5" fill="#DCA13A" opacity=".7"/>
+  </g>
+
+  <g transform="translate(600 36)">
+    <circle cx="0" cy="0" r="14" fill="none" stroke="#835516" stroke-width="5"/>
+    <circle cx="0" cy="0" r="14" fill="none" stroke="#F0C75A" stroke-width="3"/>
+    <circle cx="0" cy="0" r="4" fill="#FFF1A6"/>
+  </g>
+
+  <g opacity="0.55">
+    <rect x="486" y="33" width="4" height="6" fill="#DCA13A"/>
+    <rect x="494" y="33" width="4" height="6" fill="#F0C75A"/>
+    <rect x="702" y="33" width="4" height="6" fill="#F0C75A"/>
+    <rect x="710" y="33" width="4" height="6" fill="#DCA13A"/>
+  </g>
+</svg>

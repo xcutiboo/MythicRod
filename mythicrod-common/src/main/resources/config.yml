@@ -1,0 +1,105 @@
+################################################################################
+# MythicRod Configuration v8.0
+################################################################################
+# All values are cached at runtime. Changes require server reload or restart.
+# See documentation at: https://github.com/xcutiboo/MythicRod
+
+# Configuration version (managed automatically, do not edit)
+config-version: 8
+
+################################################################################
+# PROFILE: Auto-optimized performance tuning
+################################################################################
+# Choose: lightweight (≤10 players) | balanced (10-50) | performance (>50)
+# This affects default intervals below; you can override manually.
+profile: balanced
+
+################################################################################
+# UI & MESSAGES
+################################################################################
+ui:
+  # Chat prefix for all plugin messages (MiniMessage format)
+  # Examples: '<gold><bold>[MythicRod]</bold></gold> ' or '<gold><bold>[MythicRod] <reset>'
+  prefix: '<gold><bold>[MythicRod]</bold></gold> '
+
+language:
+  # Supported: en_US, ja_JP (defaults to en_US if invalid)
+  default: en_US
+
+messages:
+  catch:
+    # MiniMessage templates shown after each successful custom catch.
+    # Available placeholders: {amount}, {item}
+    legendary: |-
+      <gold><bold>✨ LEGENDARY CATCH! ✨</bold></gold>
+      <yellow>You caught <gold><bold>{amount}x {item}</bold></gold>!
+    rare: |-
+      <aqua><bold>★ Rare Catch! ★</bold></aqua>
+      <dark_aqua>You caught <aqua><bold>{amount}x {item}</bold></aqua>!
+    uncommon: |-
+      <green><bold>♦ Uncommon Catch ♦</bold></green>
+      <dark_green>You caught <green><bold>{amount}x {item}</bold></green>!
+    common: '<gray>You caught <white><bold>{amount}x {item}</bold></white>!'
+
+################################################################################
+# FEATURES: Enable/disable core functionality
+################################################################################
+features:
+  sounds:
+    # Play sounds when catching fish, opening menus, etc
+    enabled: true
+
+  particles:
+    # Display particle effects for special catches and events
+    enabled: true
+    # Paper particle enum names used by fishing reward effects.
+    # Data-bound particles are given safe defaults; invalid names fall back with a warning.
+    catch-particle: SPLASH
+    bubble-particle: BUBBLE_POP
+    success-particle: HAPPY_VILLAGER
+    xp-particle: HAPPY_VILLAGER
+
+  statistics:
+    # Track player fishing statistics and achievements
+    enabled: true
+
+  drops:
+    biome-specific:
+      # Use different loot tables for different biomes (if drops.yml configured)
+      enabled: true
+
+    # How custom rewards reach the player after a successful catch.
+    # Options:
+    #   vanilla_retrieve - reuse the hooked item so it flies back like vanilla Minecraft
+    #   inventory        - insert directly into the inventory; overflow drops at the player
+    #   drop_at_player   - spawn the reward at the player's location immediately
+    delivery-mode: vanilla_retrieve
+
+  rods:
+    luck-multipliers:
+      # Applied to rare and legendary reward weights for the selected or held rod tier.
+      # Keep values modest; large multipliers can destabilize a server economy.
+      basic: 1.0
+      advanced: 1.25
+      legendary: 1.5
+
+  permissions:
+    # Require specific permissions for certain drops
+    # Keep this enabled for production servers so rare and legendary tables
+    # stay gated by the permissions declared in paper-plugin.yml.
+    enabled: true
+
+  debug:
+    # Enable detailed logging (performance impact)
+    enabled: false
+
+################################################################################
+# TIMERS: Performance intervals (in seconds)
+################################################################################
+timers:
+  # Save player statistics to disk (range: 60-3600s)
+  # Recommended:
+  #   lightweight:  300-600s (5-10 min)
+  #   balanced:     600-1200s (10-20 min)
+  #   performance:  1200-1800s (20-30 min)
+  stats-save-interval-seconds: 600
