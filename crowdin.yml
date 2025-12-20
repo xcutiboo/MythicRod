@@ -1,0 +1,24 @@
+"preserve_hierarchy": true
+
+files:
+  - source: /mythicrod-paper/src/main/resources/lang/en_US.yml
+    translation: /mythicrod-paper/src/main/resources/lang/%locale_with_underscore%.yml
+    type: yaml
+    update_option: update_as_unapproved
+    languages_mapping:
+      locale_with_underscore:
+        en-GB: en_GB
+        ja: ja_JP
+        de: de_DE
+        es-ES: es_ES
+        fr: fr_FR
+        pt-BR: pt_BR
+        ru: ru_RU
+        zh-CN: zh_CN
+        zh-TW: zh_TW
+        nl: nl_NL
+        it: it_IT
+        ko: ko_KR
+        pl: pl_PL
+        tr: tr_TR
+        uk: uk_UA
