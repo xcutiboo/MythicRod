@@ -40,6 +40,7 @@ command:
   player_not_found: '<red>✗ <dark_red><yellow>%player%<dark_red> というプレイヤーが見つかりません。'
   gui:
     opened: '<green>✓ <gray>メインGUIを開きました。'
+    opened-hint: '<dark_gray>ヒント: <yellow>/mythicrod help<dark_gray> で使用可能なコマンド一覧を表示できます。'
   rod:
     opened: '<green>✓ <gray>ロッド設定を開きました。'
   give:

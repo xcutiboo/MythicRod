@@ -277,7 +277,12 @@ public class BrigadierCommandManager {
         try {
             if (context.getSource().getSender() instanceof Player player
                 && player.hasPermission(PermissionNodes.GUI)) {
-                return plugin.getGUIManager().openMenu(player, "main") ? Command.SINGLE_SUCCESS : 0;
+                boolean opened = plugin.getGUIManager().openMenu(player, "main");
+                if (opened) {
+                    sendMessage(player, tr(player, "command.gui.opened-hint"));
+                    return Command.SINGLE_SUCCESS;
+                }
+                return 0;
             }
             return executeHelp(context);
         } catch (Exception e) {

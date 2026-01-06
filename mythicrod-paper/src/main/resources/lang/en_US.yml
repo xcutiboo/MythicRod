@@ -40,6 +40,7 @@ command:
   player_not_found: '<red>✗ <dark_red>No player named <yellow>%player%<dark_red> found.'
   gui:
     opened: '<green>✓ <gray>Main GUI opened.'
+    opened-hint: '<dark_gray>tip: <yellow>/mythicrod help<dark_gray> lists every command available to you.'
   rod:
     opened: '<green>✓ <gray>Rod settings opened.'
   give:

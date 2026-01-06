@@ -84,12 +84,25 @@ import io.xcutiboo.mythicrod.paper.api.MythicRodServices;
 MythicRodAPI api = MythicRodServices.require();
 ```
 
+```kotlin
+import io.xcutiboo.mythicrod.api.MythicRodAPI
+import io.xcutiboo.mythicrod.paper.api.MythicRodServices
+
+val api: MythicRodAPI = MythicRodServices.require()
+```
+
 Optional Paper lookup:
 
 ```java
 MythicRodServices.find().ifPresent(api -> {
     // integrate here
 });
+```
+
+```kotlin
+MythicRodServices.find().ifPresent { api ->
+    // integrate here
+}
 ```
 
 Manual Bukkit lookup:
@@ -101,6 +114,11 @@ RegisteredServiceProvider<MythicRodAPI> provider =
 if (provider != null) {
     MythicRodAPI api = provider.getProvider();
 }
+```
+
+```kotlin
+val provider = Bukkit.getServicesManager().getRegistration(MythicRodAPI::class.java)
+val api = provider?.provider
 ```
 
 ## Threading And Folia Rules
@@ -184,6 +202,14 @@ api.getPlayerStats(player.getUniqueId()).thenAccept(snapshot -> {
 });
 ```
 
+```kotlin
+val api = MythicRodServices.require()
+
+api.getPlayerStats(player.uniqueId).thenAccept { snapshot ->
+    logger.info("${snapshot.playerName()} has ${snapshot.totalCaught()} custom catches")
+}
+```
+
 The completion runs async. Reschedule back to the correct player or region owner
 before touching Bukkit state.
 
@@ -213,6 +239,16 @@ if (result.isSuccess()) {
     getLogger().info("Created " + item.getIdentifier());
 } else {
     getLogger().warning(result.getError());
+}
+```
+
+```kotlin
+val result = api.createItem("nexo:my_reward", 1)
+if (result.isSuccess) {
+    val item = result.value
+    logger.info("Created ${item.identifier}")
+} else {
+    logger.warning(result.error)
 }
 ```
 
@@ -262,6 +298,11 @@ MythicRodAPI api = MythicRodServices.require();
 api.registerExternalDropProvider(new VipRewardProvider(api));
 ```
 
+```kotlin
+val api = MythicRodServices.require()
+api.registerExternalDropProvider(VipRewardProvider(api))
+```
+
 Unregister the same key during your own disable phase when MythicRod is still
 available:
 
@@ -270,6 +311,14 @@ available:
 public void onDisable() {
     MythicRodServices.find().ifPresent(api ->
         api.unregisterExternalDropProvider(VipRewardProvider.KEY));
+}
+```
+
+```kotlin
+override fun onDisable() {
+    MythicRodServices.find().ifPresent { api ->
+        api.unregisterExternalDropProvider(VipRewardProvider.KEY)
+    }
 }
 ```
 
@@ -294,6 +343,25 @@ public void onFishCatch(MythicRodFishCatchEvent event) {
         ItemStack reward = event.getRewardItem();
         reward.setAmount(Math.min(reward.getMaxStackSize(), reward.getAmount() + 1));
         event.setRewardItem(reward);
+    }
+}
+```
+
+```kotlin
+@EventHandler(priority = EventPriority.NORMAL)
+fun onRewardRoll(event: MythicRodRewardRollEvent) {
+    if (event.player.hasPermission("myplugin.vip")) {
+        event.luckMultiplier = event.luckMultiplier * 1.25
+    }
+}
+
+@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+fun onFishCatch(event: MythicRodFishCatchEvent) {
+    val drop = event.dropView
+    if (drop.tier.equals("legendary", ignoreCase = true)) {
+        val reward = event.rewardItem
+        reward.amount = minOf(reward.maxStackSize, reward.amount + 1)
+        event.rewardItem = reward
     }
 }
 ```
