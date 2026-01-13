@@ -40,8 +40,11 @@ command:
   player_not_found: '<red>✗ <dark_red><yellow>%player%<dark_red> というプレイヤーが見つかりません。'
   gui:
     opened: '<green>✓ <gray>メインGUIを開きました。'
+    opened-hint: '<dark_gray>ヒント: <yellow>/mythicrod help<dark_gray> で使用可能なコマンド一覧を表示できます。'
   rod:
     opened: '<green>✓ <gray>ロッド設定を開きました。'
+    selected: '<green>✓ <gray>ロッド階級を <white>%tier%<gray> に設定しました。'
+    locked: '<red>✗ <dark_red>階級 <yellow>%tier%<dark_red> を使用する権限がありません。'
   give:
     tier-missing: '<red>✗ <dark_red>ティアを空にはできません。'
     invalid-tier: '<red>✗ <dark_red>無効なティア <yellow>%tier%<dark_red> です。<yellow>basic<dark_red>、<yellow>advanced<dark_red>、<yellow>legendary<dark_red> を使用してください。'
@@ -94,6 +97,14 @@ command:
       debug: '<yellow>デバッグログ'
       delivery-mode: '<yellow>報酬受け渡し'
       stats-save-interval: '<yellow>統計保存間隔'
+  drop:
+    added: '<green>✓ <gray>カテゴリ <white>%category%<gray> に <white>%identifier%<gray> を追加しました。'
+    removed: '<green>✓ <gray>カテゴリ <white>%category%<gray> から <white>%identifier%<gray> を削除しました。'
+    updated: '<green>✓ <gray><white>%identifier%<gray> のフィールド <yellow>%field%<gray> を <white>%value%<gray> に更新しました。'
+    not-found: '<red>✗ <dark_red>ドロップ <yellow>%identifier%<dark_red> はカテゴリ <yellow>%category%<dark_red> に見つかりません。'
+    invalid: '<red>✗ <dark_red>無効なドロップ <yellow>%identifier%<dark_red>。マテリアル識別子と weight/amount を確認してください。'
+    unknown-field: '<red>✗ <dark_red>不明なフィールド <yellow>%field%<dark_red>。weight、amount、name、permission、glow を使用してください。'
+    bad-value: '<red>✗ <dark_red>値 <yellow>%value%<dark_red> はフィールド <yellow>%field%<dark_red> に無効です。'
 
 # ═══════════════════════════════════════════════════════════
 # 統計（コマンド用）
