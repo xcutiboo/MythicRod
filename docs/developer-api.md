@@ -1,68 +1,111 @@
 ---
 title: Developer API
-nav_order: 8
+nav_order: 7
 ---
 
-# MythicRod Developer API Guide
+# MythicRod Developer API
+{: .no_toc }
+
+A small, stable surface for integrating with MythicRod from your own Paper or
+Folia plugin: query stats, inject drops, react to reward flow, build
+MythicRod-compatible items, schedule work safely across Folia regions.
+
+![divider]({{ site.baseurl }}/assets/divider-feature.svg)
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
 
 ![divider]({{ site.baseurl }}/assets/divider.svg)
 
-MythicRod exposes a runtime service, Paper-specific event hooks, and a compact
-set of platform-neutral value types so other plugins can integrate without
-reaching into command, GUI, or fishing internals.
+## At a glance
 
-This guide is the developer-facing reference for that surface.
+| Module             | Purpose                                                      |
+| ------------------ | ------------------------------------------------------------ |
+| `mythicrod-api`    | Stable contracts and platform-neutral DTOs                   |
+| `mythicrod-paper`  | Paper runtime + the Paper-specific helper, events, listeners |
+| `mythicrod-common` | Shared internals (do not depend on directly)                 |
 
-## Choose Your Surface
+**You almost always depend on `mythicrod-api` only.** Reach for
+`mythicrod-paper` when you need the convenience helper
+`MythicRodServices` or the three Bukkit events.
 
-| Goal                             | Primary types                                                        | Module you need                    |
-| -------------------------------- | -------------------------------------------------------------------- | ---------------------------------- |
-| Resolve MythicRod at runtime     | `MythicRodAPI`, `MythicRodServices`                                  | `mythicrod-api`, `mythicrod-paper` |
-| Inspect loaded rewards           | `DropCatalog`, `PlatformDrop`                                        | `mythicrod-api`                    |
-| Create compatible reward items   | `MythicRodAPI#createItem`, `PlatformItemFactory`, `PlatformItem`     | `mythicrod-api`                    |
-| Inject external rewards          | `ExternalDropProvider`                                               | `mythicrod-api`                    |
-| Query stats and leaderboards     | `PlayerStatSnapshot`, `MythicRodAPI#getPlayerStats`, `getTopPlayers` | `mythicrod-api`                    |
-| React to Paper reward flow       | `MythicRodRewardRollEvent`, `MythicRodFishCatchEvent`                | `mythicrod-paper`                  |
-| Use stable read-only event drops | `PlatformDrop` via `getDropView()` and `getForcedDropView()`         | `mythicrod-api`, `mythicrod-paper` |
+The base package is `io.xcutiboo.mythicrod.api.*` for stable types,
+`io.xcutiboo.mythicrod.paper.api.*` for the Paper helper, and
+`io.xcutiboo.mythicrod.paper.events.*` for the Bukkit events.
 
-## Dependency Setup
+![divider]({{ site.baseurl }}/assets/divider.svg)
 
-`mythicrod-api` contains the stable service contracts and platform-neutral
-views. `mythicrod-paper` adds the Paper convenience helper and the Paper events.
+## Setup
 
-MythicRod does not currently publish a standalone Maven API artifact. Today,
-external plugins compile against the MythicRod Paper jar and keep it
-`compileOnly`.
+### Gradle (Kotlin DSL)
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven("https://repo.papermc.io/repository/maven-public/")
+}
+
+dependencies {
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    // Compile against the MythicRod jar you ship alongside the runtime.
+    compileOnly(files("libs/MythicRod-Paper-2026.1.0.jar"))
+}
+```
+
+### Gradle (Groovy)
+
+```groovy
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
+    compileOnly files('libs/MythicRod-Paper-2026.1.0.jar')
+}
+```
+
+### Maven
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>io.papermc.paper</groupId>
+    <artifactId>paper-api</artifactId>
+    <version>1.21.11-R0.1-SNAPSHOT</version>
+    <scope>provided</scope>
+  </dependency>
+  <dependency>
+    <groupId>io.xcutiboo</groupId>
+    <artifactId>mythicrod-paper</artifactId>
+    <version>2026.1.0</version>
+    <scope>system</scope>
+    <systemPath>${project.basedir}/libs/MythicRod-Paper-2026.1.0.jar</systemPath>
+  </dependency>
+</dependencies>
+```
+
+> **Heads-up.** MythicRod does not yet publish a standalone Maven artifact. The
+> jar that ships with each release contains both the API and the Paper runtime;
+> use it as `compileOnly` / `provided` and never shade it.
 
 ### Composite or multi-project builds
 
 ```kotlin
 dependencies {
     compileOnly(project(":mythicrod-api"))
-    compileOnly(project(":mythicrod-paper")) // only if you need Paper events or MythicRodServices
+    compileOnly(project(":mythicrod-paper")) // only for Paper events or MythicRodServices
 }
 ```
 
-### External plugins today
+### paper-plugin.yml load order
 
-```kotlin
-dependencies {
-    compileOnly(files("libs/MythicRod-Paper-2026.1.0.jar"))
-}
-```
-
-Important rules:
-
-- Keep MythicRod `compileOnly`.
-- Do not shade or relocate MythicRod classes into your own plugin.
-- Prefer `io.xcutiboo.mythicrod.api.*` in your code and touch `io.xcutiboo.mythicrod.paper.*` only for the Paper helper or the Paper events.
-
-### Runtime load order on Paper
-
-If your plugin integrates with MythicRod at startup, declare it as an optional
-Paper server dependency so the service is available before you resolve it.
+If your plugin resolves the MythicRod service at startup, declare MythicRod as
+an optional, after-load server dependency:
 
 ```yaml
+name: YourPlugin
+main: example.YourPlugin
+api-version: '1.21'
 dependencies:
   server:
     MythicRod:
@@ -70,18 +113,26 @@ dependencies:
       required: false
 ```
 
-If MythicRod is optional for your plugin, always handle the missing-service case
-cleanly.
+Always handle the missing-service case cleanly when MythicRod is optional.
 
-## Service Lookup
+![divider]({{ site.baseurl }}/assets/divider.svg)
 
-Preferred Paper lookup:
+## Service lookup
+
+Three entry points, all of them safe to call from `onEnable()` and beyond:
 
 ```java
 import io.xcutiboo.mythicrod.api.MythicRodAPI;
 import io.xcutiboo.mythicrod.paper.api.MythicRodServices;
 
+// Required: throws IllegalStateException if MythicRod is not loaded.
 MythicRodAPI api = MythicRodServices.require();
+
+// Optional: empty Optional when MythicRod is missing.
+MythicRodServices.find().ifPresent(found -> { /* ... */ });
+
+// Server / ServicesManager overloads exist for test contexts.
+MythicRodAPI test = MythicRodServices.require(Bukkit.getServer());
 ```
 
 ```kotlin
@@ -89,189 +140,179 @@ import io.xcutiboo.mythicrod.api.MythicRodAPI
 import io.xcutiboo.mythicrod.paper.api.MythicRodServices
 
 val api: MythicRodAPI = MythicRodServices.require()
+
+MythicRodServices.find().ifPresent { /* ... */ }
+
+val test = MythicRodServices.require(Bukkit.getServer())
 ```
 
-Optional Paper lookup:
-
-```java
-MythicRodServices.find().ifPresent(api -> {
-    // integrate here
-});
-```
-
-```kotlin
-MythicRodServices.find().ifPresent { api ->
-    // integrate here
-}
-```
-
-Manual Bukkit lookup:
+If you'd rather not link `mythicrod-paper` at all, use the raw ServicesManager:
 
 ```java
 RegisteredServiceProvider<MythicRodAPI> provider =
     Bukkit.getServicesManager().getRegistration(MythicRodAPI.class);
-
-if (provider != null) {
-    MythicRodAPI api = provider.getProvider();
-}
+MythicRodAPI api = provider != null ? provider.getProvider() : null;
 ```
 
 ```kotlin
-val provider = Bukkit.getServicesManager().getRegistration(MythicRodAPI::class.java)
-val api = provider?.provider
+val api = Bukkit.getServicesManager().getRegistration(MythicRodAPI::class.java)?.provider
 ```
 
-## Threading And Folia Rules
+![divider]({{ site.baseurl }}/assets/divider.svg)
 
-- `MythicRodAPI#getPlayerStats`, `getTopPlayers`, and `flushAllStats` complete on MythicRod-owned async threads.
-- `ExternalDropProvider` methods run on MythicRod's live fishing path and must stay fast and non-blocking.
-- `MythicRodRewardRollEvent` and `MythicRodFishCatchEvent` fire on MythicRod's player-owned execution path. On ordinary Paper that is the synchronous event thread. On Folia it is the owning region thread.
-- Do not mutate worlds, entities, or inventories from async completions unless you reschedule to the correct owner first.
-- Treat all weight values as relative weights, not normalized percentages.
+## Threading and Folia
 
-## Stability Map
+| Surface                             | Where it runs                                            |
+| ----------------------------------- | -------------------------------------------------------- |
+| `MythicRodAPI#getPlayerStats(...)`  | Completes on a MythicRod-owned async thread              |
+| `MythicRodAPI#getTopPlayers(...)`   | Completes on a MythicRod-owned async thread              |
+| `MythicRodAPI#flushAllStats()`      | Completes on a MythicRod-owned async thread              |
+| `ExternalDropProvider#getWeight`    | Fires from the fishing-event path (owner thread on Folia)|
+| `ExternalDropProvider#generateItem` | Same as `getWeight`                                      |
+| `MythicRodRewardRollEvent`          | Player-owner thread (Folia) or main thread (vanilla)     |
+| `MythicRodFishCatchEvent`           | Player-owner thread (Folia) or main thread (vanilla)     |
+| `MythicRodStatsUpdateEvent`         | MythicRod stats writer thread                            |
 
-| Package                              | Status                | Use it for                                                          |
-| ------------------------------------ | --------------------- | ------------------------------------------------------------------- |
-| `io.xcutiboo.mythicrod.api`          | Stable public API     | service lookup targets, results, stat snapshots, external providers |
-| `io.xcutiboo.mythicrod.api.drop`     | Stable public API     | read-only drop catalog inspection                                   |
-| `io.xcutiboo.mythicrod.api.platform` | Stable public API     | platform-neutral items, drops, players, schedulers, inventories     |
-| `io.xcutiboo.mythicrod.paper.api`    | Stable Paper add-on   | `MythicRodServices` convenience lookup on Paper                     |
-| `io.xcutiboo.mythicrod.paper.events` | Stable Paper add-on   | reward-roll and reward-delivery interception                        |
-| `io.xcutiboo.mythicrod.drops`        | Advanced runtime type | only when you intentionally need `CustomDrop`-specific behavior     |
+Rules of thumb:
 
-## Core Service Reference
+- Treat every weight as a relative weight. **Not** a normalised percentage.
+- Never block, sleep, or wait on a future inside `getWeight` / `generateItem`.
+- After an async completion (CompletableFuture), reschedule back to the owner
+  thread before mutating worlds, entities, inventories, or block state. Use
+  `PlatformScheduler` or Folia's own schedulers.
 
-| API surface                         | What it gives you                                            | Notes                                                         |
-| ----------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------- |
-| `MythicRodAPI#getVersion()`         | running plugin version string                                | useful for logging and compatibility checks                   |
-| `MythicRodAPI#getDropCatalog()`     | snapshot view of the active loaded drop table                | read-only inspection surface                                  |
-| `MythicRodAPI#getItemFactory()`     | runtime item factory                                         | supports vanilla and enabled integrations such as `nexo:*`    |
-| `MythicRodAPI#createItem(...)`      | convenience item creation                                    | preferred over constructing platform implementations directly |
-| `registerExternalDropProvider(...)` | injects weighted rewards into MythicRod's selection pipeline | provider keys replace on collision                            |
-| `unregisterExternalDropProvider(key)` | removes a previously registered provider by key            | returns `true` when a provider was actually removed           |
-| `getExternalDropProvider(key)`      | optional lookup for a single registered provider             | returns empty when no provider is registered for that key     |
-| `getExternalDropProviders()`        | immutable snapshot of current providers                      | useful for diagnostics                                        |
-| `getPlayerStats(UUID)`              | async single-player stats snapshot                           | completes on MythicRod async scheduler                        |
-| `getTopPlayers(StatType, int)`      | async leaderboard snapshot                                   | limit is clamped to `1..100`                                  |
-| `flushAllStats()`                   | async persistence flush                                      | useful before backups or controlled shutdown tasks            |
+![divider]({{ site.baseurl }}/assets/divider.svg)
 
-## Value Types And What They Mean
+## Stability map
 
-| Type                    | Purpose                                                      | Notes                                                                                                  |
-| ----------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `PlayerStatSnapshot`    | immutable stats snapshot returned by async API methods       | includes total catches, per-tier counts, rod usage, and last-fished time                               |
-| `Result<T>`             | small success/failure wrapper used by item creation          | check `isSuccess()` before dereferencing the value                                                     |
-| `DropCatalog`           | immutable inspection view of the active drop table           | category names plus loaded drops                                                                       |
-| `PlatformDrop`          | read-only drop descriptor                                    | exposes identifier, weight, amount, tier, permission, biome filters, and optional item materialization |
-| `PlatformItem`          | immutable MythicRod-compatible item view                     | stable metadata layer instead of Paper-specific item classes                                           |
-| `PlatformPlayer`        | platform-neutral player context passed to external providers | identity, permissions, inventory, and basic state                                                      |
-| `PlatformInventory`     | limited inventory abstraction                                | add items, inspect slots, and detect overflow/fullness                                                 |
-| `PlatformLocation`      | immutable world-position snapshot                            | safe to move across scheduler boundaries                                                               |
-| `PlatformScheduler`     | owner-aware scheduling facade                                | advanced integrations and test harnesses only                                                          |
-| `PlatformServer`        | common-module host abstraction                               | mainly useful for adapters and tests, not normal Paper consumers                                       |
-| `PlatformWorld`         | minimal world abstraction                                    | advanced integrations only                                                                             |
-| `PlatformTask`          | cancel/is-cancelled handle                                   | returned by delayed and repeating scheduler work                                                       |
-| `PlatformConfiguration` | configuration adapter used by shared runtime code            | mostly relevant for advanced adapters and tests                                                        |
+| Package                              | Status              | Use it for                                                                          |
+| ------------------------------------ | ------------------- | ----------------------------------------------------------------------------------- |
+| `io.xcutiboo.mythicrod.api`          | Stable public API   | service interface, results, stat snapshots, external providers                      |
+| `io.xcutiboo.mythicrod.api.drop`     | Stable public API   | read-only drop catalog inspection                                                   |
+| `io.xcutiboo.mythicrod.api.platform` | Stable public API   | platform-neutral items, drops, players, schedulers, inventories, worlds, locations  |
+| `io.xcutiboo.mythicrod.paper.api`    | Stable Paper helper | `MythicRodServices` convenience lookup, `PaperMythicRodAPI` runtime implementation  |
+| `io.xcutiboo.mythicrod.paper.events` | Stable Paper events | reward-roll, reward-delivery, stats-update interception                             |
+| `io.xcutiboo.mythicrod.drops`        | Internal type       | only when you intentionally need `CustomDrop`-specific behaviour through events     |
+| anything else under `mythicrod-paper`| Internal            | not part of the contract, no compatibility guarantees                               |
 
-Two important notes about `PlatformDrop`:
+![divider]({{ site.baseurl }}/assets/divider.svg)
 
-- `getTier()` returns MythicRod's rarity label using the same mapping MythicRod uses internally for reward statistics and event metadata.
-- `createItem()` may throw `UnsupportedOperationException` because some drop descriptors are configuration-only views. Prefer `MythicRodAPI#createItem(...)` when you need a real item.
+## `MythicRodAPI` reference
 
-## Paper Events
+The single service registered through Bukkit's `ServicesManager`. Every method
+documented here is verified against
+`mythicrod-api/src/main/java/io/xcutiboo/mythicrod/api/MythicRodAPI.java`.
 
-| Event                      | Fires when                                                             | You can change                                         | Notes                                                                                          |
-| -------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| `MythicRodRewardRollEvent` | MythicRod has computed eligible rewards but has not built the item yet | `setLuckMultiplier(double)` or `forceDrop(CustomDrop)` | use `getForcedDropView()` for stable observation; `forceDrop(CustomDrop)` is the advanced path |
-| `MythicRodFishCatchEvent`  | MythicRod has selected a reward and is about to deliver it             | `setRewardItem(ItemStack)` or `setCancelled(true)`     | cancellation keeps the original vanilla catch intact                                           |
+### `String getVersion()`
 
-For stable consumer code, prefer `getDropView()` from `MythicRodFishCatchEvent`
-and `getForcedDropView()` from `MythicRodRewardRollEvent`. Those return
-`PlatformDrop` instead of requiring `CustomDrop`-specific typing.
-
-## Integration Recipes
-
-### Read player stats
+The running plugin version (`"2026.1.0"`).
 
 ```java
-MythicRodAPI api = MythicRodServices.require();
-
-api.getPlayerStats(player.getUniqueId()).thenAccept(snapshot -> {
-    getLogger().info(snapshot.playerName() + " has " + snapshot.totalCaught() + " custom catches");
-});
+getLogger().info("MythicRod " + api.getVersion());
 ```
 
 ```kotlin
-val api = MythicRodServices.require()
-
-api.getPlayerStats(player.uniqueId).thenAccept { snapshot ->
-    logger.info("${snapshot.playerName()} has ${snapshot.totalCaught()} custom catches")
-}
+logger.info("MythicRod ${api.version}")
 ```
 
-The completion runs async. Reschedule back to the correct player or region owner
-before touching Bukkit state.
+### `DropCatalog getDropCatalog()`
 
-### Browse the loaded drop catalog
+A read-only snapshot view of the currently loaded drop table. See
+[`DropCatalog`](#dropcatalog).
 
-```java
-DropCatalog catalog = api.getDropCatalog();
+### `PlatformItemFactory getItemFactory()`
 
-for (String category : catalog.getCategories()) {
-    for (PlatformDrop drop : catalog.getDrops(category)) {
-        getLogger().info(
-            category + " -> " + drop.getIdentifier()
-                + " [tier=" + drop.getTier()
-                + ", weight=" + drop.getWeight()
-                + ", amount=" + drop.getAmount() + "]"
-        );
-    }
-}
-```
+The runtime item factory MythicRod itself uses. Use this when you need to make
+MythicRod-compatible items in your own code. See
+[`PlatformItemFactory`](#platformitemfactory).
 
-### Create a MythicRod-compatible item
+### `Result<PlatformItem> createItem(String identifier, int amount)`
+
+Convenience wrapper around `getItemFactory().createItem(...)`.
 
 ```java
-Result<PlatformItem> result = api.createItem("nexo:my_reward", 1);
+Result<PlatformItem> result = api.createItem("DIAMOND", 1);
 if (result.isSuccess()) {
     PlatformItem item = result.getValue();
-    getLogger().info("Created " + item.getIdentifier());
-} else {
-    getLogger().warning(result.getError());
 }
 ```
 
 ```kotlin
-val result = api.createItem("nexo:my_reward", 1)
+val result = api.createItem("DIAMOND", 1)
 if (result.isSuccess) {
     val item = result.value
-    logger.info("Created ${item.identifier}")
-} else {
-    logger.warning(result.error)
 }
 ```
 
-### Register an external drop provider
+### `void registerExternalDropProvider(ExternalDropProvider provider)`
+
+Adds your provider to MythicRod's weighted selection. Existing providers with
+the same `getKey()` are replaced.
+
+### `boolean unregisterExternalDropProvider(String key)`
+
+Removes a previously registered provider. Returns `true` when a provider was
+removed.
+
+### `Optional<ExternalDropProvider> getExternalDropProvider(String key)`
+
+Lookup a single provider by key.
+
+### `List<ExternalDropProvider> getExternalDropProviders()`
+
+Immutable snapshot of every registered provider. Useful for diagnostics.
+
+### `CompletableFuture<PlayerStatSnapshot> getPlayerStats(UUID playerId)`
+
+Async snapshot of a player's MythicRod stats. Completes with
+`PlayerStatSnapshot.empty(uuid, "")` when MythicRod has never seen that player.
+Cancellation aborts your continuation, not necessarily MythicRod's I/O.
+
+### `CompletableFuture<List<PlayerStatSnapshot>> getTopPlayers(StatType type, int limit)`
+
+Async sorted leaderboard. Limit is clamped to `1..100`. `StatType.LAST_FISHED`
+is sorted most-recent-first; other types descending.
+
+### `CompletableFuture<Void> flushAllStats()`
+
+Forces an immediate persistence flush of in-memory stats. Called automatically
+on plugin shutdown. Useful before server backups.
+
+![divider]({{ site.baseurl }}/assets/divider.svg)
+
+## `ExternalDropProvider`
+
+Implement this to inject your own rewards into MythicRod's roll. All methods
+in `ExternalDropProvider.java` are listed below.
+
+| Method                                       | Required? | Notes                                                        |
+| -------------------------------------------- | --------- | ------------------------------------------------------------ |
+| `String getKey()`                            | Yes       | Stable namespaced key. Cannot change across restarts.        |
+| `double getWeight(PlatformPlayer player)`    | Yes       | Relative weight. `<= 0` excludes the provider for that roll. |
+| `PlatformItem generateItem(PlatformPlayer)`  | Yes       | Return `null` to abort delivery quietly.                     |
+| `String getDisplayName()`                    | Default   | MiniMessage display name. Default: `<gray>Unknown Drop</gray>`. |
+| `String getTier()`                           | Default   | Defaults to `"common"`. Use one of `common`, `uncommon`, `rare`, `legendary`, or a custom string. |
+
+Full example:
 
 ```java
-public final class VipRewardProvider implements ExternalDropProvider {
-    public static final String KEY = "myplugin:vip_reward";
+import io.xcutiboo.mythicrod.api.ExternalDropProvider;
+import io.xcutiboo.mythicrod.api.MythicRodAPI;
+import io.xcutiboo.mythicrod.api.platform.PlatformItem;
+import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
+
+public final class VipReward implements ExternalDropProvider {
+    public static final String KEY = "myplugin:vip";
 
     private final MythicRodAPI api;
 
-    public VipRewardProvider(MythicRodAPI api) {
-        this.api = api;
-    }
+    public VipReward(MythicRodAPI api) { this.api = api; }
 
-    @Override
-    public String getKey() {
-        return KEY;
-    }
+    @Override public String getKey() { return KEY; }
 
     @Override
     public double getWeight(PlatformPlayer player) {
-        return player.hasPermission("myplugin.vip") ? 3.0D : 0.0D;
+        return player.hasPermission("myplugin.vip") ? 4.0D : 0.0D;
     }
 
     @Override
@@ -279,116 +320,403 @@ public final class VipRewardProvider implements ExternalDropProvider {
         return api.createItem("DIAMOND", 1).orElse(null);
     }
 
-    @Override
-    public String getDisplayName() {
-        return "<gold>VIP Diamond</gold>";
-    }
-
-    @Override
-    public String getTier() {
-        return "rare";
-    }
-}
-```
-
-Registration lifecycle:
-
-```java
-MythicRodAPI api = MythicRodServices.require();
-api.registerExternalDropProvider(new VipRewardProvider(api));
-```
-
-```kotlin
-val api = MythicRodServices.require()
-api.registerExternalDropProvider(VipRewardProvider(api))
-```
-
-Unregister the same key during your own disable phase when MythicRod is still
-available:
-
-```java
-@Override
-public void onDisable() {
-    MythicRodServices.find().ifPresent(api ->
-        api.unregisterExternalDropProvider(VipRewardProvider.KEY));
+    @Override public String getDisplayName() { return "<gold>VIP Diamond"; }
+    @Override public String getTier() { return "rare"; }
 }
 ```
 
 ```kotlin
+import io.xcutiboo.mythicrod.api.ExternalDropProvider
+import io.xcutiboo.mythicrod.api.MythicRodAPI
+import io.xcutiboo.mythicrod.api.platform.PlatformItem
+import io.xcutiboo.mythicrod.api.platform.PlatformPlayer
+
+class VipReward(private val api: MythicRodAPI) : ExternalDropProvider {
+    override fun getKey() = KEY
+    override fun getWeight(player: PlatformPlayer) =
+        if (player.hasPermission("myplugin.vip")) 4.0 else 0.0
+    override fun generateItem(player: PlatformPlayer): PlatformItem? =
+        api.createItem("DIAMOND", 1).orElse(null)
+    override fun getDisplayName() = "<gold>VIP Diamond"
+    override fun getTier() = "rare"
+    companion object { const val KEY = "myplugin:vip" }
+}
+```
+
+Lifecycle:
+
+```java
+@Override public void onEnable() {
+    MythicRodServices.find().ifPresent(api -> api.registerExternalDropProvider(new VipReward(api)));
+}
+
+@Override public void onDisable() {
+    MythicRodServices.find().ifPresent(api -> api.unregisterExternalDropProvider(VipReward.KEY));
+}
+```
+
+```kotlin
+override fun onEnable() {
+    MythicRodServices.find().ifPresent { it.registerExternalDropProvider(VipReward(it)) }
+}
+
 override fun onDisable() {
-    MythicRodServices.find().ifPresent { api ->
-        api.unregisterExternalDropProvider(VipRewardProvider.KEY)
-    }
+    MythicRodServices.find().ifPresent { it.unregisterExternalDropProvider(VipReward.KEY) }
 }
 ```
 
-`MythicRodServices.find()` is used here instead of `require()` so your plugin's
-shutdown still completes cleanly when MythicRod has already been disabled by
-the server.
+![divider]({{ site.baseurl }}/assets/divider.svg)
 
-### React to reward flow on Paper
+## Paper events
+
+Three Bukkit events fire during the fishing pipeline. All live in
+`io.xcutiboo.mythicrod.paper.events`.
+
+### `MythicRodRewardRollEvent`
+
+Fires once MythicRod has identified eligible drops but **before** it has built
+the reward item. The right place to bias selection.
+
+| Getter / setter           | Returns / accepts | Notes                                                    |
+| ------------------------- | ----------------- | -------------------------------------------------------- |
+| `getPlayer()`             | `Player`          | Paper player who triggered the roll                      |
+| `getCategory()`           | `String`          | Category about to be rolled (e.g. `global`, `biome_ocean`)|
+| `getBaseWeight()`         | `double`          | MythicRod's pre-bias weight scalar                       |
+| `getLuckMultiplier()`     | `double`          | Current pending multiplier                               |
+| `setLuckMultiplier(d)`    | `void`            | Override the multiplier for this roll                    |
+| `forceDrop(CustomDrop)`   | `void`            | Force a specific drop (advanced; bypasses selection)     |
+| `getForcedDrop()`         | `CustomDrop`      | Returns the forced drop if any (internal type)           |
+| `getForcedDropView()`     | `PlatformDrop`    | Stable read-only view of the forced drop                 |
+| `hasForcedDrop()`         | `boolean`         | True when a forced drop is set                           |
+| `getHandlerList()` / `getHandlers()` | `HandlerList` | Standard Bukkit boilerplate                         |
 
 ```java
-@EventHandler(priority = EventPriority.NORMAL)
-public void onRewardRoll(MythicRodRewardRollEvent event) {
-    if (event.getPlayer().hasPermission("myplugin.vip")) {
-        event.setLuckMultiplier(event.getLuckMultiplier() * 1.25D);
-    }
-}
-
-@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-public void onFishCatch(MythicRodFishCatchEvent event) {
-    PlatformDrop drop = event.getDropView();
-    if ("legendary".equalsIgnoreCase(drop.getTier())) {
-        ItemStack reward = event.getRewardItem();
-        reward.setAmount(Math.min(reward.getMaxStackSize(), reward.getAmount() + 1));
-        event.setRewardItem(reward);
+@EventHandler
+public void onRoll(MythicRodRewardRollEvent event) {
+    if (event.getPlayer().hasPermission("myplugin.lucky")) {
+        event.setLuckMultiplier(event.getLuckMultiplier() * 1.5D);
     }
 }
 ```
 
 ```kotlin
-@EventHandler(priority = EventPriority.NORMAL)
-fun onRewardRoll(event: MythicRodRewardRollEvent) {
-    if (event.player.hasPermission("myplugin.vip")) {
-        event.luckMultiplier = event.luckMultiplier * 1.25
-    }
-}
-
-@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-fun onFishCatch(event: MythicRodFishCatchEvent) {
-    val drop = event.dropView
-    if (drop.tier.equals("legendary", ignoreCase = true)) {
-        val reward = event.rewardItem
-        reward.amount = minOf(reward.maxStackSize, reward.amount + 1)
-        event.rewardItem = reward
+@EventHandler
+fun onRoll(event: MythicRodRewardRollEvent) {
+    if (event.player.hasPermission("myplugin.lucky")) {
+        event.luckMultiplier = event.luckMultiplier * 1.5
     }
 }
 ```
 
-## Contract Notes And Pitfalls
+### `MythicRodFishCatchEvent`
 
-- Weight values are relative weights, not percentages.
-- `ExternalDropProvider#getWeight(...)` and `generateItem(...)` must not block, perform network I/O, or wait on futures.
-- `MythicRodFishCatchEvent#setRewardItem(...)` rejects `null` and `AIR` items.
-- `MythicRodFishCatchEvent#setCancelled(true)` skips MythicRod's custom replacement and keeps the original Minecraft catch intact.
-- `MythicRodRewardRollEvent#forceDrop(CustomDrop)` is an advanced Paper-specific hook. Most plugins should prefer `setLuckMultiplier(...)` before selection or `setRewardItem(...)` after selection.
-- Optional item integrations such as `nexo:*` only work when that plugin is actually enabled at runtime.
-- `PlatformDrop#createItem()` is not guaranteed to succeed for every drop descriptor. Use the item factory when you need concrete item creation.
+Fires after selection. Cancellable. The reward item is mutable. Cancelling the
+event leaves the vanilla catch in place.
 
-## What To Reach For First
+| Getter / setter         | Returns / accepts | Notes                                                |
+| ----------------------- | ----------------- | ---------------------------------------------------- |
+| `getPlayer()`           | `Player`          | Paper player about to receive the catch              |
+| `getDrop()`             | `CustomDrop`      | Internal MythicRod descriptor                         |
+| `getDropView()`         | `PlatformDrop`    | Stable read-only view                                 |
+| `getRewardItem()`       | `ItemStack`       | Item MythicRod is about to deliver                    |
+| `setRewardItem(stack)`  | `void`            | Replace the reward item. Must not be `null` or `AIR`. |
+| `isCancelled()` / `setCancelled(boolean)` | -   | Cancellable                                           |
 
-If you are adding a normal MythicRod integration, start with this order:
+```java
+@EventHandler(ignoreCancelled = true)
+public void onCatch(MythicRodFishCatchEvent event) {
+    if ("legendary".equalsIgnoreCase(event.getDropView().getTier())) {
+        Player p = event.getPlayer();
+        p.getWorld().strikeLightningEffect(p.getLocation());
+    }
+}
+```
 
-1. Resolve `MythicRodAPI` through `MythicRodServices`.
-2. Use `MythicRodAPI#createItem(...)` instead of platform-specific item builders.
-3. Use `ExternalDropProvider` for new rewards.
-4. Use `MythicRodRewardRollEvent` only when you need to bias selection.
-5. Use `MythicRodFishCatchEvent` when you need to replace or veto the final reward item.
+```kotlin
+@EventHandler(ignoreCancelled = true)
+fun onCatch(event: MythicRodFishCatchEvent) {
+    if (event.dropView.tier.equals("legendary", ignoreCase = true)) {
+        val p = event.player
+        p.world.strikeLightningEffect(p.location)
+    }
+}
+```
 
-That path keeps your plugin on the stable surface and away from MythicRod's
-internal runtime wiring.
+### `MythicRodStatsUpdateEvent`
 
----
+Fires after MythicRod has updated a player's stats. Read-only; useful for
+analytics, dashboards, or webhooks.
 
-[← Back to docs home](./) · [GitHub](https://github.com/xcutiboo/MythicRod) · [Hangar](https://hangar.papermc.io/xcutiboo/MythicRod)
+| Getter           | Returns               | Notes                                          |
+| ---------------- | --------------------- | ---------------------------------------------- |
+| `getPlayerId()`  | `UUID`                | Player whose stats were updated                |
+| `getTier()`      | `String`              | Tier of the catch that triggered the update    |
+| `getSnapshot()`  | `PlayerStatSnapshot`  | Fresh, immutable stats snapshot               |
+
+```java
+@EventHandler
+public void onStats(MythicRodStatsUpdateEvent event) {
+    var snap = event.getSnapshot();
+    Bukkit.getLogger().info(snap.playerName() + " total=" + snap.totalCaught());
+}
+```
+
+```kotlin
+@EventHandler
+fun onStats(event: MythicRodStatsUpdateEvent) {
+    val snap = event.snapshot
+    Bukkit.getLogger().info("${snap.playerName()} total=${snap.totalCaught()}")
+}
+```
+
+![divider]({{ site.baseurl }}/assets/divider.svg)
+
+## Value types
+
+### `Result<T>`
+
+Tiny success/failure wrapper used by item creation. Static factories:
+`Result.success(value)` / `Result.failure("reason")`. Instance methods:
+`isSuccess()`, `isFailure()`, `getValue()`, `getError()`, `orElse(fallback)`,
+`orElseThrow()`. `orElseThrow()` raises `IllegalStateException` with the stored
+error message.
+
+### `PlayerStatSnapshot`
+
+Java record with these components, in declaration order:
+
+| Component          | Type      | Meaning                                          |
+| ------------------ | --------- | ------------------------------------------------ |
+| `playerUuid`       | `UUID`    | Player UUID                                      |
+| `playerName`       | `String`  | Last-known player name                           |
+| `totalCaught`      | `int`     | Total custom catches                             |
+| `commonCaught`     | `int`     | Common-tier catches                              |
+| `uncommonCaught`   | `int`     | Uncommon-tier catches                            |
+| `rareCaught`       | `int`     | Rare-tier catches                                |
+| `legendaryCaught`  | `int`     | Legendary-tier catches                           |
+| `basicRodUses`     | `int`     | Casts with a basic rod                           |
+| `advancedRodUses`  | `int`     | Casts with an advanced rod                       |
+| `legendaryRodUses` | `int`     | Casts with a legendary rod                       |
+| `lastFished`       | `Instant` | Timestamp of last catch, `Instant.EPOCH` if none |
+| `snapshotTime`     | `Instant` | When MythicRod built this snapshot               |
+
+Static factory `PlayerStatSnapshot.empty(uuid, name)` returns a zeroed snapshot.
+
+Nested enum `PlayerStatSnapshot.StatType` for `getTopPlayers(...)`:
+`TOTAL_CAUGHT`, `RARE_CAUGHT`, `LEGENDARY_CAUGHT`, `LAST_FISHED`.
+
+### `DropCatalog`
+
+Read-only catalog of currently loaded drops.
+
+| Method                | Returns                       | Notes                          |
+| --------------------- | ----------------------------- | ------------------------------ |
+| `getCategories()`     | `Set<String>`                 | Registered category keys       |
+| `getDrops(category)`  | `List<? extends PlatformDrop>` | Drops for a category (snapshot) |
+| `getAllDrops()`       | `List<? extends PlatformDrop>` | All loaded drops (snapshot)     |
+| `getTotalDropCount()` | `int`                         | Count across all categories    |
+
+```java
+DropCatalog catalog = api.getDropCatalog();
+for (String cat : catalog.getCategories()) {
+    for (PlatformDrop drop : catalog.getDrops(cat)) {
+        getLogger().info(cat + " -> " + drop.getIdentifier() + " (" + drop.getTier() + ")");
+    }
+}
+```
+
+```kotlin
+val catalog = api.dropCatalog
+catalog.categories.forEach { cat ->
+    catalog.getDrops(cat).forEach { drop ->
+        logger.info("$cat -> ${drop.identifier} (${drop.tier})")
+    }
+}
+```
+
+### `PlatformDrop`
+
+Immutable view of a configured drop.
+
+| Method            | Returns         | Notes                                                |
+| ----------------- | --------------- | ---------------------------------------------------- |
+| `getIdentifier()` | `String`        | Material or `nexo:...`                               |
+| `getWeight()`     | `int`           | Relative roll weight                                 |
+| `getAmount()`     | `int`           | Configured stack amount                              |
+| `getTier()`       | `String`        | Default: `common`/`uncommon`/`rare`/`legendary` from weight |
+| `isNexoItem()`    | `boolean`       | `true` when identifier targets Nexo                   |
+| `getPermission()` | `String`        | Required permission, or `null` when unrestricted     |
+| `getBiomes()`     | `List<String>`  | Biome constraints, or empty list when global         |
+| `createItem()`    | `PlatformItem`  | May throw `UnsupportedOperationException` for descriptor-only entries |
+
+### `PlatformItem`
+
+Immutable item view.
+
+| Method              | Returns                | Notes                                  |
+| ------------------- | ---------------------- | -------------------------------------- |
+| `getIdentifier()`   | `String`               | `DIAMOND` or `nexo:my_item`             |
+| `getAmount()`       | `int`                  | Stack amount                            |
+| `getDisplayName()`  | `String`               | Display name (may be `null`)            |
+| `getLore()`         | `List<String>`         | Lore lines                              |
+| `getEnchantments()` | `Map<String, Integer>` | Enchant key -> level                    |
+| `getItemFlags()`    | `List<String>`         | Bukkit ItemFlag names                   |
+| `isGlowing()`       | `boolean`              | Glint override on/off                   |
+| `isCustom()`        | `boolean`              | True when sourced from a custom-item integration |
+
+### `PlatformItemFactory`
+
+| Method                                      | Returns                  | Notes                            |
+| ------------------------------------------- | ------------------------ | -------------------------------- |
+| `createItem(identifier, amount)`            | `Result<PlatformItem>`   | Use this rather than constructing items directly |
+| `canCreate(identifier)`                     | `boolean`                | Quick probe                       |
+
+### `PlatformPlayer` (extends `PlatformCommandSender`)
+
+| Method               | Returns               | Notes                          |
+| -------------------- | --------------------- | ------------------------------ |
+| `getUniqueId()`      | `UUID`                | Stable UUID                     |
+| `getName()`          | `String`              | Current player name             |
+| `isOnline()`         | `boolean`             | Still connected?                 |
+| `isOp()`             | `boolean`             | Operator status                  |
+| `closeInventory()`   | `void`                | Closes the currently open inventory |
+| `getInventory()`     | `PlatformInventory`   | Inventory view                   |
+
+`PlatformCommandSender` also exposes `hasPermission(String)`, `sendMessage(String)`,
+and friends used by integrations.
+
+### `PlatformInventory`
+
+| Method            | Returns                       | Notes                          |
+| ----------------- | ----------------------------- | ------------------------------ |
+| `getSize()`       | `int`                         | Slot count                      |
+| `getTitle()`      | `String`                      | UI title or `null`              |
+| `isFull()`        | `boolean`                     | Anything can fit?               |
+| `addItem(item)`   | `Map<Integer, PlatformItem>`  | Overflow map keyed by slot index|
+| `getItem(slot)`   | `PlatformItem`                | Returns `null` for empty slot    |
+
+### `PlatformLocation` (record)
+
+Components: `worldName`, `x`, `y`, `z`, `yaw`, `pitch`. Getter aliases
+`getWorldName()`, `getX()`, `getY()`, `getZ()`, `getYaw()`, `getPitch()`.
+
+### `PlatformWorld`, `PlatformServer`, `PlatformConfiguration`, `PlatformTask`
+
+Smaller platform abstractions used by adapters and tests. Most consumer plugins
+never touch them directly.
+
+| Type                     | Use case                                                    |
+| ------------------------ | ----------------------------------------------------------- |
+| `PlatformWorld`          | World identity in tests and adapters                        |
+| `PlatformServer`         | Host abstraction for the common module                      |
+| `PlatformConfiguration`  | YAML adapter used by shared runtime code                    |
+| `PlatformTask`           | Cancellable handle returned by `PlatformScheduler` delays   |
+
+### `PlatformScheduler`
+
+Folia-safe scheduling facade.
+
+| Method                                                   | Returns / runs on                   |
+| -------------------------------------------------------- | ----------------------------------- |
+| `runAtLocation(loc, task)`                               | Region owner thread for that location |
+| `runAtLocationDelayed(loc, task, delayTicks)`            | Same, returns `PlatformTask`         |
+| `runForPlayer(player, task)`                             | Player owner thread                  |
+| `runForPlayerDelayed(player, task, delayTicks)`          | Same, returns `PlatformTask`         |
+| `runGlobal(task)`                                        | Global tick / scheduler              |
+| `runGlobalDelayed(task, delayTicks)`                     | Same, returns `PlatformTask`         |
+| `runGlobalRepeating(task, initialDelayTicks, periodTicks)`| Returns `PlatformTask`              |
+| `runAsync(task)`                                         | Async thread                          |
+| `runAsyncDelayed(task, delayTicks)`                      | Same, returns `PlatformTask`          |
+| `runAsyncRepeating(task, initialMillis, periodMillis)`   | Returns `PlatformTask`; uses milliseconds |
+
+![divider]({{ site.baseurl }}/assets/divider.svg)
+
+## Recipes
+
+### Award a bonus item when a legendary lands
+
+```java
+@EventHandler(ignoreCancelled = true)
+public void onCatch(MythicRodFishCatchEvent e) {
+    if (!"legendary".equalsIgnoreCase(e.getDropView().getTier())) return;
+    e.getPlayer().getInventory().addItem(new ItemStack(Material.NETHER_STAR));
+}
+```
+
+### Track every catch into your own analytics
+
+```java
+@EventHandler
+public void onStats(MythicRodStatsUpdateEvent e) {
+    var s = e.getSnapshot();
+    metrics.record("mythicrod.catch", Map.of(
+        "uuid", s.playerUuid().toString(),
+        "tier", e.getTier(),
+        "total", String.valueOf(s.totalCaught())
+    ));
+}
+```
+
+### Top-10 leaderboard sign refresh
+
+```java
+api.getTopPlayers(StatType.TOTAL_CAUGHT, 10).thenAccept(top -> {
+    Bukkit.getScheduler().runTask(plugin, () -> updateSign(top));
+});
+```
+
+```kotlin
+api.getTopPlayers(StatType.TOTAL_CAUGHT, 10).thenAccept { top ->
+    Bukkit.getScheduler().runTask(plugin) { updateSign(top) }
+}
+```
+
+### Add a per-biome rare drop dynamically
+
+```java
+api.registerExternalDropProvider(new ExternalDropProvider() {
+    @Override public String getKey() { return "myplugin:ocean_pearl"; }
+    @Override public double getWeight(PlatformPlayer p) { return 2.0D; }
+    @Override public PlatformItem generateItem(PlatformPlayer p) {
+        return api.createItem("NAUTILUS_SHELL", 1).orElse(null);
+    }
+    @Override public String getTier() { return "rare"; }
+});
+```
+
+![divider]({{ site.baseurl }}/assets/divider.svg)
+
+## Contracts and pitfalls
+
+- Weights are **relative**, not normalised percentages.
+- `ExternalDropProvider#getWeight` and `generateItem` must stay non-blocking.
+- `MythicRodFishCatchEvent#setRewardItem(...)` rejects `null` and `AIR`. Cancel
+  the event if you want the vanilla catch instead.
+- `MythicRodRewardRollEvent#forceDrop(...)` bypasses weight selection. Prefer
+  `setLuckMultiplier(...)` for bias and let MythicRod pick.
+- `PlatformDrop#createItem()` is not guaranteed to succeed for every drop
+  descriptor; use `MythicRodAPI#getItemFactory()` when you need real items.
+- Optional integrations such as `nexo:*` identifiers only work when that plugin
+  is loaded at runtime.
+- After any `CompletableFuture` completion, reschedule to the correct owner
+  thread before touching Bukkit state.
+
+![divider]({{ site.baseurl }}/assets/divider.svg)
+
+## Versioning policy
+
+MythicRod uses CalVer: `<year>.<release>.<patch>`. Patch releases never break
+the API. Minor releases may add new methods with default implementations. Major
+year-rollovers may rename or remove only when the changelog calls it out
+explicitly.
+
+The internal `CustomDrop` type and anything under
+`io.xcutiboo.mythicrod.drops.*` is not covered by the stability guarantee.
+Always prefer the platform-neutral views (`PlatformDrop`, `PlatformItem`,
+`PlatformPlayer`) when you can.
+
+![divider]({{ site.baseurl }}/assets/divider.svg)
+
+[← Docs home]({{ site.baseurl }}/) · [GitHub](https://github.com/xcutiboo/MythicRod) ·
+[Hangar](https://hangar.papermc.io/xcutiboo/MythicRod) ·
+[Modrinth](https://modrinth.com/plugin/mythicrod)
