@@ -46,7 +46,7 @@ drops:
         - '<aqua>Legendary Fishing Artifact</aqua>'
       enchantments:
         sharpness: 10
-        sweeping_edge: 3
+        looting: 3
         unbreaking: 5
         knockback: 2
       item-flags:
