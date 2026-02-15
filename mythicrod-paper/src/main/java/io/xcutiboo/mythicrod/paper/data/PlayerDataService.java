@@ -18,13 +18,11 @@ import org.bukkit.persistence.PersistentDataType;
 
 import io.xcutiboo.mythicrod.paper.MythicRod;
 
-/**
- * Manages per-player persistent data used by Paper-only gameplay and UI code.
- *
- * <p>The data lives in the player's {@link PersistentDataContainer}, so it moves
- * with normal player data and does not leak Paper presentation preferences into
- * the shared module.
- */
+/// Manages per-player persistent data used by Paper-only gameplay and UI code.
+///
+/// The data lives in the player's {@link PersistentDataContainer}, so it moves
+/// with normal player data and does not leak Paper presentation preferences into
+/// the shared module.
 public class PlayerDataService implements Listener {
     private static final Logger LOGGER = Logger.getLogger("MythicRod");
     private static final String DEFAULT_TIER = "basic";
@@ -39,12 +37,10 @@ public class PlayerDataService implements Listener {
         this.reducedEffectsKey = new NamespacedKey(plugin, "mythicrod_reduced_effects");
     }
 
-    /**
-     * Evicts per-player cache entries when a player leaves.
-     *
-     * <p>Without this handler the caches retain one entry per unique player
-     * until plugin shutdown.
-     */
+    /// Evicts per-player cache entries when a player leaves.
+    ///
+    /// Without this handler the caches retain one entry per unique player
+    /// until plugin shutdown.
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerQuit(PlayerQuitEvent event) {
         try {

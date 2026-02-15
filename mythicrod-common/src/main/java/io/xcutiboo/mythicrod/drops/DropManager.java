@@ -23,17 +23,15 @@ import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 import io.xcutiboo.mythicrod.constants.PermissionNodes;
 import lombok.NonNull;
 
-/**
- * Manages fishing drop tables loaded from configuration.
- *
- * <p><strong>Thread safety:</strong> The canonical drop table is held in an
- * {@link AtomicReference} so that a reload (which builds a completely new map)
- * is published atomically. Readers always see either the old complete map or
- * the new complete map, never a partially-populated one. Individual category
- * lists use {@link CopyOnWriteArrayList} so that in-place mutations
- * ({@code updateDrop}, {@code deleteDrop}) are safe to perform while concurrent
- * readers iterate over the list.
- */
+/// Manages fishing drop tables loaded from configuration.
+///
+/// <strong>Thread safety:</strong> The canonical drop table is held in an
+/// {@link AtomicReference} so that a reload (which builds a completely new map)
+/// is published atomically. Readers always see either the old complete map or
+/// the new complete map, never a partially-populated one. Individual category
+/// lists use {@link CopyOnWriteArrayList} so that in-place mutations
+/// ({@code updateDrop}, {@code deleteDrop}) are safe to perform while concurrent
+/// readers iterate over the list.
 public class DropManager implements DropCatalog {
     private static final String KEY_AMOUNT = "amount";
     private static final String KEY_CUSTOM_MODEL_DATA = "custom_model_data";
@@ -605,14 +603,12 @@ public class DropManager implements DropCatalog {
         return clamped;
     }
 
-    /**
-     * Selects a random drop with a luck multiplier applied to rare/legendary
-     * drop weights. A multiplier &gt; 1.0 makes rare catches more probable.
-     *
-     * @param player         the fishing player (permission + biome checks)
-     * @param biomeName      current biome key string
-     * @param luckMultiplier from {@code MythicRodRewardRollEvent}, clamped to at least 0.01
-     */
+    /// Selects a random drop with a luck multiplier applied to rare/legendary
+    /// drop weights. A multiplier &gt; 1.0 makes rare catches more probable.
+    ///
+    /// @param player         the fishing player (permission + biome checks)
+    /// @param biomeName      current biome key string
+    /// @param luckMultiplier from {@code MythicRodRewardRollEvent}, clamped to at least 0.01
     public CustomDrop getRandomDrop(PlatformPlayer player, String biomeName, double luckMultiplier) {
         if (player == null || !player.isOnline()) {
             fine(() -> "Skipping reward roll because player is null or offline");
@@ -622,7 +618,7 @@ public class DropManager implements DropCatalog {
         return selector.selectDrop(allDrops, player, biomeName, luckMultiplier);
     }
 
-    /** Luck-neutral overload. */
+    /// Luck-neutral overload.
     public CustomDrop getRandomDrop(PlatformPlayer player, String biomeName) {
         if (player == null || !player.isOnline()) {
             fine(() -> "Skipping reward roll because player is null or offline");
@@ -744,20 +740,18 @@ public class DropManager implements DropCatalog {
         }
     }
 
-    /**
-     * Update an existing drop with new properties.
-     *
-     * <p>Thread safe: the category list is a {@link CopyOnWriteArrayList}, so
-     * {@code set()} is atomic and concurrent readers are unaffected.
-     *
-     * @param dropId     The drop identifier
-     * @param category   The category name
-     * @param weight     The new relative roll weight
-     * @param amount     The new amount
-     * @param customName The new custom name (can be null)
-     * @param lore       The new lore list
-     * @param glowing    Whether the item should glow
-     */
+    /// Update an existing drop with new properties.
+    ///
+    /// Thread safe: the category list is a {@link CopyOnWriteArrayList}, so
+    /// {@code set()} is atomic and concurrent readers are unaffected.
+    ///
+    /// @param dropId     The drop identifier
+    /// @param category   The category name
+    /// @param weight     The new relative roll weight
+    /// @param amount     The new amount
+    /// @param customName The new custom name (can be null)
+    /// @param lore       The new lore list
+    /// @param glowing    Whether the item should glow
     public void updateDrop(String dropId, String category, int weight, int amount,
                            String customName, List<String> lore, boolean glowing) {
         List<CustomDrop> drops = dropCategories().get(category.toLowerCase(Locale.ROOT));
@@ -785,11 +779,9 @@ public class DropManager implements DropCatalog {
         }
     }
 
-    /**
-     * Adds a drop to a category from a {@link EditableDropFields} value object.
-     *
-     * <p>Returns {@code null} when the category or fields are invalid.
-     */
+    /// Adds a drop to a category from a {@link EditableDropFields} value object.
+    ///
+    /// Returns {@code null} when the category or fields are invalid.
     public CustomDrop addDrop(String category, EditableDropFields fields) {
         if (category == null || category.isBlank() || fields == null) {
             return null;
@@ -839,15 +831,13 @@ public class DropManager implements DropCatalog {
         return scopedDrop;
     }
 
-    /**
-     * Updates the exact drop instance selected by the GUI.
-     *
-     * <p>Identifier-based updates are ambiguous when a category contains two
-     * drops with the same material. The GUI passes the live {@link CustomDrop}
-     * object it opened so only that row is replaced.
-     *
-     * @return {@code true} when the selected drop was still present
-     */
+    /// Updates the exact drop instance selected by the GUI.
+    ///
+    /// Identifier-based updates are ambiguous when a category contains two
+    /// drops with the same material. The GUI passes the live {@link CustomDrop}
+    /// object it opened so only that row is replaced.
+    ///
+    /// @return {@code true} when the selected drop was still present
     public boolean updateDrop(CustomDrop targetDrop, String category, int weight, int amount,
                               String customName, List<String> lore, boolean glowing) {
         if (targetDrop == null) return false;
@@ -866,11 +856,9 @@ public class DropManager implements DropCatalog {
         ));
     }
 
-    /**
-     * Replaces the selected drop instance with the supplied {@link EditableDropFields}.
-     *
-     * @return {@code true} when the target was still present and the new fields validated
-     */
+    /// Replaces the selected drop instance with the supplied {@link EditableDropFields}.
+    ///
+    /// @return {@code true} when the target was still present and the new fields validated
     public boolean updateDrop(CustomDrop targetDrop, String category, EditableDropFields fields) {
         if (!hasUpdatableArguments(targetDrop, category, fields)) return false;
         String normalizedIdentifier = normalizeEditedIdentifier(fields.identifier());
@@ -923,15 +911,13 @@ public class DropManager implements DropCatalog {
         return false;
     }
 
-    /**
-     * Delete a drop from a category.
-     *
-     * <p>Thread safe: {@link CopyOnWriteArrayList#removeIf} performs a
-     * copy-on-write replace so concurrent readers are unaffected.
-     *
-     * @param dropId   The drop identifier
-     * @param category The category name
-     */
+    /// Delete a drop from a category.
+    ///
+    /// Thread safe: {@link CopyOnWriteArrayList#removeIf} performs a
+    /// copy-on-write replace so concurrent readers are unaffected.
+    ///
+    /// @param dropId   The drop identifier
+    /// @param category The category name
     public void deleteDrop(String dropId, String category) {
         List<CustomDrop> drops = dropCategories().get(category.toLowerCase(Locale.ROOT));
         if (drops == null) return;
@@ -942,11 +928,9 @@ public class DropManager implements DropCatalog {
         }
     }
 
-    /**
-     * Deletes the exact drop instance selected by the GUI.
-     *
-     * @return {@code true} when the selected drop was still present
-     */
+    /// Deletes the exact drop instance selected by the GUI.
+    ///
+    /// @return {@code true} when the selected drop was still present
     public boolean deleteDrop(CustomDrop targetDrop, String category) {
         if (targetDrop == null || category == null || category.isBlank()) {
             return false;
@@ -1001,7 +985,7 @@ public class DropManager implements DropCatalog {
         return trimmedIdentifier;
     }
 
-    /** Saves the current in-memory drop table back to the source configuration file. */
+    /// Saves the current in-memory drop table back to the source configuration file.
     public void saveDropsConfig() {
         saveDrops();
     }

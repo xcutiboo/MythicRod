@@ -97,6 +97,14 @@ command:
       debug: '<yellow>Debug logging'
       delivery-mode: '<yellow>Reward delivery'
       stats-save-interval: '<yellow>Stats save interval'
+  drop:
+    added: '<green>✓ <gray>Added <white>%identifier%<gray> to category <white>%category%<gray>.'
+    removed: '<green>✓ <gray>Removed <white>%identifier%<gray> from category <white>%category%<gray>.'
+    updated: '<green>✓ <gray>Updated <white>%identifier%<gray> field <yellow>%field%<gray> to <white>%value%<gray>.'
+    not-found: '<red>✗ <dark_red>Drop <yellow>%identifier%<dark_red> not found in category <yellow>%category%<dark_red>.'
+    invalid: '<red>✗ <dark_red>Invalid drop <yellow>%identifier%<dark_red>. Check material identifier and weight/amount.'
+    unknown-field: '<red>✗ <dark_red>Unknown field <yellow>%field%<dark_red>. Use weight, amount, name, permission, or glow.'
+    bad-value: '<red>✗ <dark_red>Value <yellow>%value%<dark_red> is not valid for field <yellow>%field%<dark_red>.'
 
 # ═══════════════════════════════════════════════════════════
 # STATISTICS (used by commands)

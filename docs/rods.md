@@ -14,6 +14,10 @@ plain fishing rod with two PersistentDataContainer keys:
   rod.
 - `mythicrod:rod_tier` (`string`): tier name.
 
+Advanced and legendary rods are crafted with the enchant glint flag set. The
+legendary tier is also unbreakable so it can sit on a reward shelf without
+needing repair.
+
 Survival players can't fabricate these markers. Admins hand them out with
 `/mythicrod give <player> <tier>`.
 
@@ -47,6 +51,20 @@ tiers). Common and uncommon catches stay unaffected.
 On Folia, the actual `Inventory#addItem` runs on the target's owner
 scheduler. If the target's inventory is full, the sender gets a clean
 "inventory full" reply and no rod gets dropped on the ground.
+
+## Self-service tier switch
+
+Players who already have rod permissions can change their own bonus tier:
+
+```
+/mythicrod rod select basic
+/mythicrod rod select advanced
+/mythicrod rod select legendary
+```
+
+The tier is stored per-player through `PlayerDataService`. Selecting a tier
+the player lacks the permission for is rejected with `command.rod.locked`.
+The GUI rod menu writes through the same code path.
 
 ---
 

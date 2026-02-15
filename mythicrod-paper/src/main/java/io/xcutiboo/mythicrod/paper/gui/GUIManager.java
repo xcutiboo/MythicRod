@@ -118,12 +118,10 @@ public class GUIManager implements Listener {
         player.closeInventory();
     }
 
-    /**
-     * Captures the player's next chat message for an inventory editor.
-     *
-     * <p>The chat event may be async, so the accepted value is delivered back on
-     * the player's owning scheduler before any menu code runs.
-     */
+    /// Captures the player's next chat message for an inventory editor.
+    ///
+    /// The chat event may be async, so the accepted value is delivered back on
+    /// the player's owning scheduler before any menu code runs.
     public boolean requestTextInput(
         Player player,
         String prompt,

@@ -169,6 +169,28 @@ public class BrigadierCommandManager {
                 .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
                     .suggests(this::suggestDropCategories)
                     .executes(this::executeDropsCategory)))
+            .then(Commands.literal("drop")
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
+                .then(Commands.literal("add")
+                    .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
+                        .suggests(this::suggestDropCategories)
+                        .then(Commands.argument("identifier", StringArgumentType.string())
+                            .then(Commands.argument("weight", IntegerArgumentType.integer(1, 10000))
+                                .then(Commands.argument("amount", IntegerArgumentType.integer(1, 64))
+                                    .executes(this::executeDropAdd))))))
+                .then(Commands.literal("remove")
+                    .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
+                        .suggests(this::suggestDropCategories)
+                        .then(Commands.argument("identifier", StringArgumentType.string())
+                            .executes(this::executeDropRemove))))
+                .then(Commands.literal("set")
+                    .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
+                        .suggests(this::suggestDropCategories)
+                        .then(Commands.argument("identifier", StringArgumentType.string())
+                            .then(Commands.argument("field", StringArgumentType.word())
+                                .suggests(this::suggestDropFields)
+                                .then(Commands.argument("value", StringArgumentType.greedyString())
+                                    .executes(this::executeDropSet)))))))
             .then(Commands.literal("debug")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
                 .executes(this::executeDebug))
@@ -1546,6 +1568,160 @@ public class BrigadierCommandManager {
             case "uncommon" -> "<green>";
             default -> GRAY_PREFIX;
         };
+    }
+
+    private CompletableFuture<Suggestions> suggestDropFields(
+        @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
+        SuggestionsBuilder builder
+    ) {
+        for (String f : List.of("weight", "amount", "permission", "glow", "name")) {
+            builder.suggest(f);
+        }
+        return builder.buildFuture();
+    }
+
+    private int executeDropAdd(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        try {
+            String category = StringArgumentType.getString(context, KEY_CATEGORY).toLowerCase(Locale.ROOT);
+            String identifier = StringArgumentType.getString(context, "identifier").trim();
+            int weight = IntegerArgumentType.getInteger(context, "weight");
+            int amount = IntegerArgumentType.getInteger(context, "amount");
+
+            io.xcutiboo.mythicrod.drops.EditableDropFields fields =
+                new io.xcutiboo.mythicrod.drops.EditableDropFields(
+                    identifier, weight, amount,
+                    null, List.of(), 0, Map.of(), List.of(), false, null, List.of()
+                );
+            CustomDrop drop = plugin.getDropManager().addDrop(category, fields);
+            if (drop == null) {
+                sendMessage(sender, tr(sender, "command.drop.invalid",
+                    Map.of("identifier", identifier)));
+                playErrorSound(sender);
+                return 0;
+            }
+            plugin.getDropManager().saveDrops();
+            sendMessage(sender, tr(sender, "command.drop.added",
+                Map.of("identifier", identifier, "category", category)));
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing drop add", e);
+            return 0;
+        }
+    }
+
+    private int executeDropRemove(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        try {
+            String category = StringArgumentType.getString(context, KEY_CATEGORY).toLowerCase(Locale.ROOT);
+            String identifier = StringArgumentType.getString(context, "identifier").trim();
+            CustomDrop target = findDropInCategory(category, identifier);
+            if (target == null) {
+                sendMessage(sender, tr(sender, "command.drop.not-found",
+                    Map.of("identifier", identifier, "category", category)));
+                playErrorSound(sender);
+                return 0;
+            }
+            boolean removed = plugin.getDropManager().deleteDrop(target, category);
+            if (!removed) {
+                sendMessage(sender, tr(sender, "command.drop.not-found",
+                    Map.of("identifier", identifier, "category", category)));
+                playErrorSound(sender);
+                return 0;
+            }
+            plugin.getDropManager().saveDrops();
+            sendMessage(sender, tr(sender, "command.drop.removed",
+                Map.of("identifier", identifier, "category", category)));
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing drop remove", e);
+            return 0;
+        }
+    }
+
+    private int executeDropSet(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        try {
+            String category = StringArgumentType.getString(context, KEY_CATEGORY).toLowerCase(Locale.ROOT);
+            String identifier = StringArgumentType.getString(context, "identifier").trim();
+            String field = StringArgumentType.getString(context, "field").toLowerCase(Locale.ROOT);
+            String value = StringArgumentType.getString(context, "value");
+
+            CustomDrop target = findDropInCategory(category, identifier);
+            if (target == null) {
+                sendMessage(sender, tr(sender, "command.drop.not-found",
+                    Map.of("identifier", identifier, "category", category)));
+                playErrorSound(sender);
+                return 0;
+            }
+
+            int weight = target.getWeight();
+            int amount = target.getAmount();
+            String customName = target.getCustomName();
+            String permission = target.getPermission();
+            boolean glow = target.isGlowing();
+
+            try {
+                switch (field) {
+                    case "weight" -> weight = Integer.parseInt(value.trim());
+                    case "amount" -> amount = Integer.parseInt(value.trim());
+                    case "name" -> customName = value;
+                    case "permission" -> permission = value.isBlank() ? null : value.trim();
+                    case "glow" -> glow = Boolean.parseBoolean(value.trim());
+                    default -> {
+                        sendMessage(sender, tr(sender, "command.drop.unknown-field",
+                            Map.of("field", field)));
+                        playErrorSound(sender);
+                        return 0;
+                    }
+                }
+            } catch (NumberFormatException _) {
+                sendMessage(sender, tr(sender, "command.drop.bad-value",
+                    Map.of("field", field, "value", value)));
+                playErrorSound(sender);
+                return 0;
+            }
+
+            io.xcutiboo.mythicrod.drops.EditableDropFields next =
+                new io.xcutiboo.mythicrod.drops.EditableDropFields(
+                    target.getIdentifier(), weight, amount, customName,
+                    target.getLore(), target.getCustomModelData(),
+                    target.getEnchantments(), target.getItemFlags(), glow,
+                    permission, target.getBiomes()
+                );
+            boolean updated = plugin.getDropManager().updateDrop(target, category, next);
+            if (!updated) {
+                sendMessage(sender, tr(sender, "command.drop.not-found",
+                    Map.of("identifier", identifier, "category", category)));
+                playErrorSound(sender);
+                return 0;
+            }
+            plugin.getDropManager().saveDrops();
+            sendMessage(sender, tr(sender, "command.drop.updated",
+                Map.of("identifier", identifier, "field", field, "value", value)));
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing drop set", e);
+            return 0;
+        }
+    }
+
+    private CustomDrop findDropInCategory(String category, String identifier) {
+        List<CustomDrop> drops = plugin.getDropManager().getDropCategories().get(category);
+        if (drops == null) return null;
+        for (CustomDrop d : drops) {
+            if (identifier.equalsIgnoreCase(d.getIdentifier())) return d;
+        }
+        return null;
     }
 
     private int executeRodSelect(CommandContext<CommandSourceStack> context) {

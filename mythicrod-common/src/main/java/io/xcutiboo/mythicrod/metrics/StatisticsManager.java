@@ -30,24 +30,22 @@ import io.xcutiboo.mythicrod.api.platform.PlatformConfiguration;
 import io.xcutiboo.mythicrod.internal.runtime.MythicRodRuntime;
 import io.xcutiboo.mythicrod.stats.PlayerStats;
 
-/**
- * Manages in-memory player fishing statistics with Caffeine TTL-bounded caching.
- *
- * <h2>Thread Safety</h2>
- * <ul>
- *   <li>The active-players cache uses Caffeine and is safe for concurrent access.</li>
- *   <li>The dirty set uses {@link ConcurrentHashMap} as a set.</li>
- *   <li>{@link #saveAll()} is intended to be called from the async scheduler.</li>
- *   <li>{@link #getStats(UUID)} and {@link #recordCatch} may be called from
- *       any entity region thread.</li>
- * </ul>
- *
- * <h2>Cache Design</h2>
- * Stats for online players are kept indefinitely while they are active.
- * After login/access, entries expire from the cache after
- * {@value #EXPIRE_AFTER_ACCESS_MINUTES} minutes of no access.
- * This prevents {@code OutOfMemoryError} from unbounded accumulation.
- */
+/// Manages in-memory player fishing statistics with Caffeine TTL-bounded caching.
+///
+/// <h2>Thread Safety</h2>
+/// <ul>
+///   <li>The active-players cache uses Caffeine and is safe for concurrent access.</li>
+///   <li>The dirty set uses {@link ConcurrentHashMap} as a set.</li>
+///   <li>{@link #saveAll()} is intended to be called from the async scheduler.</li>
+///   <li>{@link #getStats(UUID)} and {@link #recordCatch} may be called from
+///       any entity region thread.</li>
+/// </ul>
+///
+/// <h2>Cache Design</h2>
+/// Stats for online players are kept indefinitely while they are active.
+/// After login/access, entries expire from the cache after
+/// {@value #EXPIRE_AFTER_ACCESS_MINUTES} minutes of no access.
+/// This prevents {@code OutOfMemoryError} from unbounded accumulation.
 public final class StatisticsManager {
 
     private static final int EXPIRE_AFTER_ACCESS_MINUTES = 30;
@@ -68,7 +66,7 @@ public final class StatisticsManager {
     private final Cache<UUID, PlayerStats> statsCache;
     private final ConcurrentHashMap<UUID, Boolean> dirtySet = new ConcurrentHashMap<>();
 
-    /** Total catches across all players since last reload; used by bStats. */
+    /// Total catches across all players since last reload; used by bStats.
     private final AtomicLong totalCatchesGlobal = new AtomicLong(0L);
 
     public StatisticsManager(@NotNull MythicRodRuntime runtime) {
@@ -107,17 +105,13 @@ public final class StatisticsManager {
         }
     }
 
-    /**
-     * Path to the statistics YAML file inside the plugin data folder.
-     * All player stats are stored here under {@code players.<uuid>.*}.
-     */
+    /// Path to the statistics YAML file inside the plugin data folder.
+    /// All player stats are stored here under {@code players.<uuid>.*}.
     private static final String STATS_FILENAME = "statistics.yml";
 
-    /**
-     * Live reference to the statistics YAML configuration.
-     * Guarded by {@code this} for write access; readers see either the old
-     * reference or the new one swapped during reload, never a half-built object.
-     */
+    /// Live reference to the statistics YAML configuration.
+    /// Guarded by {@code this} for write access; readers see either the old
+    /// reference or the new one swapped during reload, never a half-built object.
     @SuppressWarnings("java:S3077")
     private volatile PlatformConfiguration statsConfig;
 
@@ -142,18 +136,16 @@ public final class StatisticsManager {
         logger().fine("Statistics manager reloaded");
     }
 
-    /** @return Total catch count across all players since last reload (for bStats). */
+    /// @return Total catch count across all players since last reload (for bStats).
     public long getTotalCatches() {
         return totalCatchesGlobal.get();
     }
 
-    /**
-     * Returns the top {@code limit} players by total catches.
-     * Used by GUI menus that do not have async context.
-     *
-     * @param limit Max entries to return.
-     * @return Sorted list of PlayerStats, descending by totalCaught.
-     */
+    /// Returns the top {@code limit} players by total catches.
+    /// Used by GUI menus that do not have async context.
+    ///
+    /// @param limit Max entries to return.
+    /// @return Sorted list of PlayerStats, descending by totalCaught.
     @NotNull
     public List<PlayerStats> getTopFishers(int limit) {
         Comparator<PlayerStats> byTotalDesc = Comparator.comparingInt(PlayerStats::getTotalCaught).reversed();
@@ -166,15 +158,13 @@ public final class StatisticsManager {
                 .toList();
     }
 
-    /**
-     * Returns the {@link PlayerStats} for the given player UUID.
-     * Creates a new empty entry if none exists.
-     *
-     * <p>Thread-safe; may be called from any region thread.
-     *
-     * @param uuid Player UUID. Must not be null.
-     * @return Non-null PlayerStats instance.
-     */
+    /// Returns the {@link PlayerStats} for the given player UUID.
+    /// Creates a new empty entry if none exists.
+    ///
+    /// Thread-safe; may be called from any region thread.
+    ///
+    /// @param uuid Player UUID. Must not be null.
+    /// @return Non-null PlayerStats instance.
     @NotNull
     public PlayerStats getOrCreate(@NotNull UUID uuid) {
         return statsCache.get(uuid, id -> {
@@ -183,16 +173,14 @@ public final class StatisticsManager {
         });
     }
 
-    /**
-     * Returns the {@link PlayerStats} for the given UUID, or {@code null}
-     * if no entry has been created for this player yet.
-     *
-     * <p>Unlike {@link #getOrCreate}, this does not create a new entry.
-     * Used by the API layer for read-only queries.
-     *
-     * @param uuid Player UUID.
-     * @return Existing stats, or {@code null}.
-     */
+    /// Returns the {@link PlayerStats} for the given UUID, or {@code null}
+    /// if no entry has been created for this player yet.
+    ///
+    /// Unlike {@link #getOrCreate}, this does not create a new entry.
+    /// Used by the API layer for read-only queries.
+    ///
+    /// @param uuid Player UUID.
+    /// @return Existing stats, or {@code null}.
     @Nullable
     public PlayerStats getStats(@NotNull UUID uuid) {
         PlayerStats cachedStats = statsCache.getIfPresent(uuid);
@@ -202,14 +190,12 @@ public final class StatisticsManager {
         return loadPersistedStats(uuid, null);
     }
 
-    /**
-     * Returns a snapshot of all currently cached {@link PlayerStats} entries.
-     *
-     * <p>The returned map is a point-in-time copy. Mutations to the cache
-     * after this call are not reflected. Safe to iterate from async threads.
-     *
-     * @return Immutable map of UUID → PlayerStats.
-     */
+    /// Returns a snapshot of all currently cached {@link PlayerStats} entries.
+    ///
+    /// The returned map is a point-in-time copy. Mutations to the cache
+    /// after this call are not reflected. Safe to iterate from async threads.
+    ///
+    /// @return Immutable map of UUID → PlayerStats.
     @NotNull
     public Map<UUID, PlayerStats> getAllStats() {
         Map<UUID, PlayerStats> combinedStats = snapshotPersistedStats();
@@ -217,13 +203,11 @@ public final class StatisticsManager {
         return Collections.unmodifiableMap(combinedStats);
     }
 
-    /**
-     * Records a catch for the given player, incrementing counters and marking
-     * as dirty for persistence.
-     *
-     * @param uuid     Player UUID.
-     * @param category The drop tier string (e.g. "legendary", "rare").
-     */
+    /// Records a catch for the given player, incrementing counters and marking
+    /// as dirty for persistence.
+    ///
+    /// @param uuid     Player UUID.
+    /// @param category The drop tier string (e.g. "legendary", "rare").
     public void recordCatch(@NotNull UUID uuid, @NotNull String category) {
         PlayerStats stats = getOrCreate(uuid);
         stats.incrementTotalCaught();
@@ -250,14 +234,12 @@ public final class StatisticsManager {
         dirtySet.put(uuid, Boolean.TRUE);
     }
 
-    /**
-     * Clears every counter for the given player and marks the entry dirty so
-     * the next persistence flush wipes the on-disk row.
-     *
-     * @param uuid Player UUID.
-     * @return {@code true} if a stats entry existed to reset; {@code false} when
-     *         no in-memory or on-disk entry was present.
-     */
+    /// Clears every counter for the given player and marks the entry dirty so
+    /// the next persistence flush wipes the on-disk row.
+    ///
+    /// @param uuid Player UUID.
+    /// @return {@code true} if a stats entry existed to reset; {@code false} when
+    ///         no in-memory or on-disk entry was present.
     public boolean resetStats(@NotNull UUID uuid) {
         PlayerStats inMemory = statsCache.getIfPresent(uuid);
         if (inMemory != null) {
@@ -276,10 +258,8 @@ public final class StatisticsManager {
         return true;
     }
 
-    /**
-     * Flushes all dirty entries to persistent storage.
-     * Must be called from the async scheduler.
-     */
+    /// Flushes all dirty entries to persistent storage.
+    /// Must be called from the async scheduler.
     public void saveAll() {
         if (dirtySet.isEmpty()) {
             return;
@@ -324,14 +304,12 @@ public final class StatisticsManager {
         }
     }
 
-    /**
-     * Pre-loads stats for a player from the YAML file (e.g., on join).
-     * If no saved data exists, creates a fresh {@link PlayerStats} entry.
-     * Should be called from the async scheduler.
-     *
-     * @param uuid       Player UUID.
-     * @param playerName Player's current name.
-     */
+    /// Pre-loads stats for a player from the YAML file (e.g., on join).
+    /// If no saved data exists, creates a fresh {@link PlayerStats} entry.
+    /// Should be called from the async scheduler.
+    ///
+    /// @param uuid       Player UUID.
+    /// @param playerName Player's current name.
     public void loadPlayer(@NotNull UUID uuid, @NotNull String playerName) {
         statsCache.get(uuid, id -> {
             PlayerStats persistedStats = loadPersistedStats(id, playerName);
@@ -339,11 +317,9 @@ public final class StatisticsManager {
         });
     }
 
-    /**
-     * Removes a player from the cache (e.g., on quit), flushing dirty data first.
-     *
-     * @param uuid Player UUID.
-     */
+    /// Removes a player from the cache (e.g., on quit), flushing dirty data first.
+    ///
+    /// @param uuid Player UUID.
     public void unloadPlayer(@NotNull UUID uuid) {
         PlayerStats stats = statsCache.getIfPresent(uuid);
         if (stats != null && dirtySet.containsKey(uuid)) {
@@ -356,13 +332,11 @@ public final class StatisticsManager {
         statsCache.invalidate(uuid);
     }
 
-    /**
-     * Persists a single player's stats to the {@code statistics.yml} file.
-     *
-     * <p>Must be called from an async thread, never from the main server thread.
-     * All writes are guarded by a {@code synchronized} block on {@code this} so
-     * concurrent saves from the Caffeine eviction listener don't corrupt the file.
-     */
+    /// Persists a single player's stats to the {@code statistics.yml} file.
+    ///
+    /// Must be called from an async thread, never from the main server thread.
+    /// All writes are guarded by a {@code synchronized} block on {@code this} so
+    /// concurrent saves from the Caffeine eviction listener don't corrupt the file.
     private boolean persistStats(@NotNull UUID uuid, @NotNull PlayerStats stats) {
         try {
             synchronized (this) {
@@ -487,7 +461,7 @@ public final class StatisticsManager {
         return persistedStats;
     }
 
-    /** Loads (or creates) the {@code statistics.yml} config from disk. */
+    /// Loads (or creates) the {@code statistics.yml} config from disk.
     private @NotNull PlatformConfiguration loadStatsConfig() {
         File statsFile = new File(runtime.getDataFolder(), STATS_FILENAME);
         if (!runtime.getDataFolder().exists()) {
