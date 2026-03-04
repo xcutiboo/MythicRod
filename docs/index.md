@@ -33,6 +33,8 @@ statistics, and a small public API.
 | [Loot tables](loot-tables.md) | `drops.yml` shape, biome categories, identifiers. |
 | [Custom rods](rods.md) | Tier multipliers, in-game rod menu. |
 | [Developer API](developer-api.md) | Service lookup, `ExternalDropProvider`, events. |
+| [Testing checklist](testing.md) | 12-step Paper + Folia smoke test runbook. |
+| [Release guide](release.md) | Secrets, pre-flight, tag flow, Hangar + Modrinth automation. |
 | [Troubleshooting](troubleshooting.md) | Reload failures, Nexo, Folia notes. |
 
 ![divider]({{ site.baseurl }}/assets/divider.svg)

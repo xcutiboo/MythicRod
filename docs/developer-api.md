@@ -1,6 +1,6 @@
 ---
 title: Developer API
-nav_order: 7
+nav_order: 8
 ---
 
 # MythicRod Developer API
@@ -172,6 +172,7 @@ val api = Bukkit.getServicesManager().getRegistration(MythicRodAPI::class.java)?
 | `MythicRodRewardRollEvent`          | Player-owner thread (Folia) or main thread (vanilla)     |
 | `MythicRodFishCatchEvent`           | Player-owner thread (Folia) or main thread (vanilla)     |
 | `MythicRodStatsUpdateEvent`         | MythicRod stats writer thread                            |
+| `MythicRodReloadEvent`              | Thread that called `MythicRod#reload()` (main thread for `/mythicrod reload`) |
 
 Rules of thumb:
 
@@ -466,6 +467,33 @@ public void onStats(MythicRodStatsUpdateEvent event) {
 fun onStats(event: MythicRodStatsUpdateEvent) {
     val snap = event.snapshot
     Bukkit.getLogger().info("${snap.playerName()} total=${snap.totalCaught()}")
+}
+```
+
+### `MythicRodReloadEvent`
+
+Fires once `MythicRod#reload()` finishes. Not cancellable. Use it to refresh
+your own caches that mirrored MythicRod state, or to log to a dashboard.
+
+| Getter         | Returns   | Notes                                        |
+| -------------- | --------- | -------------------------------------------- |
+| `isSuccess()`  | `boolean` | `true` when reload completed without errors  |
+
+```java
+@EventHandler
+public void onReload(MythicRodReloadEvent event) {
+    if (event.isSuccess()) {
+        myDropProviderCache.invalidate();
+    }
+}
+```
+
+```kotlin
+@EventHandler
+fun onReload(event: MythicRodReloadEvent) {
+    if (event.isSuccess) {
+        myDropProviderCache.invalidate()
+    }
 }
 ```
 

@@ -1,6 +1,6 @@
 ---
 title: Release guide
-nav_order: 10
+nav_order: 11
 ---
 
 # Release guide
