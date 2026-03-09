@@ -1,0 +1,77 @@
+################################################################################
+# MythicRod English Messages (Base/Fallback Language)
+################################################################################
+# This is the primary/default language file for MythicRod.
+# All missing keys in other languages will fall back to English translations.
+#
+# Color Code Reference:
+#   &0-&9 = Colors | &a=Green &b=Cyan &c=Red &d=Pink &e=Yellow &f=White
+#   &l=Bold | &o=Italic | &n=Underline | &r=Reset
+#
+################################################################################
+
+prefix:
+  default: '&6&l<MythicRod> &r'
+
+general:
+  no-permission: "&cYou don't have permission to do that."
+  command-not-found: "&cI don't recognize that command. Try &e/mythicrod help&c."
+  error: '&cSomething went wrong. Check the server logs for details.'
+
+gui:
+  players-only: '&cThe GUI only works in-game.'
+  language-changed: '&aLanguage changed to &f{language}&a!'
+  permission-denied: "&cYou don't have permission to open the GUI."
+
+fishing:
+  catch-rare: '&b&l✦ RARE CATCH! &fYou reeled in &e{amount}× {item}&f!'
+  catch-legendary: '&d&l✦ LEGENDARY! &fYou discovered &e{amount}× {item}&f!'
+  catch-normal: '&a✓ &aCaught &e{amount}× {item}&a!'
+  stats-recorded: '&7+1 Fishing Stat Recorded'
+
+stats:
+  header: "&6━━━ &e{player}'s Fishing Stats &6━━━"
+  total-catches: '&eTotal Catches: &f{total}'
+  rare-catches: '&eRare Catches: &f{rare}'
+  legendary-catches: '&eLegendary Catches: &f{legendary}'
+  top-materials: '&6━━━ &eTop Materials Caught &6━━━'
+  material-count: '&e{material}: &f{count}'
+  permission-denied: "&cYou don't have permission to view stats."
+  player-not-found: '&cNo player named &e{player}&c found.'
+  console-usage: '&cPlease specify a player name when using this from console.'
+  disabled: '&cStatistics tracking is disabled.'
+  no-stats: "&cThere aren't any fishing stats yet."
+  top-header: '&6━━━ &eTop {limit} Fishers &6━━━'
+  top-entry: '&e#{rank}: &f{player} &7- &f{catches} catches'
+  limit-invalid: '&cLimit must be between &e1&c and &e100&c.'
+
+drops:
+  header: '&6━━━ &eMythicRod Drop Categories &6━━━'
+  category-entry: '&e{category}: &f{count} items'
+  usage: '&7Use &e/mythicrod drops {category}&7 to see items.'
+  category-header: '&6━━━ &eMythicRod Drops: {category} &6━━━'
+  category-not-found: '&cNo drops found in category &e{category}&c.'
+  available-categories: '&6Available: &e{categories}'
+  drop-entry: '&e{name} &7- &f{chance}% chance, {amount}× per catch'
+
+commands:
+  reload:
+    start: '&eReloading configuration...'
+    success: '&aConfiguration reloaded successfully!'
+    failed: '&cFailed to reload: &f{error}'
+  permission-denied: '&cYou need the &f{permission}&c permission.'
+  gui-permission-denied: "&cYou don't have permission to open the GUI."
+  player-not-found: '&cNo player named &e{player}&c found.'
+  console-only: '&cThis command requires you to be in-game.'
+  help-header: '&6━━━ &eMythicRod Commands &6━━━'
+  help-gui: '&e/mythicrod &7or &e/mythicrod gui &7- Open menu'
+  help-reload: '&e/mythicrod reload &7- Reload configuration'
+  help-stats: '&e/mythicrod stats [player] &7- View stats'
+  help-top: '&e/mythicrod top [limit] &7- Top fishers'
+  help-drops: '&e/mythicrod drops [category] &7- View drops'
+  help-help: '&e/mythicrod help &7- Show this message'
+
+language:
+  en: '&fEnglish'
+  jp: '&f日本語'
+  current: '&eCurrently speaking: &f{language}'

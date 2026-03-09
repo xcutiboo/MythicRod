@@ -1,0 +1,83 @@
+################################################################################
+# MythicRod Configuration v4.0 (Production Edition)
+################################################################################
+# All values are cached at runtime. Changes require server reload or restart.
+# See documentation at: https://github.com/xcutiboo/MythicRod
+
+# Configuration version (managed automatically, do not edit)
+config-version: 4
+
+################################################################################
+# PROFILE: Auto-optimized performance tuning
+################################################################################
+# Choose: lightweight (≤10 players) | balanced (10-50) | performance (>50)
+# This affects default intervals below; you can override manually.
+profile: balanced
+
+################################################################################
+# UI & MESSAGES
+################################################################################
+ui:
+  # Chat prefix for all plugin messages
+  prefix: '&6&l[MythicRod] &r'
+
+language:
+  # Supported: en_US, ja_JP (defaults to en_US if invalid)
+  default: en_US
+
+################################################################################
+# FEATURES: Enable/disable core functionality
+################################################################################
+features:
+  sounds:
+    # Play sounds when catching fish, opening menus, etc
+    enabled: true
+
+  particles:
+    # Display particle effects for special catches and events
+    enabled: true
+
+  statistics:
+    # Track player fishing statistics and achievements
+    enabled: true
+
+  drops:
+    biome-specific:
+      # Use different loot tables for different biomes (if drops.yml configured)
+      enabled: true
+
+  permissions:
+    # Require specific permissions for certain drops
+    enabled: false
+
+  debug:
+    # Enable detailed logging (performance impact)
+    enabled: false
+
+################################################################################
+# TIMERS: Performance intervals (in seconds)
+################################################################################
+timers:
+  # Save player statistics to disk (range: 60-3600s)
+  # Recommended:
+  #   lightweight:  300-600s (5-10 min)
+  #   balanced:     600-1200s (10-20 min)
+  #   performance:  1200-1800s (20-30 min)
+  stats-save-interval-seconds: 600
+
+  # Remove old/unused fishing hooks from memory (range: 60-1800s)
+  # Recommended:
+  #   lightweight:  180-300s (3-5 min)
+  #   balanced:     300-600s (5-10 min)
+  #   performance:  600-900s (10-15 min)
+  hook-cleanup-interval-seconds: 300
+
+################################################################################
+# DROPS: Legacy simple drop format (optional, see drops.yml for advanced)
+################################################################################
+drops:
+  - 'DIAMOND,5,1'
+  - 'IRON_INGOT,30,1'
+  - 'GOLD_INGOT,20,1'
+  - 'EMERALD,15,1'
+  - 'NETHERITE_INGOT,1,1'

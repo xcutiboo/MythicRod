@@ -1,0 +1,30 @@
+Type-safe project accessors is an incubating feature.
+
+> Task :mythicrod-common:compileJava FAILED
+C:\Users\xquti\Desktop\MythicRod\mythicrod-common\src\main\java\io\xcutiboo\mythicrod\drops\DropManager.java:298: error: method setDebugMode(boolean) is already defined in class DropManager
+    public void setDebugMode(boolean debugMode) {
+                ^
+C:\Users\xquti\Desktop\MythicRod\mythicrod-common\src\main\java\io\xcutiboo\mythicrod\config\ConfigManager.java:71: error: cannot find symbol
+        initialize();
+        ^
+  symbol:   method initialize()
+  location: class ConfigManager
+C:\Users\xquti\Desktop\MythicRod\mythicrod-common\src\main\java\io\xcutiboo\mythicrod\di\CommonModule.java:34: error: cannot find symbol
+        manager.initialize();
+               ^
+  symbol:   method initialize()
+  location: variable manager of type ConfigManager
+3 errors
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mythicrod-common:compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 579ms
+1 actionable task: 1 executed

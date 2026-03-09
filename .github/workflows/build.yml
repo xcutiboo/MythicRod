@@ -8,12 +8,10 @@ on:
     branches: ['main', 'master']
   workflow_dispatch:
 
-# Cancel outdated workflow runs when new commits are pushed
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-# Restrict default permissions to read-only
 permissions:
   contents: read
 
@@ -25,7 +23,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Fetch full history for accurate version calculation and changelog generation
           fetch-depth: 0
 
       - name: Validate Gradle wrapper
@@ -40,7 +37,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          # Only write cache from main/master to prevent cache pollution from feature branches
           cache-read-only: ${{ !startsWith(github.ref, 'refs/heads/main') && !startsWith(github.ref, 'refs/heads/master') }}
           gradle-home-cache-cleanup: true
 
@@ -50,25 +46,24 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build --no-daemon -Dorg.gradle.internal.http.socketTimeout=60000
 
-      - name: Upload plugin artifact
+      - name: Upload plugin artifacts
         uses: actions/upload-artifact@v4
         with:
           name: mythicrod
           path: |
-            build/libs/*.jar
-            !build/libs/*-plain.jar
-            !build/libs/*-sources.jar
+            mythicrod-paper/build/libs/*.jar
+            mythicrod-spigot/build/libs/*.jar
+            !**/*-plain.jar
+            !**/*-sources.jar
           if-no-files-found: error
           retention-days: 7
 
-  # Publish release when a version tag (v*) is pushed
-  # This job only runs after a successful build and when github.ref is a tag like v1.0.0
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Required to create and push releases
+      contents: write
 
     steps:
       - name: Download build artifact
@@ -81,6 +76,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/libs/*.jar
-          # Auto-generate changelog from PR titles since the last tag
           generate_release_notes: true
           fail_on_unmatched_files: true

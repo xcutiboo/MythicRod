@@ -1,0 +1,826 @@
+  #==============================================================================
+# MythicRod - English (United States) Language File
+# This is the authoritative base language for MythicRod.
+# All other languages will fall back to these translations if keys are missing.
+#
+# Format Version: 2.0
+# Language Code: en_US
+# Language Name: English
+# Translators: MythicRod Team
+#
+# Color Codes:
+#   &0-&9, &a-&f = Colors
+#   &l = Bold | &o = Italic | &n = Underline | &m = Strikethrough | &r = Reset
+#
+# Placeholders:
+#   Use curly braces: {player}, {amount}, {item}, {count}, etc.
+#   Do NOT translate placeholder names - only translate surrounding text
+#
+# For Translators:
+#   - Maintain the same tone: friendly, professional, and helpful
+#   - Keep color codes in place (they control text appearance)
+#   - Test placeholder positions to ensure natural grammar
+#   - Preserve line breaks and formatting
+#   - See lang/README.md for full translation guidelines
+#==============================================================================
+
+#==============================================================================
+# GENERAL MESSAGES
+#==============================================================================
+prefix:
+  default: '&6&l<MythicRod> &r'
+
+general:
+  no-permission: "&cYou don't have permission to do that."
+  command-not-found: "&cI don't recognize that command. Try &e/mythicrod help&c."
+  error: '&cSomething went wrong. Check the console for details.'
+  player-only: '&cThis command can only be used in-game.'
+  console-only: '&cThis command cannot be used from the console. Please specify a player.'
+  player-not-found: '&cNo player named &e{player}&c could be found.'
+  invalid-number: '&cThat's not a valid number: &f{input}'
+
+#==============================================================================
+# COMMAND MESSAGES
+#==============================================================================
+commands:
+  help:
+    header: '&6━━━ &eMythicRod Commands &6━━━'
+    gui: '&e/mythicrod &7or &e/mythicrod gui &7- Open the menu'
+    reload: '&e/mythicrod reload &7- Reload configuration'
+    stats: '&e/mythicrod stats [player] &7- View fishing statistics'
+    top: '&e/mythicrod top [limit] &7- View top fishers leaderboard'
+    drops: '&e/mythicrod drops [category] &7- View available drops'
+    help: '&e/mythicrod help &7- Show this help message'
+
+  reload:
+    start: '&eReloading configuration...'
+    success: '&aConfiguration reloaded successfully!'
+    failed: '&cFailed to reload configuration: &f{error}'
+    permission-denied: "&cYou need the &fmythicrod.reload&c permission to do that."
+
+  gui:
+    permission-denied: "&cYou don't have permission to open the menu."
+
+  stats:
+    permission-denied: "&cYou don't have permission to view statistics."
+    disabled: '&cStatistics tracking is currently disabled.'
+    no-data: "&cThere aren't any fishing statistics recorded yet."
+    limit-invalid: '&cThe limit must be between &e1&c and &e100&c.'
+
+  drops:
+    permission-denied: "&cYou don't have permission to view drops."
+    category-not-found: '&cNo drops found in category &e{category}&c.'
+    available-categories: '&6Available categories: &e{categories}'
+
+#==============================================================================
+# GUI - MAIN HUB MENU
+#==============================================================================
+gui:
+  main:
+    title: '&6&lMythicRod &8⚡ &7Main Menu'
+
+    config:
+      name: '&e&lConfiguration Settings'
+      lore:
+        - '&7Customize how MythicRod works'
+        - '&7on your server.'
+        - ''
+        - '&7Configure:'
+        - '&8• &fSounds and particle effects'
+        - '&8• &fStatistics tracking'
+        - '&8• &fBiome-specific drops'
+        - '&8• &fPermission requirements'
+        - ''
+        - '&eClick to configure settings'
+
+    drops:
+      name: '&b&lDrop Management'
+      lore:
+        - '&7View and explore all fishing'
+        - '&7drops available on the server.'
+        - ''
+        - '&7Browse:'
+        - '&8• &fGlobal drops (everyone)'
+        - '&8• &fRare drops (permission-based)'
+        - '&8• &fLegendary items'
+        - '&8• &fBiome-specific drops'
+        - ''
+        - '&7Each drop shows its chances,'
+        - '&7requirements, and properties.'
+        - ''
+        - '&bClick to browse drops'
+
+    stats:
+      name: '&d&lStatistics & Leaderboards'
+      lore:
+        - '&7Track your fishing progress'
+        - '&7and compete with others!'
+        - ''
+        - '&7View:'
+        - '&8• &fYour total catches'
+        - '&8• &fRare and legendary catches'
+        - '&8• &fTop materials caught'
+        - '&8• &fLeaderboard rankings'
+        - ''
+        - '&dClick to view statistics'
+
+      disabled: '&cStatistics tracking is currently disabled!'
+
+    info:
+      name: '&6&lPlugin Information'
+      lore:
+        - '&7Running &fMythicRod v{version}'
+        - '&7by &fxcutiboo'
+        - ''
+        - '&7This plugin enhances fishing with:'
+        - '&8• &fCustom drops and loot tables'
+        - '&8• &fBiome-specific drops'
+        - '&8• &fStatistics tracking'
+        - '&8• &fLegendary items'
+        - '&8• &fMultiple language support'
+        - ''
+        - '&7Server: &f{server_version}'
+        - '&7Platform: &f{platform}'
+        - ''
+        - '&6Need help? /mythicrod help'
+
+    reload:
+      name: '&a&lReload Configuration'
+      lore:
+        - '&7Reload all configurations and'
+        - '&7drop tables without restarting.'
+        - ''
+        - '&7This will refresh:'
+        - '&8• &fconfig.yml'
+        - '&8• &fdrops.yml'
+        - '&8• &fLanguage files'
+        - ''
+        - '&aClick to reload'
+
+      success: '&aConfiguration reloaded successfully!'
+      failed: '&cFailed to reload configuration. Check the console for errors.'
+
+    close:
+      name: '&c&lClose Menu'
+      lore: '&7Click to close this menu'
+
+    help:
+      name: '&b&lHelp & Commands'
+      lore:
+        - '&7Quick command reference:'
+        - ''
+        - '&e/mythicrod gui &7- Open this menu'
+        - '&e/mythicrod reload &7- Reload config'
+        - '&e/mythicrod stats &7- View your stats'
+        - '&e/mythicrod top &7- View leaderboard'
+        - '&e/mythicrod drops &7- View drops'
+        - '&e/mythicrod help &7- Full command list'
+        - ''
+        - '&7Need more help? Check the docs!'
+
+#==============================================================================
+# GUI - CONFIGURATION MENU
+#==============================================================================
+  config:
+    title: '&6&lMythicRod &8⚙ &7Configuration'
+
+    sounds:
+      name: '&e&lSound Effects {status}'
+      lore:
+        - '&7Play audio feedback when'
+        - '&7catching fish and using menus.'
+        - ''
+        - '&7Current: {current}'
+        - ''
+        - '&eClick to toggle'
+
+    particles:
+      name: '&e&lParticle Effects {status}'
+      lore:
+        - '&7Display particle effects for'
+        - '&7rare and legendary catches.'
+        - ''
+        - '&7Current: {current}'
+        - ''
+        - '&eClick to toggle'
+
+    statistics:
+      name: '&d&lStatistics Tracking {status}'
+      lore:
+        - '&7Record and track player'
+        - '&7fishing statistics.'
+        - ''
+        - '&7When enabled:'
+        - '&8• &fTracks catches per player'
+        - '&8• &fEnables leaderboards'
+        - '&8• &fRecords material counts'
+        - ''
+        - '&7Current: {current}'
+        - ''
+        - '&dClick to toggle'
+
+    biome-drops:
+      name: '&a&lBiome-Specific Drops {status}'
+      lore:
+        - '&7Use different drop tables'
+        - '&7for each biome type.'
+        - ''
+        - '&7When enabled:'
+        - '&8• &fOcean = ocean-themed drops'
+        - '&8• &fDesert = desert-themed drops'
+        - '&8• &fAnd more...'
+        - ''
+        - '&7Current: {current}'
+        - ''
+        - '&aClick to toggle'
+
+    permissions:
+      name: '&c&lPermission System {status}'
+      lore:
+        - '&7Require permissions for'
+        - '&7certain drops.'
+        - ''
+        - '&7When enabled:'
+        - '&8• &fRare drops need mythicrod.drops.rare'
+        - '&8• &fLegendary drops may need perms'
+        - '&8• &fPlayers without perms get basic drops'
+        - ''
+        - '&7When disabled:'
+        - '&8• &fAll players can get all drops'
+        - ''
+        - '&7Current: {current}'
+        - ''
+        - '&cClick to toggle'
+
+    save-interval:
+      name: '&b&lStatistics Save Interval'
+      lore:
+        - '&7How often statistics are'
+        - '&7automatically saved to disk.'
+        - ''
+        - '&7Current: &f{current} seconds'
+        - ''
+        - '&7Recommendations:'
+        - '&8• &fSmall servers: 300-600s'
+        - '&8• &fMedium servers: 600-1200s'
+        - '&8• &fLarge servers: 1200+ seconds'
+        - ''
+        - '&7Left-click: &f-60s'
+        - '&7Right-click: &f+60s'
+        - '&7Shift + Left: &f-300s'
+        - '&7Shift + Right: &f+300s'
+
+    cleanup-interval:
+      name: '&b&lHook Cleanup Interval'
+      lore:
+        - '&7How often old fishing hooks'
+        - '&7are removed from memory.'
+        - ''
+        - '&7Current: &f{current} seconds'
+        - ''
+        - '&7Recommendations:'
+        - '&8• &fSmall servers: 180-300s'
+        - '&8• &fMedium servers: 300-600s'
+        - '&8• &fLarge servers: 600+ seconds'
+        - ''
+        - '&7Left-click: &f-60s'
+        - '&7Right-click: &f+60s'
+        - '&7Shift + Left: &f-300s'
+        - '&7Shift + Right: &f+300s'
+
+    debug:
+      name: '&c&lDebug Mode {status}'
+      lore:
+        - '&7Enable detailed logging for'
+        - '&7troubleshooting issues.'
+        - ''
+        - '&cWarning: &7Generates lots of'
+        - '&7console output! Only enable'
+        - '&7when actively debugging.'
+        - ''
+        - '&7Current: {current}'
+        - ''
+        - '&cClick to toggle'
+
+    language:
+      name: '&5&lLanguage Settings 🌐'
+      lore:
+        - '&7Change the language used for'
+        - '&7all messages and menus.'
+        - ''
+        - '&7Current: &f{language}'
+        - ''
+        - '&7Available languages:'
+        - '&8• &fEnglish (en_US)'
+        - '&8• &f日本語 (ja_JP)'
+        - ''
+        - '&5Click to change language'
+
+    info:
+      name: '&6&lConfiguration Info'
+      lore:
+        - '&7Changes made here take'
+        - '&7effect immediately, but some'
+        - '&7features may require a reload.'
+        - ''
+        - '&7Remember to save your changes'
+        - '&7before closing this menu!'
+        - ''
+        - '&7Tips:'
+        - '&8• &fTest changes before saving'
+        - '&8• &fUse debug mode for troubleshooting'
+        - '&8• &fReload to apply all changes'
+
+    back:
+      name: '&e← Back to Main Menu'
+      lore: '&7Return to the main hub'
+
+    save:
+      name: '&a&l✓ Save Configuration'
+      lore:
+        - '&7Save all changes made in'
+        - '&7this menu to config.yml.'
+        - ''
+        - '&7Changes saved:'
+        - '&8• &fImmediately applied'
+        - '&8• &fPersist after restart'
+        - ''
+        - '&aClick to save changes'
+
+      success: '&a✓ Configuration saved successfully!'
+      info: '&7Changes are now active. Use &e/mythicrod reload &7for a full reload if needed.'
+      failed: '&c✗ Failed to save configuration! Check the console for errors.'
+
+    close:
+      name: '&c&lClose'
+      lore: '&7Close without saving changes'
+
+    status:
+      enabled: '&a✓'
+      disabled: '&c✗'
+
+    current:
+      enabled: '&aEnabled'
+      disabled: '&cDisabled'
+
+  language:
+    menu:
+      title: '&6&lMythicRod &8🌐 &7Language Selection'
+      info:
+        name: '&6&lLanguage Settings'
+        lore:
+          choose: '&7Choose your preferred language'
+          current: '&eCurrent Language: &f{current_language}'
+          click_to_switch: '&7Click on a language to switch.'
+          instant: '&7Changes apply instantly!'
+          used_for: '&8This is the language used for:'
+          used_chat: '&8• Chat messages'
+          used_gui: '&8• GUI menus'
+          used_command: '&8• Command feedback'
+    english:
+      name: 'English'
+      description: 'Switch to English'
+      region: 'United Kingdom'
+    japanese:
+      name: '日本語'
+      description: '日本語に切り替える'
+      region: 'Japan · 日本'
+    active_badge: '✓ Currently Active'
+    click_to_activate: 'Click to activate'
+    check_mark_prefix: '✓ '
+    check_mark_suffix: ' ✓'
+  decor:
+    line_thick: '━━━━━━━━━━━━━━━'
+    line_thin: '═════════════════════'
+
+#==============================================================================
+# GUI - STATISTICS MENU
+#==============================================================================
+  stats:
+    title:
+      personal: '&6&lMythicRod &8⚡ &7Your Statistics'
+      leaderboard: '&6&lMythicRod &8⚡ &7Top Fishers'
+
+    total:
+      name: '&e&lTotal Catches'
+      lore:
+        - '&7You've caught a total of:'
+        - '&f{count} items'
+        - ''
+        - '&7Keep fishing to increase'
+        - '&7your catch count!'
+
+    rare:
+      name: '&b&lRare Catches'
+      lore:
+        - '&7You've found:'
+        - '&b{rare} rare items'
+        - '&d{legendary} legendary items'
+        - ''
+        - '&7Rare drops are special'
+        - '&7and harder to find!'
+
+    rate:
+      name: '&d&lRare Drop Rate'
+      lore:
+        - '&7Out of all your catches:'
+        - '&f{percentage}% &7were rare or legendary'
+        - ''
+        - '&7The average rare rate is'
+        - '&7around 5-15%. You're doing'
+        - '&7{comparison}!'
+
+    rate-comparison:
+      great: '&agreat'
+      good: '&ewell'
+      average: '&7average'
+
+    top-materials:
+      name: '&6&lYour Top Materials'
+      lore: '&7Items you've caught most often'
+
+    material:
+      name: '&e{material}'
+      caught: '&7Caught: &f{count} times'
+      percentage: '&7That's &f{percentage}%&7 of your total catches'
+
+    no-data:
+      name: '&c&lNo Data Yet'
+      lore:
+        - '&7Start fishing to see'
+        - '&7your statistics here!'
+
+    leaderboard:
+      name: '&6&lView Leaderboard'
+      lore:
+        - '&7See how you rank against'
+        - '&7other fishers on the server!'
+        - ''
+        - '&6Click to view leaderboard'
+
+      empty:
+        name: '&c&lNo Statistics Yet'
+        lore:
+          - '&7No fishing stats have been'
+          - '&7recorded yet. Be the first!'
+
+      entry:
+        name: '&e#{rank} &f{player}'
+        lore:
+          - '&7Player: &f{player}'
+          - '&7Total Catches: &f{catches}'
+
+        you: '&a&lThis is you!'
+        rank-badge: '&e&l{ordinal} Place!'
+
+      info:
+        name: '&6&lLeaderboard Info'
+        lore:
+          - '&7This leaderboard shows the'
+          - '&7top fishers based on total'
+          - '&7catch count.'
+          - ''
+          - '&7Keep fishing to climb higher!'
+
+    back-main:
+      name: '&e← Back to Main Menu'
+
+    back-stats:
+      name: '&e← Back to Your Stats'
+
+    close:
+      name: '&c&lClose'
+
+#==============================================================================
+# GUI - DROPS MENU
+#==============================================================================
+  drops:
+    title:
+      list: '&6&lMythicRod &8⚡ &7Drop Categories'
+      category: '&6&lDrops &8⚡ &7{category}'
+
+    category:
+      name: '&e&l{name}'
+      lore:
+        - '&7This category contains'
+        - '&f{count} different drops'
+        - ''
+        - '&7Type: &f{type}'
+        - '&7Access: &f{access}'
+        - ''
+        - '&eClick to view drops'
+
+    category-types:
+      global: '&aGlobal (Everyone)'
+      rare: '&bRare (Permission)'
+      legendary: '&dLegendary (Special)'
+      biome: '&2Biome-Specific'
+
+    category-access:
+      everyone: '&aEveryone'
+      permission: '&ePermission Required'
+      special: '&dSpecial Requirements'
+
+    info:
+      name: '&6&lDrop Information'
+      lore:
+        - '&7Drops are items you can'
+        - '&7catch while fishing.'
+        - ''
+        - '&7Categories:'
+        - '&8• &aGlobal &7- Everyone'
+        - '&8• &bRare &7- Permission-based'
+        - '&8• &dLegendary &7- Special items'
+        - ''
+        - '&7Click a category to explore!'
+
+    drop:
+      material: '&7Material: &f{material}'
+      amount: '&7Amount: &f{amount}'
+      weight: '&7Drop Weight: &f{weight}'
+      custom-name: '&7Custom Name: &f{name}'
+      biomes: '&7Biomes: &f{biomes}'
+      permission: '&7Permission: &f{permission}'
+
+      enchantments:
+        header: '&7Enchantments:'
+        entry: '  &8• &f{enchant} {level}'
+
+      lore:
+        header: '&7Custom Lore:'
+        entry: '  &8• &7{line}'
+
+      name: '&e{name}'
+
+    category-info:
+      name: '&6&l{category}'
+      lore:
+        - '&7Viewing all drops in'
+        - '&7this category.'
+        - ''
+        - '&7Total: &f{count} drops'
+
+    back-main:
+      name: '&e← Back to Main Menu'
+
+    back-categories:
+      name: '&e← Back to Categories'
+
+    close:
+      name: '&c&lClose'
+
+#==============================================================================
+# GUI - LANGUAGE MENU
+#==============================================================================
+  language:
+    title: '&6&lMythicRod &8🌐 &7Language Selection'
+
+    info:
+      name: '&6&lLanguage Settings'
+      lore:
+        - '&7Choose your preferred language'
+        - '&7for all messages and menus.'
+        - ''
+        - '&7Available Languages:'
+        - '&8• &fEnglish'
+        - '&8• &f日本語 (Japanese)'
+        - ''
+        - '&7The language you select will:'
+        - '&8• &fAffect all in-game messages'
+        - '&8• &fAffect all menu text'
+        - '&8• &fBe saved for the entire server'
+        - ''
+        - '&6Select a language below!'
+      select: '&6Select a language below!'
+
+    languages:
+      english:
+        name: 'English'
+        lore:
+          - '&7The default language.'
+          - '&7All features fully supported.'
+        description: 'Switch to English'
+        region: 'United Kingdom'
+
+      japanese:
+        name: '日本語'
+        lore:
+          - '&7Japanese language support.'
+          - '&7日本語で全ての機能が利用可能。'
+        description: '日本語に切り替える'
+        region: 'Japan · 日本'
+
+    back:
+      name: '&e← Back to Configuration'
+      lore: '&7Return to the configuration menu'
+
+    indicator:
+      prefix: '✓ '
+      suffix: ' ✓'
+
+    status:
+      active: '&a&l✓ Currently Active'
+      inactive: '&7Click to activate'
+
+    separator: '&7━━━━━━━━━━━━━━━'
+
+    changed: '&a✓ Language changed to &f{name}&a!'
+    changed-info: '&7All menus and messages will now display in {name}.'
+    failed: '&c✗ Failed to change language! Check the console for errors.'
+
+    formats:
+      english: '&fEnglish'
+      japanese: '&f日本語'
+      unknown: '&f{code}'
+
+#==============================================================================
+# FISHING MESSAGES
+#==============================================================================
+fishing:
+  catch:
+    normal: '&a✓ &aCaught &e{amount}× {item}&a!'
+    rare: '&b&l✦ RARE CATCH! &fYou reeled in &e{amount}× {item}&f!'
+    legendary: '&d&l✦ LEGENDARY! &fYou discovered &e{amount}× {item}&f!'
+
+  stats-recorded: '&7+1 Fishing Stat Recorded'
+
+#==============================================================================
+# STATISTICS MESSAGES
+#==============================================================================
+stats:
+  header: "&6━━━ &e{player}'s Fishing Stats &6━━━"
+  total-catches: '&eTotal Catches: &f{total}'
+  rare-catches: '&eRare Catches: &f{rare}'
+  legendary-catches: '&eLegendary Catches: &f{legendary}'
+  top-materials: '&6━━━ &eTop Materials Caught &6━━━'
+  material-entry: '&e{material}: &f{count}'
+
+  leaderboard:
+    header: '&6━━━ &eTop {limit} Fishers &6━━━'
+    entry: '&e#{rank}: &f{player} &7- &f{catches} catches'
+
+#==============================================================================
+# DROPS MESSAGES (Command Output)
+#==============================================================================
+drops:
+  header: '&6━━━ &eMythicRod Drop Categories &6━━━'
+  category-entry: '&e{category}: &f{count} items'
+  usage: '&7Use &e/mythicrod drops {category}&7 to see items in that category.'
+  category-header: '&6━━━ &eMythicRod Drops: {category} &6━━━'
+  drop-entry: '&e{name} &7- &f{chance}% chance, {amount}× per catch'
+
+#==============================================================================
+# LANGUAGE DISPLAY NAMES
+#==============================================================================
+language:
+  names:
+    en_US: '&fEnglish'
+    en: '&fEnglish'
+    ja_JP: '&f日本語'
+    jp: '&f日本語'
+  current: '&eCurrently speaking: &f{language}'
+
+#==============================================================================
+# CONSOLE / ADMIN MESSAGES
+# These messages appear in the server console for administrators
+#==============================================================================
+console:
+  startup:
+    paper:
+      loading: 'MythicRod-Paper loading (Brigadier command system enabled)...'
+      banner:
+        - ''
+        - '&6&l╔═══════════════════════════════════════╗'
+        - '&6&l║  &f&lMythicRod &6&l- Paper Edition         ║'
+        - '&6&l║  &7Version {version}                    ║'
+        - '&6&l║  &7Enhanced fishing with custom drops  ║'
+        - '&6&l╚═══════════════════════════════════════╝'
+        - ''
+      initialized: 'MythicRod-Paper initialized successfully!'
+      failed: 'Failed to enable MythicRod-Paper'
+
+    spigot:
+      adventure-ready: '[MythicRod-Spigot] Adventure Platform initialized and ready for rich text formatting'
+      banner:
+        - ''
+        - '&6&l╔═══════════════════════════════════════╗'
+        - '&6&l║  &f&lMythicRod &6&l- Spigot Edition       ║'
+        - '&6&l║  &7Version {version}                    ║'
+        - '&6&l║  &7Enhanced fishing with custom drops  ║'
+        - '&6&l╚═══════════════════════════════════════╝'
+        - ''
+      drops-loaded: '[MythicRod-Spigot] Loaded {count} total drops across all categories'
+      running-on: '[MythicRod-Spigot] Running on {server}'
+      initialized: '[MythicRod-Spigot] Plugin initialized and ready for fishing adventures!'
+      failed: 'Failed to enable MythicRod-Spigot'
+
+  shutdown:
+    stats-saved: '[MythicRod-Spigot] Player statistics persisted to storage'
+    success: '[MythicRod-Spigot] Plugin disabled successfully. Thanks for using MythicRod!'
+    critical-error: '[MythicRod-Spigot] CRITICAL: Error during shutdown. Check for data loss.'
+
+  reload:
+    initiated: '[MythicRod-Spigot] Configuration reload initiated by administrator'
+    success: '[MythicRod-Spigot] Configuration and all managers reloaded successfully'
+    failed: '[MythicRod-Spigot] CRITICAL: Failed to reload configuration. Check YAML syntax and file permissions.'
+    failed-message: 'Failed to reload configuration'
+
+  config:
+    reloaded: 'Configuration reloaded successfully!'
+    create-drops-failed: 'Could not create drops.yml'
+    create-stats-failed: 'Could not create stats.yml'
+    save-stats-failed: 'Could not save stats.yml'
+
+  drops:
+    loading: 'Loading MythicRod drops configuration...'
+    loaded-global: '✓ Loaded {count} global drops'
+    empty-global: '! Global drops list is empty'
+    no-global: '! No global drops found - creating defaults'
+    loaded-category: '✓ Loaded {count} drops for category: {category}'
+    loaded-biome: '✓ Loaded {count} drops for biome: {biome}'
+    total-summary: '✓ Total drops loaded: {total} across {categories} categories'
+    category-list: '  [{category}]: {count} drops'
+    invalid-config: '  ! Invalid drop configuration: {key}'
+    missing-material: '  ! Missing material for drop: {key}'
+    invalid-material: "  ! Invalid material '{material}' for drop: {key}"
+    invalid-chance: '  ! Invalid chance ({chance}) for drop: {key} - using default of 10'
+    invalid-amount: '  ! Invalid amount ({amount}) for drop: {key} - using default of 1'
+    invalid-enchantment: '  ! Invalid enchantment: {enchant}'
+    enchant-load-failed: '  ! Failed to load enchantment: {enchant}'
+    invalid-flag: '  ! Invalid item flag: {flag}'
+    advanced-success: '  ✓ Loaded advanced drop: {name} (Material: {material}, Chance: {chance})'
+    advanced-result: '✓ Loaded {advanced} advanced drops with custom properties'
+    advanced-failed: '! Failed to load {failed} advanced drops - check configuration'
+    invalid-format: '  ! Invalid drop format: {format}'
+    invalid-material-simple: '  ! Invalid material: {material}'
+    invalid-values: '  ! Invalid values for drop: {format}'
+    invalid-number: '  ! Invalid number in drop: {format}'
+    null-player: 'Cannot get drop for null player'
+    player-offline: 'Player {player} is offline or invalid'
+    selection-debug: 'Drop selection for {player} in biome {biome}:'
+    eligible-count: '  Eligible drops: {count}'
+    total-weight: '  Total weight: {weight}'
+    selected: '  Selected: {drop} (weight: {weight}/{total})'
+    no-eligible: 'Warning: No eligible drops found for {player} in biome {biome}'
+    no-eligible-reasons:
+      - '  Checked: Global={global}, Category={category}, Biome={biome}'
+      - '  Permission system: {permission_system}'
+      - '  Biome-specific enabled: {biome_enabled}'
+      - '  This player may not have required permissions'
+      - '  Or there may be no drops configured for this biome'
+      - '  Falling back to default vanilla fishing'
+    added-global: '  Added {count} global drops to pool'
+    permission-denied: '  Player lacks permission for {count} drops'
+    added-category: '  Added {count} drops from category: {category}'
+    added-biome: '  Added {count} biome-specific drops for: {biome}'
+    zero-chance: 'Warning: Drop {drop} has 0% chance and will never drop'
+
+  stats:
+    load-failed: 'Could not load statistics - config is null'
+    invalid-uuid: 'Invalid UUID in statistics: {uuid}'
+    loaded: 'Loaded statistics for {count} players'
+    save-failed: 'Could not save statistics - config is null'
+
+  gui:
+    initialized: 'GUI Manager initialized'
+    unknown-menu: 'Unknown menu: {menu}'
+    open-failed: 'Failed to open menu: {menu}'
+    close-error: 'Error closing menu'
+    click-error: 'Error handling menu click'
+    reopen-error: 'Error reopening menu'
+    quit-error: 'Error closing menu on quit'
+
+    spigot:
+      initialized: '[MythicRod-GUIManager] GUI system initialized and ready for menu operations'
+      unknown-menu: '[MythicRod-GUIManager] Unknown menu ID: {menu}. Verify configuration and menu registration.'
+      open-failed: '[MythicRod-GUIManager] CRITICAL: Error opening menu "{menu}". Check stack trace and menu configuration.'
+      close-error: '[MythicRod-GUIManager] Non-fatal error closing menu. Player session may be incomplete.'
+      click-error: '[MythicRod-GUIManager] Error handling menu interaction. Player action may not have been processed.'
+
+#==============================================================================
+# VALIDATION MESSAGES
+# Used internally for startup validation and error reporting
+#==============================================================================
+validation:
+  config:
+    missing-key: 'Configuration key missing: {key} - using default: {default}'
+    invalid-type: 'Configuration key {key} has invalid type - expected {expected}, got {actual}'
+    out-of-range: 'Configuration value {key} is out of range ({value}) - must be between {min} and {max}'
+    corrected: 'Configuration value {key} corrected from {old} to {new}'
+
+  language:
+    file-missing: 'Language file missing: {file} - falling back to en_US'
+    key-missing: 'Translation key missing in {language}: {key} - using English fallback'
+    placeholder-mismatch: 'Placeholder count mismatch in {language} for key {key} - expected {expected}, found {actual}'
+    malformed: 'Malformed translation in {language} for key {key} - using fallback'
+
+  drops:
+    no-drops: 'No drops configured - players will receive vanilla fishing loot only'
+    category-empty: 'Drop category {category} is empty'
+    material-invalid: 'Invalid material in drop {drop}: {material}'
+    weight-invalid: 'Invalid weight in drop {drop}: {weight} - must be positive number'
+    amount-invalid: 'Invalid amount in drop {drop}: {amount} - must be 1-64'
+
+#==============================================================================
+# END OF LANGUAGE FILE
+#==============================================================================

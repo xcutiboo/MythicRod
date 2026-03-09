@@ -1,50 +1,6 @@
-name: Configure Branch Protection
+name: Disabled
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
-    paths:
-      - '.github/workflows/branch-protection.yml'
 
-jobs:
-  setup-branch-protection:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      # Note: Branch protection requires admin access and a Personal Access Token (PAT)
-      # This workflow documents the recommended settings and can be manually configured
-    
-    steps:
-      - name: Branch Protection Documentation
-        run: |
-          echo "Branch Protection Settings for 'master' branch:"
-          echo "================================================"
-          echo ""
-          echo "To enable branch protection, go to:"
-          echo "https://github.com/${{ github.repository }}/settings/branches"
-          echo ""
-          echo "Recommended settings for 'master' branch:"
-          echo "- ✅ Require a pull request before merging"
-          echo "  - Require approvals: 1"
-          echo "  - Dismiss stale pull request approvals when new commits are pushed"
-          echo "- ✅ Require status checks to pass before merging"
-          echo "  - Require branches to be up to date before merging"
-          echo "  - Status checks that are required:"
-          echo "    - build (Build and Release workflow)"
-          echo "- ✅ Require conversation resolution before merging"
-          echo "- ✅ Do not allow bypassing the above settings"
-          echo "- ✅ Restrict who can push to matching branches"
-          echo "  - Restrict pushes that create matching branches"
-          echo "- ✅ Block force pushes"
-          echo "- ✅ Do not allow deletions"
-          echo ""
-          echo "These settings will:"
-          echo "- Prevent direct pushes to master"
-          echo "- Require PRs to be reviewed before merging"
-          echo "- Ensure the build passes before merging"
-          echo "- Block force pushes and branch deletion"
-          echo ""
-          echo "Alternatively, use the GitHub API or CLI:"
-          echo "gh api repos/${{ github.repository }}/branches/master/protection -X PUT -f required_status_checks[strict]=true -f required_status_checks[contexts][]=build -f enforce_admins=true -f required_pull_request_reviews[required_approving_review_count]=1 -f restrictions=null -f allow_force_pushes[enabled]=false -f allow_deletions[enabled]=false"
+jobs: {}

@@ -1,0 +1,124 @@
+# Authoritative base language for MythicRod (Crowdin-ready)
+# Keys are stable, descriptive, and namespaced.
+
+general:
+  no_permission: "&cYou don't have permission to do that."
+  error: '&cSomething went wrong. Check the server logs for details.'
+  player_only: '&cThis command can only be used by players!'
+  prefix: '&6&l[MythicRod] &r'
+
+command:
+  help:
+    header: '&6&l━━━ &fMythicRod Commands &6&l━━━'
+    gui: '&e/mythicrod gui &7- Open main GUI'
+    reload: '&e/mythicrod reload &7- Reload configuration (admin only)'
+    stats: '&e/mythicrod stats [player] &7- View fishing statistics'
+    top: '&e/mythicrod top [limit] &7- View leaderboard'
+    drops: '&e/mythicrod drops [category] &7- View available drops'
+    help: '&e/mythicrod help &7- Show this help message'
+  reload:
+    start: '&eReloading configuration...'
+    success: '&aConfiguration reloaded successfully!'
+    failed: '&cFailed to reload: &e{error}'
+  player_not_found: '&cNo player named &e{player}&c found.'
+
+stats:
+  permission_denied: "&cYou don't have permission to view stats."
+  header: '&6&l━━━ &fFishing Stats: &e{player} &6&l━━━'
+  total_catches: '&7Total Catches: &f{total}'
+  items_caught: '&7Items Caught: &f{items}'
+  unique_types: '&7Unique Types: &f{unique}'
+  rare_catches: '&7Rare Catches: &e{rare}'
+  console_usage: '&cPlease specify a player name when using this from console.'
+  limit_invalid: '&cLimit must be between &e1&c and &e100&c.'
+
+leaderboard:
+  header_top: '&b&l═══════════════════════════'
+  title: '&6&lTop Fishers Leaderboard'
+  entry_suffix: '&7 - {count} catches'
+  footer_bottom: '&b&l═══════════════════════════'
+
+drops:
+  header: '&6&l━━━ &fAvailable Drops &6&l━━━'
+  category_header: '&6&l━━━ &fDrops: &e{category} &6&l━━━'
+  category_entry: '&e{category}&7: &f{count} items'
+  category_not_found: '&cNo drops found in category &e{category}&c.'
+  available_categories: '&7Available categories: &f{categories}'
+  usage: '&7Use &e/mythicrod drops {category}&7 to see items.'
+
+fishing:
+  catch-normal: '&a✓ &aCaught &e{amount}× {item}&a!'
+  catch-rare: '&b&l✦ RARE CATCH! &fYou reeled in &e{amount}× {item}&f!'
+  catch-legendary: '&d&l✦ LEGENDARY! &fYou discovered &e{amount}× {item}&f!'
+  stats-recorded: '&7+1 Fishing Stat Recorded'
+
+# GUI Language Menu
+gui:
+  language:
+    title: '&6&lMythicRod &8🌐 &7Language Selection'
+    info:
+      name: '&6&lLanguage Settings'
+      select: '&7Choose your preferred language'
+    languages:
+      english:
+        name: 'English'
+        description: 'Switch to English'
+        region: 'United Kingdom'
+      japanese:
+        name: '日本語'
+        description: '日本語に切り替える'
+        region: 'Japan · 日本'
+    back:
+      name: '&e← Back to Configuration'
+      lore: '&7Return to the configuration menu'
+    indicator:
+      prefix: '✓ '
+      suffix: ' ✓'
+    status:
+      active: '✓ Currently Active'
+      inactive: 'Click to activate'
+    separator: '━━━━━━━━━━━━━━━'
+    changed: '&a✓ Language changed to &f{name}&a!'
+    changed-info: '&7All menus and messages will now display in {name}.'
+    failed: '&c✗ Failed to change language! Check console for errors.'
+
+banner:
+  spigot:
+    title: 'MythicRod-Spigot'
+    platform: 'Spigot 1.21.4'
+    brigadier_style: 'Brigadier-Style ✓'
+    version_label: 'v{version}'
+  paper:
+    title: 'MythicRod-Paper'
+    platform: 'Paper 1.21.4'
+    brigadier_native: 'Brigadier ✓'
+    version_label: 'v{version}'
+
+logging:
+  startup_adventure_ready: '[MythicRod-Spigot] Adventure Platform initialized and ready'
+  loaded_drops: '[MythicRod-Spigot] Loaded {count} custom drops from configuration'
+  startup_success: '[MythicRod-Spigot] All systems initialized successfully in {ms}ms'
+  reload_start: '[MythicRod-Spigot] Configuration reload initiated by admin or plugin'
+  reload_success: '[MythicRod-Spigot] Configuration and all managers reloaded successfully'
+  reload_failed: '[MythicRod-Spigot] Critical error reloading configuration. Check YAML syntax and file permissions.'
+  shutdown_success: '[MythicRod-Spigot] Plugin disabled successfully'
+  shutdown_error: '[MythicRod-Spigot] Critical error during plugin shutdown. Check for data loss.'
+  gui_unknown_menu: '[MythicRod-GUIManager] Unknown menu ID: {menu}. Verify configuration and menu registration.'
+  gui_open_error: "[MythicRod-GUIManager] Critical error opening menu '{menu}'. Check stack trace and menu configuration."
+  gui_close_warning: '[MythicRod-GUIManager] Non-fatal error closing menu. Player session may be incomplete.'
+  gui_click_error: '[MythicRod-GUIManager] Error handling menu interaction. Player action may not have been processed.'
+  menu_open_error: '[MythicRod-BaseMenu] Error opening menu for {player}. Menu may not display correctly.'
+  mainhub_reload_error: '[MythicRod-MainHubMenu] Critical error during reload from GUI. Configuration may be corrupted. Check file permissions and YAML syntax.'
+  config_save_error: '[MythicRod-ConfigMenu] Critical error saving configuration from GUI. Changes may not be persisted. Check file permissions and disk space.'
+  lang_invalid_url_format: '[MythicRod-LanguageSwitchMenu] Invalid texture URL format for language head: {url}. Using default skin instead.'
+  lang_fetch_failed: '[MythicRod-LanguageSwitchMenu] Failed to fetch language head texture from URL: {url}. Reason: {error}'
+  lang_apply_failed: '[MythicRod-LanguageSwitchMenu] Error applying language head texture. Using default skin instead. Check texture URL format.'
+  lang_change_failed: '[MythicRod-LanguageSwitchMenu] Critical error changing language. Language may not have been updated. Check configuration files.'
+
+language:
+  names:
+    en_US: '&fEnglish'
+    en: '&fEnglish'
+    ja_JP: '&f日本語'
+    jp: '&f日本語'
+  current: '&eCurrently speaking: &f{language}'
