@@ -1,6 +1,6 @@
 package io.xcutiboo.mythicrod.constants;
 
-/** Permission node constants mirrored in {@code paper-plugin.yml}. */
+/// Permission node constants mirrored in {@code paper-plugin.yml}.
 public final class PermissionNodes {
     private PermissionNodes() {}
 

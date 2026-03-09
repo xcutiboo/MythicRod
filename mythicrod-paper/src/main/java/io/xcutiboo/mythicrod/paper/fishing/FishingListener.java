@@ -49,13 +49,11 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
-/**
- * Fishing listener for replacing vanilla catches with MythicRod rewards.
- *
- * <p>Important invariants: do not store hook state globally, do not remove the
- * fishing hook to short-circuit vanilla mechanics, and keep Folia entity/item
- * mutation on the owning scheduler path.
- */
+/// Fishing listener for replacing vanilla catches with MythicRod rewards.
+///
+/// Important invariants: do not store hook state globally, do not remove the
+/// fishing hook to short-circuit vanilla mechanics, and keep Folia entity/item
+/// mutation on the owning scheduler path.
 public class FishingListener implements Listener {
     private static final String TIER_BASIC = "basic";
     private static final String TIER_ADVANCED = "advanced";
@@ -273,11 +271,9 @@ public class FishingListener implements Listener {
         }
     }
 
-    /**
-     * Applies the final reward from the player's owner thread, or from the main
-     * server thread on ordinary Paper. Keeping the Paper path immediate avoids a
-     * client-visible flash of the vanilla item before MythicRod replaces it.
-     */
+    /// Applies the final reward from the player's owner thread, or from the main
+    /// server thread on ordinary Paper. Keeping the Paper path immediate avoids a
+    /// client-visible flash of the vanilla item before MythicRod replaces it.
     private void giveCustomDropOnPlayerThread(Player player, Item caughtItem, ItemStack customItem, CustomDrop drop, Location hookLoc) {
         if (player == null || !player.isOnline()) {
             if (plugin.getConfigManager().isDebugMode()) {

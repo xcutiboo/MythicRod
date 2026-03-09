@@ -12,12 +12,10 @@ import org.bukkit.Vibration;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 
-/**
- * Shared particle-name helpers for admin commands and GUI controls.
- *
- * <p>The GUI intentionally cycles through a small curated list of readable,
- * low-noise particles. Commands may still accept any valid Paper particle enum.
- */
+/// Shared particle-name helpers for admin commands and GUI controls.
+///
+/// The GUI intentionally cycles through a small curated list of readable,
+/// low-noise particles. Commands may still accept any valid Paper particle enum.
 public final class ParticleOptions {
     private static final List<String> SUGGESTED_NAMES = List.of(
         "SPLASH",

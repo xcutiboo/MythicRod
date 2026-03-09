@@ -9,15 +9,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Thread-safe player fishing statistics container.
- *
- * <p>All counters use atomic types so increments are safe to call from
- * any Folia region thread without external synchronization.
- *
- * <p>Runtime code increments this object during play. Public API callers receive
- * immutable {@link io.xcutiboo.mythicrod.api.PlayerStatSnapshot} copies.
- */
+/// Thread-safe player fishing statistics container.
+///
+/// All counters use atomic types so increments are safe to call from
+/// any Folia region thread without external synchronization.
+///
+/// Runtime code increments this object during play. Public API callers receive
+/// immutable {@link io.xcutiboo.mythicrod.api.PlayerStatSnapshot} copies.
 public final class PlayerStats {
 
     private final @NotNull UUID playerUuid;
@@ -56,10 +54,10 @@ public final class PlayerStats {
     public int getAdvancedRodUses()  { return advancedRodUses.get(); }
     public int getLegendaryRodUses() { return legendaryRodUses.get(); }
 
-    /** Returns the epoch-millisecond timestamp of the last catch, or {@code 0} if never. */
+    /// Returns the epoch-millisecond timestamp of the last catch, or {@code 0} if never.
     public long getLastFished()      { return lastFished.get(); }
 
-    /** Returns non-zero catch counts by rarity tier, ordered from rarest to common. */
+    /// Returns non-zero catch counts by rarity tier, ordered from rarest to common.
     @NotNull
     public Map<String, Integer> getTierCounts() {
         Map<String, Integer> counts = LinkedHashMap.newLinkedHashMap(4);
@@ -84,13 +82,11 @@ public final class PlayerStats {
     public void incrementAdvancedRodUses()  { advancedRodUses.incrementAndGet(); }
     public void incrementLegendaryRodUses() { legendaryRodUses.incrementAndGet(); }
 
-    /** Records the current timestamp as the last fishing time. */
+    /// Records the current timestamp as the last fishing time.
     public void markFished()                { lastFished.set(System.currentTimeMillis()); }
 
-    /**
-     * Resets every counter to zero. The player UUID and name are preserved so
-     * subsequent updates land on the same entry.
-     */
+    /// Resets every counter to zero. The player UUID and name are preserved so
+    /// subsequent updates land on the same entry.
     public void reset() {
         totalCaught.set(0);
         commonCaught.set(0);
@@ -103,12 +99,10 @@ public final class PlayerStats {
         lastFished.set(0L);
     }
 
-    /**
-     * Overwrites all counters with persisted values.
-     *
-     * <p>Call this while loading data, before the object is exposed to active
-     * gameplay paths.
-     */
+    /// Overwrites all counters with persisted values.
+    ///
+    /// Call this while loading data, before the object is exposed to active
+    /// gameplay paths.
     public void loadFromPersisted(PersistedSnapshot snapshot) {
         totalCaught.set(snapshot.total());
         commonCaught.set(snapshot.common());
@@ -121,10 +115,8 @@ public final class PlayerStats {
         lastFished.set(snapshot.lastFishedMs());
     }
 
-    /**
-     * Value object describing the persisted shape of a {@link PlayerStats}
-     * row as it appears on disk.
-     */
+    /// Value object describing the persisted shape of a {@link PlayerStats}
+    /// row as it appears on disk.
     public record PersistedSnapshot(
         int total,
         int common,

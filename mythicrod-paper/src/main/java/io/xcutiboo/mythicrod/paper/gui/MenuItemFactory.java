@@ -5,26 +5,22 @@ import org.bukkit.inventory.ItemStack;
 
 import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
 
-/**
- * Factory for shared menu controls used across MythicRod inventory screens.
- */
+/// Factory for shared menu controls used across MythicRod inventory screens.
 public final class MenuItemFactory {
 
     private MenuItemFactory() {
     }
 
-    /**
-     * Creates a toggle item that shows enabled/disabled state.
-     *
-     * @param enabled current state
-     * @param name localized item name
-     * @param description localized description of what this setting controls
-     * @param statusLine localized status lore line
-     * @param actionLine localized click-action lore line
-     * @param enabledMaterial material shown when enabled
-     * @param disabledMaterial material shown when disabled
-     * @return configured item stack
-     */
+    /// Creates a toggle item that shows enabled/disabled state.
+    ///
+    /// @param enabled current state
+    /// @param name localized item name
+    /// @param description localized description of what this setting controls
+    /// @param statusLine localized status lore line
+    /// @param actionLine localized click-action lore line
+    /// @param enabledMaterial material shown when enabled
+    /// @param disabledMaterial material shown when disabled
+    /// @return configured item stack
     public static ItemStack createToggleItem(
             boolean enabled,
             String name,

@@ -2,9 +2,7 @@ package io.xcutiboo.mythicrod.paper.util;
 
 import java.util.logging.Logger;
 
-/**
- * Small wrapper for MythicRod's startup/status console lines.
- */
+/// Small wrapper for MythicRod's startup/status console lines.
 public class PrettyLogger {
 
     public static final String RESET = "\u001B[0m";

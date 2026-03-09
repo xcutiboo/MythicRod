@@ -16,15 +16,13 @@ import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
 import io.xcutiboo.mythicrod.paper.util.StringFormatting;
 import io.xcutiboo.mythicrod.stats.PlayerStats;
 
-/**
- * Statistics GUI menu showing personal stats and global leaderboard.
- *
- * <p>Uses {@link io.xcutiboo.mythicrod.metrics.StatisticsManager#getStats(UUID)}
- * for personal stats and falls back to a temporary zeroed view for first-time players,
- * while using
- * {@link io.xcutiboo.mythicrod.metrics.StatisticsManager#getTopFishers(int)}
- * for the leaderboard (returns {@code List<PlayerStats>} sorted by totalCaught).
- */
+/// Statistics GUI menu showing personal stats and global leaderboard.
+///
+/// Uses {@link io.xcutiboo.mythicrod.metrics.StatisticsManager#getStats(UUID)}
+/// for personal stats and falls back to a temporary zeroed view for first-time players,
+/// while using
+/// {@link io.xcutiboo.mythicrod.metrics.StatisticsManager#getTopFishers(int)}
+/// for the leaderboard (returns {@code List<PlayerStats>} sorted by totalCaught).
 public class StatsMenu extends BaseMenu {
     private static final String CTX_COUNT = "count";
 

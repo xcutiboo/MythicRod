@@ -2,14 +2,12 @@ package io.xcutiboo.mythicrod.spigot;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-/**
- * Skeleton Spigot runtime. The Paper module remains the supported runtime;
- * this module exists so a future Spigot implementation can be filled in
- * without restructuring the project.
- *
- * <p>No fishing logic is wired here. The plugin enables, logs that it is a
- * stub, and disables cleanly.
- */
+/// Skeleton Spigot runtime. The Paper module remains the supported runtime;
+/// this module exists so a future Spigot implementation can be filled in
+/// without restructuring the project.
+///
+/// No fishing logic is wired here. The plugin enables, logs that it is a
+/// stub, and disables cleanly.
 public final class MythicRodSpigot extends JavaPlugin {
 
     @Override
