@@ -191,7 +191,7 @@ public class StatisticsManager {
                     catchData.put("count", entry.getValue());
                     return catchData;
                 })
-                .collect(java.util.stream.Collectors.toList());
+                .toList();
         result.put("top_catches", topCatches);
 
         return result;

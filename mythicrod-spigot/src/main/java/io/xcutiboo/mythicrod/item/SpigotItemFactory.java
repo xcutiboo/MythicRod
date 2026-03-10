@@ -11,14 +11,9 @@ import java.util.logging.Logger;
 /**
  * Platform-specific implementation of item creation for Spigot
  */
-public class SpigotItemFactory implements PlatformItemFactory {
+public class SpigotItemFactory implements PlatformItemFactory {    private final NexoItemProvider nexoProvider;
 
-    private final Logger logger;
-    private final NexoItemProvider nexoProvider;
-
-    public SpigotItemFactory(Logger logger) {
-        this.logger = logger;
-        this.nexoProvider = new NexoItemProvider(logger);
+    public SpigotItemFactory(Logger logger) {        this.nexoProvider = new NexoItemProvider(logger);
     }
 
     @Override

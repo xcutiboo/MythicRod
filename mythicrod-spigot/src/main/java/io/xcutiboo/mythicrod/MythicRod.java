@@ -39,14 +39,16 @@ import org.bstats.bukkit.Metrics;
  * Paper is the source of truth. Spigot adapts.
  */
 public final class MythicRod extends JavaPlugin implements MythicRodPlugin {
-    private static final int BSTATS_PLUGIN_ID = 23847;
-    
+    private io.xcutiboo.mythicrod.api.platform.PlatformServer platformServer;
+    @Override
+    public io.xcutiboo.mythicrod.api.platform.PlatformServer getPlatform() { return platformServer; }
+
+        
     private Injector injector;
     private ConfigManager configManager;
     private DropManager dropManager;
     private StatisticsManager statisticsManager;
-    private BrigadierStyleCommandManager commandManager;
-    private GUIManager guiManager;
+        private GUIManager guiManager;
     private MythicRodAPI api;
     private FishingListener fishingListener;
     private LanguageManager languageManager;
@@ -65,9 +67,10 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin {
             this.languageManager = injector.getInstance(LanguageManager.class);
             this.dropManager = injector.getInstance(DropManager.class);
             this.statisticsManager = injector.getInstance(StatisticsManager.class);
-            this.commandManager = injector.getInstance(BrigadierStyleCommandManager.class);
+            injector.getInstance(BrigadierStyleCommandManager.class);
             this.fishingListener = injector.getInstance(FishingListener.class);
             this.guiManager = injector.getInstance(GUIManager.class);
+            this.platformServer = new io.xcutiboo.mythicrod.spigot.platform.SpigotServer(this);
             this.api = injector.getInstance(MythicRodAPI.class);
             this.metrics = injector.getInstance(Metrics.class);
             
@@ -148,6 +151,18 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin {
         return audiences;
     }
 
+    public io.xcutiboo.mythicrod.api.platform.PlatformPlayer wrapPlayer(org.bukkit.entity.Player player) {
+        return player == null ? null : new io.xcutiboo.mythicrod.spigot.platform.SpigotPlayer(player);
+    }
+
+    public io.xcutiboo.mythicrod.api.platform.PlatformCommandSender wrapSender(org.bukkit.command.CommandSender sender) {
+        if (sender instanceof org.bukkit.entity.Player) {
+            return wrapPlayer((org.bukkit.entity.Player) sender);
+        }
+        return sender == null ? null : new io.xcutiboo.mythicrod.spigot.platform.SpigotCommandSender(sender);
+    }
+
+
     @Override
     public ConfigManager getConfigManager() { return configManager; }
 
@@ -172,7 +187,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin {
             if (languageManager != null) {
                 languageManager.setLanguage(configManager.getConfig().getString("language", "en"));
             }
-            dropManager.reload();
+            dropManager.loadDrops(configManager.getStatsConfig());
             statisticsManager.reload();
             getLogger().log(java.util.logging.Level.INFO, "[MythicRod-Spigot] Configuration and all managers reloaded successfully");
         } catch (Exception e) {
@@ -182,25 +197,25 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin {
     }
 
     @Override
-    public void sendFormattedMessage(org.bukkit.entity.Player player, String message) {
+    public void sendFormattedMessage(io.xcutiboo.mythicrod.api.platform.PlatformPlayer player, String message) {
         Component component = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
             .legacyAmpersand().deserialize(message);
-        audiences.player(player).sendMessage(component);
+        audiences.player(java.util.UUID.fromString(player.getUniqueId().toString())).sendMessage(component);
     }
     
     private void setupMetricsCharts() {
-        metrics.addCustomChart(new Metrics.SimplePie("server_type", () -> "Spigot"));
+        metrics.addCustomChart(new org.bstats.charts.SimplePie("server_type", () -> "Spigot"));
         
-        metrics.addCustomChart(new Metrics.SimplePie("language", () -> 
+        metrics.addCustomChart(new org.bstats.charts.SimplePie("language", () -> 
             languageManager != null ? languageManager.getLanguage() : "en"));
         
-        metrics.addCustomChart(new Metrics.SimplePie("statistics_enabled", () -> 
+        metrics.addCustomChart(new org.bstats.charts.SimplePie("statistics_enabled", () -> 
             configManager.trackStatistics() ? "Enabled" : "Disabled"));
         
-        metrics.addCustomChart(new Metrics.SimplePie("biome_drops_enabled", () -> 
+        metrics.addCustomChart(new org.bstats.charts.SimplePie("biome_drops_enabled", () -> 
             configManager.enableBiomeSpecificDrops() ? "Enabled" : "Disabled"));
         
-        metrics.addCustomChart(new Metrics.SingleLineChart("total_catches", () -> 
+        metrics.addCustomChart(new org.bstats.charts.SingleLineChart("total_catches", () -> 
             statisticsManager != null ? statisticsManager.getTotalCatches() : 0));
     }
 }

@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import io.xcutiboo.mythicrod.MythicRodPlugin;
 import io.xcutiboo.mythicrod.api.platform.PlatformConfiguration;
@@ -14,7 +13,6 @@ import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 public class DropManager {
     private final MythicRodPlugin plugin;
     private final Map<String, List<CustomDrop>> dropCategories = new HashMap<>();
-    private final DropSelector selector;
     private boolean debugMode = false;
 
     public DropManager(MythicRodPlugin plugin) {
@@ -22,7 +20,6 @@ public class DropManager {
             throw new IllegalArgumentException("Plugin instance cannot be null");
         }
         this.plugin = plugin;
-        this.selector = new DropSelector(plugin.getLogger(), true, false);
     }
 
     public void setDebugMode(boolean debug) {
@@ -156,29 +153,28 @@ public class DropManager {
 
     private void loadDefaultDrops() {
         List<CustomDrop> defaults = new ArrayList<>();
-        defaults.add(new CustomDrop("COD", 40, 1));
-        defaults.add(new CustomDrop("SALMON", 30, 1));
-        defaults.add(new CustomDrop("TROPICAL_FISH", 20, 1));
-        defaults.add(new CustomDrop("PUFFERFISH", 15, 1));
-        defaults.add(new CustomDrop("IRON_INGOT", 10, 1));
-        defaults.add(new CustomDrop("GOLD_INGOT", 8, 1));
-        defaults.add(new CustomDrop("DIAMOND", 3, 1));
-        defaults.add(new CustomDrop("EMERALD", 5, 1));
+        defaults.add(new CustomDrop(new DropConfigurationRecord("COD", 40, 1, null, null, 0, null, null, false, null, null, null)));
+        defaults.add(new CustomDrop(new DropConfigurationRecord("SALMON", 30, 1, null, null, 0, null, null, false, null, null, null)));
+        defaults.add(new CustomDrop(new DropConfigurationRecord("TROPICAL_FISH", 20, 1, null, null, 0, null, null, false, null, null, null)));
+        defaults.add(new CustomDrop(new DropConfigurationRecord("PUFFERFISH", 15, 1, null, null, 0, null, null, false, null, null, null)));
+        defaults.add(new CustomDrop(new DropConfigurationRecord("IRON_INGOT", 10, 1, null, null, 0, null, null, false, null, null, null)));
+        defaults.add(new CustomDrop(new DropConfigurationRecord("GOLD_INGOT", 8, 1, null, null, 0, null, null, false, null, null, null)));
+        defaults.add(new CustomDrop(new DropConfigurationRecord("DIAMOND", 3, 1, null, null, 0, null, null, false, null, null, null)));
+        defaults.add(new CustomDrop(new DropConfigurationRecord("EMERALD", 5, 1, null, null, 0, null, null, false, null, null, null)));
         
         dropCategories.put("default", defaults);
         plugin.getLogger().info("Loaded default fishing drops.");
     }
 
     private CustomDrop createCustomDrop(String identifier, int chance, int amount) {
-        return new CustomDrop(identifier, chance, amount);
+        return new CustomDrop(new DropConfigurationRecord(identifier, chance, amount, null, null, 0, null, null, false, null, null, null));
     }
 
     private CustomDrop createCustomDrop(String identifier, int chance, int amount, String name,
                                        List<String> lore, Map<String, Integer> enchantments,
                                        List<String> itemFlags, boolean glowing, String permission,
                                        List<String> biomes, String nexoItemId) {
-        return new CustomDrop(identifier, chance, amount, name, lore, enchantments,
-                            itemFlags, glowing, permission, biomes, nexoItemId);
+        return new CustomDrop(new DropConfigurationRecord(identifier, chance, amount, name, lore, 0, enchantments, itemFlags, glowing, permission, biomes, nexoItemId));
     }
     public CustomDrop getRandomDrop(PlatformPlayer player, String biomeName) {
         if (player == null) {
@@ -295,9 +291,6 @@ public class DropManager {
                 .mapToInt(List::size)
                 .sum();
     }
-    public void setDebugMode(boolean debugMode) {
-        this.debugMode = debugMode;
-    }
     public boolean isDebugMode() {
         return debugMode;
     }
@@ -308,7 +301,7 @@ public class DropManager {
     public List<CustomDrop> getAllDrops() {
         return dropCategories.values().stream()
                 .flatMap(List::stream)
-                .collect(java.util.stream.Collectors.toList());
+                .toList();
     }
 
     public List<CustomDrop> getAvailableDrops(PlatformPlayer player) {
@@ -316,6 +309,6 @@ public class DropManager {
                 .filter(drop -> drop.getPermission() == null ||
                               drop.getPermission().isEmpty() ||
                               player.hasPermission(drop.getPermission()))
-                .collect(java.util.stream.Collectors.toList());
+                .toList();
     }
 }

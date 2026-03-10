@@ -14,7 +14,7 @@ import org.bukkit.event.player.PlayerFishEvent;
 
 import io.xcutiboo.mythicrod.MythicRod;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
-import io.xcutiboo.mythicrod.fishing.EffectsService;
+import io.xcutiboo.mythicrod.api.service.EffectsService;
 import io.xcutiboo.mythicrod.fishing.FishingService;
 import io.xcutiboo.mythicrod.fishing.FishingService.FishingResult;
 import io.xcutiboo.mythicrod.fishing.RewardService;
@@ -50,7 +50,7 @@ public class FishingListener implements Listener {
     }
 
     private void handleFishingStart(Player player, FishHook hook, UUID hookId) {
-        fishingService.startFishing(hookId, player.getUniqueId(), hook.getLocation());
+        fishingService.startFishing(hookId, player.getUniqueId(), new io.xcutiboo.mythicrod.api.platform.PlatformLocation(hook.getLocation().getWorld().getName(), hook.getLocation().getX(), hook.getLocation().getY(), hook.getLocation().getZ(), hook.getLocation().getYaw(), hook.getLocation().getPitch()));
         plugin.getLogger().fine("Player " + player.getName() + " started fishing with hook " + hookId);
     }
 
@@ -62,7 +62,7 @@ public class FishingListener implements Listener {
         }
 
         Location hookLoc = hook.getLocation();
-        FishingResult result = fishingService.processCatch(hookId, player, hookLoc);
+        FishingResult result = fishingService.processCatch(hookId, plugin.wrapPlayer(player), new io.xcutiboo.mythicrod.api.platform.PlatformLocation(hook.getLocation().getWorld().getName(), hook.getLocation().getX(), hook.getLocation().getY(), hook.getLocation().getZ(), hook.getLocation().getYaw(), hook.getLocation().getPitch()), hook.getLocation().getBlock().getBiome().toString());
 
         if (!result.isSuccess()) {
             if (debugMode) {
@@ -75,7 +75,7 @@ public class FishingListener implements Listener {
         CustomDrop drop = result.getDrop();
         if (debugMode) {
             plugin.getLogger().info("  Biome: " + result.getBiomeName());
-            plugin.getLogger().info("  Selected drop: " + drop.getMaterial() + " x" + drop.getAmount());
+            plugin.getLogger().info("  Selected drop: " + drop.getIdentifier() + " x" + drop.getAmount());
         }
 
         Entity caughtEntity = event.getCaught();
@@ -86,23 +86,23 @@ public class FishingListener implements Listener {
             vanillaItem.remove();
         }
 
-        if (!rewardService.deliverReward(player, drop)) {
+        if (!rewardService.deliverReward(plugin.wrapPlayer(player), drop, new io.xcutiboo.mythicrod.api.platform.PlatformLocation(hookLoc.getWorld().getName(), hookLoc.getX(), hookLoc.getY(), hookLoc.getZ(), hookLoc.getYaw(), hookLoc.getPitch()))) {
             if (debugMode) {
                 plugin.getLogger().warning("  Failed to deliver reward");
             }
             return;
         }
 
-        rewardService.sendCatchMessage(player, drop);
-        effectsService.spawnCatchEffects(player, hookLoc);
+        rewardService.sendCatchMessage(plugin.wrapPlayer(player), drop);
+        effectsService.spawnCatchEffects(plugin.wrapPlayer(player), new io.xcutiboo.mythicrod.api.platform.PlatformLocation(hookLoc.getWorld().getName(), hookLoc.getX(), hookLoc.getY(), hookLoc.getZ(), hookLoc.getYaw(), hookLoc.getPitch()));
 
         if (plugin.getConfigManager().trackStatistics()) {
-            plugin.getStatisticsManager().recordCatch(player, drop);
+            plugin.getStatisticsManager().recordCatch(plugin.wrapPlayer(player), drop);
         }
 
         int xpAmount = rewardService.calculateExperience(drop);
-        rewardService.giveExperience(player, xpAmount);
-        effectsService.spawnExperienceEffects(player, xpAmount);
+        player.giveExp(xpAmount);
+        effectsService.spawnExperienceEffects(plugin.wrapPlayer(player), xpAmount);
 
         if (debugMode) {
             plugin.getLogger().info("  SUCCESS - Custom drop given!");
@@ -124,6 +124,6 @@ public class FishingListener implements Listener {
 
 
     public void cleanupHooks() {
-        fishingService.cleanupStaleHooks(plugin.getServer());
+        fishingService.cleanupStaleHooks(plugin.getPlatform());
     }
 }

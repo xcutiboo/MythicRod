@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 public class NexoItemProvider {
     
     private final Logger logger;
-    private final Class<?> nexoItemsClass;
     private final java.lang.reflect.Method itemFromIdMethod;
     private final java.lang.reflect.Method existsMethod;
     private final boolean isAvailable;
@@ -21,16 +20,15 @@ public class NexoItemProvider {
     public NexoItemProvider(Logger logger) {
         this.logger = logger;
         
-        Class<?> tempClass = null;
         java.lang.reflect.Method tempItemMethod = null;
         java.lang.reflect.Method tempExistsMethod = null;
         boolean tempAvailable = false;
 
         if (Bukkit.getPluginManager().isPluginEnabled("Nexo")) {
             try {
-                tempClass = Class.forName("com.nexomc.nexo.api.NexoItems");
-                tempItemMethod = tempClass.getMethod("itemFromId", String.class);
-                tempExistsMethod = tempClass.getMethod("exists", String.class);
+                Class<?> nexoItemsClass = Class.forName("com.nexomc.nexo.api.NexoItems");
+                tempItemMethod = nexoItemsClass.getMethod("itemFromId", String.class);
+                tempExistsMethod = nexoItemsClass.getMethod("exists", String.class);
                 tempAvailable = true;
                 logger.info("Nexo integration initialized via reflection.");
             } catch (Exception e) {
@@ -38,7 +36,6 @@ public class NexoItemProvider {
             }
         }
 
-        this.nexoItemsClass = tempClass;
         this.itemFromIdMethod = tempItemMethod;
         this.existsMethod = tempExistsMethod;
         this.isAvailable = tempAvailable;

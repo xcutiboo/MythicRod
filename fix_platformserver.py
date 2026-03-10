@@ -1,0 +1,67 @@
+with open("mythicrod-common/src/main/java/io/xcutiboo/mythicrod/api/platform/PlatformServer.java", "w") as f:
+    f.write("""package io.xcutiboo.mythicrod.api.platform;
+
+import java.util.UUID;
+import java.util.logging.Logger;
+
+/**
+ * Core platform abstraction representing the server environment.
+ */
+public interface PlatformServer {
+    
+    /**
+     * @return The platform logger
+     */
+    Logger getLogger();
+    
+    /**
+     * @return The platform-specific scheduler
+     */
+    PlatformScheduler getScheduler();
+    
+    /**
+     * Get an online player by UUID
+     */
+    PlatformPlayer getPlayer(UUID uuid);
+    
+    /**
+     * Get a platform command sender by name
+     */
+    PlatformCommandSender getCommandSender(String name);
+    
+    /**
+     * Check if an entity exists and is valid/alive
+     */
+    boolean isEntityValid(UUID entityId);
+    
+    /**
+     * @return True if Nexo is installed and enabled
+     */
+    boolean isNexoEnabled();
+    
+    /**
+     * Load a configuration file
+     */
+    PlatformConfiguration loadConfiguration(java.io.File file);
+    
+    /**
+     * Load a configuration from an input stream
+     */
+    PlatformConfiguration loadConfiguration(java.io.InputStream stream);
+    
+    /**
+     * Create an empty configuration
+     */
+    PlatformConfiguration createEmptyConfiguration();
+    
+    /**
+     * Dispatch a command as the console sender
+     */
+    void dispatchCommandConsole(String command);
+
+    /**
+     * Broadcast a message to all players
+     */
+    void broadcastMessage(String message);
+}
+""")

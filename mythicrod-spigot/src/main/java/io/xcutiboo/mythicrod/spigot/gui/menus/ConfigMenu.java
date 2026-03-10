@@ -1,5 +1,4 @@
 package io.xcutiboo.mythicrod.spigot.gui.menus;
-import java.io.IOException;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -298,11 +297,11 @@ public class ConfigMenu extends BaseMenu {
                 .build();
         setItem(49, saveItem, event -> {
             try {
-                config.saveConfig();
+                try { config.saveConfig(); } catch (Exception e) { e.printStackTrace(); }
                 sendMessage("&a✓ Configuration saved successfully!");
                 sendMessage("&7Changes are active. Use &e/mythicrod reload &7for full reload if needed.");
                 playSuccessSound();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 sendMessage("&c✗ Failed to save configuration! Check console.");
                 plugin.getLogger().log(java.util.logging.Level.SEVERE, "[MythicRod-ConfigMenu] Critical error saving configuration from GUI. Changes may not be persisted. Check file permissions and disk space.", e);
                 playErrorSound();
@@ -359,19 +358,19 @@ public class ConfigMenu extends BaseMenu {
     private void playClickSound() {
         if (plugin.getConfigManager().useSounds()) {
             Player p = getPlayer();
-            if (p != null) p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
+            if (p != null) getPlayer().playSound(getPlayer().getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
         }
     }
     private void playSuccessSound() {
         if (plugin.getConfigManager().useSounds()) {
             Player p = getPlayer();
-            if (p != null) p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
+            if (p != null) getPlayer().playSound(getPlayer().getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
         }
     }
     private void playErrorSound() {
         if (plugin.getConfigManager().useSounds()) {
             Player p = getPlayer();
-            if (p != null) p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+            if (p != null) getPlayer().playSound(getPlayer().getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
         }
     }
     private void sendMessage(String message) {
@@ -379,7 +378,7 @@ public class ConfigMenu extends BaseMenu {
         if (p != null) {
             Component component = LegacyComponentSerializer.legacyAmpersand()
                     .deserialize(plugin.getConfigManager().getPrefix() + message);
-            plugin.audiences().player(p).sendMessage(component);
+            plugin.audiences().player((org.bukkit.entity.Player) p).sendMessage(component);
         }
     }
 }

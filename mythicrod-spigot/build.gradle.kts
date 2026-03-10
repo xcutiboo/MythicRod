@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":mythicrod-common"))
     
     compileOnly(libs.spigot.api)
+    implementation(libs.guice)
     
     implementation(libs.bundles.adventure)
     implementation(libs.bstats.bukkit)

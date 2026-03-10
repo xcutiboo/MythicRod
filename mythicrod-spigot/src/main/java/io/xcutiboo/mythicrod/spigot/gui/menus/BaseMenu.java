@@ -12,6 +12,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.spigot.gui.MythicRodMenuHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
@@ -25,7 +26,7 @@ public abstract class BaseMenu {
 
     public BaseMenu(MythicRod plugin, Player player) {
         this.plugin = plugin;
-        this.playerUuid = player.getUniqueId();
+        this.playerUuid = getPlayer().getUniqueId();
     }
 
     protected abstract int getSize();
@@ -36,6 +37,15 @@ public abstract class BaseMenu {
         return plugin.getServer().getPlayer(playerUuid);
     }
 
+    public io.xcutiboo.mythicrod.api.platform.PlatformPlayer getPlatformPlayer() {
+        Player p = getPlayer();
+        return p != null ? plugin.getPlatform().getPlayer(p.getUniqueId()) : null;
+    }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
+
     public void open() {
         Player player = getPlayer();
         if (player == null || !player.isOnline()) {
@@ -43,7 +53,7 @@ public abstract class BaseMenu {
         }
         try {
             Component titleComponent = LegacyComponentSerializer.legacyAmpersand().deserialize(getTitle());
-            inventory = Bukkit.createInventory(null, getSize(), LegacyComponentSerializer.legacySection().serialize(titleComponent));
+            inventory = Bukkit.createInventory(new MythicRodMenuHolder(this), getSize(), LegacyComponentSerializer.legacySection().serialize(titleComponent));
             build();
             player.openInventory(inventory);
         } catch (Exception e) {

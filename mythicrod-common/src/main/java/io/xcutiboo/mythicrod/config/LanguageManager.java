@@ -2,8 +2,6 @@ package io.xcutiboo.mythicrod.config;
 
 import java.io.File;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -23,7 +21,6 @@ import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
  */
 public class LanguageManager {
     private final MythicRodPlugin plugin;
-    private final ConfigManager configManager;
 
     // Locale codes like en_US, ja_JP
     private String languageCode = "en_US";
@@ -41,7 +38,6 @@ public class LanguageManager {
 
     public LanguageManager(MythicRodPlugin plugin, ConfigManager configManager) {
         this.plugin = plugin;
-        this.configManager = configManager;
         this.playerPreferences = new PlayerPreferences(plugin);
         
         this.languageCode = normalizeLocale(configManager.getLanguage());

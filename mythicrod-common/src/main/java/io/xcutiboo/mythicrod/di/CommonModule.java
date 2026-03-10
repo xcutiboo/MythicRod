@@ -31,7 +31,7 @@ public class CommonModule extends AbstractModule {
     @Singleton
     public ConfigManager provideConfigManager(MythicRodPlugin plugin) {
         ConfigManager manager = new ConfigManager(plugin);
-        manager.initialize();
+        
         return manager;
     }
 
@@ -45,7 +45,7 @@ public class CommonModule extends AbstractModule {
     @Singleton
     public DropManager provideDropManager(MythicRodPlugin plugin, ConfigManager configManager) {
         DropManager manager = new DropManager(plugin);
-        manager.loadDrops(configManager.getStatsConfig()); // Need a separate getter for drops, using platform config
+        manager.loadDrops(configManager.getConfig()); // Need a separate getter for drops, using platform config
         return manager;
     }
 
@@ -53,7 +53,7 @@ public class CommonModule extends AbstractModule {
     @Singleton
     public StatisticsManager provideStatisticsManager(MythicRodPlugin plugin) {
         StatisticsManager manager = new StatisticsManager(plugin);
-        manager.initialize();
+        
         return manager;
     }
 

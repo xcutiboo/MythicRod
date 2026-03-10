@@ -24,6 +24,11 @@ public interface PlatformServer {
     PlatformPlayer getPlayer(UUID uuid);
     
     /**
+     * Get a platform command sender by name
+     */
+    PlatformCommandSender getCommandSender(String name);
+    
+    /**
      * Check if an entity exists and is valid/alive
      */
     boolean isEntityValid(UUID entityId);
@@ -47,4 +52,14 @@ public interface PlatformServer {
      * Create an empty configuration
      */
     PlatformConfiguration createEmptyConfiguration();
+    
+    /**
+     * Dispatch a command as the console sender
+     */
+    void dispatchCommandConsole(String command);
+
+    /**
+     * Broadcast a message to all players
+     */
+    void broadcastMessage(String message);
 }

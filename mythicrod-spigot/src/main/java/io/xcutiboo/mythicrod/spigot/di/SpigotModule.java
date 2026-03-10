@@ -5,7 +5,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import io.xcutiboo.mythicrod.MythicRod;
 import io.xcutiboo.mythicrod.di.CommonModule;
-import io.xcutiboo.mythicrod.fishing.EffectsService;
+import io.xcutiboo.mythicrod.api.service.EffectsService;
 import io.xcutiboo.mythicrod.fishing.FishingService;
 import io.xcutiboo.mythicrod.fishing.RewardService;
 import io.xcutiboo.mythicrod.spigot.commands.BrigadierStyleCommandManager;

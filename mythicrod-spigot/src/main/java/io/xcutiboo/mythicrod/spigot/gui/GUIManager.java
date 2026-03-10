@@ -13,9 +13,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.Inventory;
 
 import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.constants.PermissionNodes;
 import io.xcutiboo.mythicrod.spigot.gui.menus.BaseMenu;
 
 /**
@@ -46,6 +46,11 @@ public class GUIManager implements Listener {
 
     public boolean openMenu(Player player, String menuId, Map<String, Object> context) {
         if (player == null || !player.isOnline()) {
+            return false;
+        }
+
+        if (!player.hasPermission(PermissionNodes.ADMIN_GUI)) {
+            player.sendMessage("§cYou do not have permission to use the GUI.");
             return false;
         }
 
@@ -90,69 +95,47 @@ public class GUIManager implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-
-        BaseMenu menu = openMenus.get(player.getUniqueId());
-        if (menu == null) return;
-
-        // Check for specific exploit vectors like offhand swap, number key swap, and drop
-        switch (event.getClick()) {
-            case NUMBER_KEY:
-            case SWAP_OFFHAND:
-            case DROP:
-            case CONTROL_DROP:
-                event.setCancelled(true);
-                break;
-            default:
-                break;
+        if (!(event.getInventory().getHolder() instanceof MythicRodMenuHolder holder)) {
+            return;
         }
 
-        Inventory clicked = event.getClickedInventory();
-        if (clicked == null) return;
+        if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        if (!menu.isMenuInventory(clicked)) {
-            // Prevent shift-clicking items from bottom inventory into the menu
-            if (event.isShiftClick()) {
-                event.setCancelled(true);
-            }
+        // Security Check: Ensure only admins can interact with GUIs
+        if (!player.hasPermission(PermissionNodes.ADMIN_GUI)) {
+            event.setCancelled(true);
+            player.closeInventory();
             return;
         }
 
         event.setCancelled(true);
 
-        // Security Check: Ensure only admins can interact with GUIs
-        if (!player.hasPermission("mythicrod.admin") && !player.isOp()) {
-            player.closeInventory();
-            return;
-        }
-
         try {
-            menu.handleClick(event);
+            holder.getMenu().handleClick(event);
         } catch (Exception e) {
-            plugin.getLogger().log(java.util.logging.Level.SEVERE, "[MythicRod-GUIManager] Error handling menu interaction. Player action may not have been processed.", e);
+            plugin.getLogger().log(java.util.logging.Level.SEVERE, "[MythicRod-GUIManager] Error handling menu interaction.", e);
             closeMenu(player);
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
+        if (!(event.getInventory().getHolder() instanceof MythicRodMenuHolder)) {
+            return;
+        }
+
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        BaseMenu menu = openMenus.get(player.getUniqueId());
-        if (menu == null) return;
-
-        if (event.getRawSlots().stream().anyMatch(slot ->
-                slot < event.getView().getTopInventory().getSize())) {
+        if (!player.hasPermission(PermissionNodes.ADMIN_GUI)) {
             event.setCancelled(true);
+            player.closeInventory();
+            return;
+        }
 
-            // Security Check: Ensure only admins can interact with GUIs
-            if (!player.hasPermission("mythicrod.admin") && !player.isOp()) {
-                player.closeInventory();
-                plugin.getLogger().log(java.util.logging.Level.WARNING, "Error validating drag permission for player: " + player.getName());
-                closeMenu(player);
-            }
+        if (event.getRawSlots().stream().anyMatch(slot -> slot < event.getView().getTopInventory().getSize())) {
+            event.setCancelled(true);
         }
     }
 

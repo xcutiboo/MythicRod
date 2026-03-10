@@ -1,6 +1,6 @@
 dependencies {
     // Core dependencies needed by the common module
-    compileOnly(libs.guice)
+    implementation(libs.guice)
     
     // Adventure API for text handling
     compileOnly(libs.adventure.text.minimessage)

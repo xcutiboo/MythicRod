@@ -44,7 +44,7 @@ public class MainHubMenu extends BaseMenu {
                 .glow(true)
                 .build();
         setItem(20, configItem, event -> {
-            plugin.getGUIManager().openMenu(player, "config");
+            plugin.getGUIManager().openMenu(getPlayer(), "config");
         });
 
         ItemStack dropsItem = new ItemBuilder(Material.FISHING_ROD)
@@ -63,7 +63,7 @@ public class MainHubMenu extends BaseMenu {
                 )
                 .build();
         setItem(22, dropsItem, event -> {
-            plugin.getGUIManager().openMenu(player, "drops");
+            plugin.getGUIManager().openMenu(getPlayer(), "drops");
         });
 
         ItemStack statsItem = new ItemBuilder(Material.WRITABLE_BOOK)
@@ -85,7 +85,7 @@ public class MainHubMenu extends BaseMenu {
                 sendMessage("&cStatistics tracking is currently disabled!");
                 return;
             }
-            plugin.getGUIManager().openMenu(player, "stats");
+            plugin.getGUIManager().openMenu(getPlayer(), "stats");
         });
 
         ItemStack infoItem = new ItemBuilder(Material.KNOWLEDGE_BOOK)
@@ -106,7 +106,7 @@ public class MainHubMenu extends BaseMenu {
             .build();
         setItem(40, infoItem);
 
-        if (player.hasPermission("mythicrod.admin.reload")) {
+        if (getPlayer().hasPermission("mythicrod.admin.reload")) {
             ItemStack reloadItem = new ItemBuilder(Material.RECOVERY_COMPASS)
                     .name("&a&lReload Configuration")
                     .lore(
@@ -121,7 +121,7 @@ public class MainHubMenu extends BaseMenu {
                     )
                     .build();
             setItem(49, reloadItem, event -> {
-                player.closeInventory();
+                getPlayer().closeInventory();
                 try {
                     plugin.reload();
                     sendMessage("&aConfiguration reloaded successfully!");
@@ -136,7 +136,7 @@ public class MainHubMenu extends BaseMenu {
                 .name("&c&lClose Menu")
                 .lore("&7Click to close")
                 .build();
-        setItem(45, closeItem, event -> player.closeInventory());
+        setItem(45, closeItem, event -> getPlayer().closeInventory());
 
         ItemStack helpItem = new ItemBuilder(Material.ENCHANTED_BOOK)
                 .name("&b&lHelp & Commands")
@@ -172,6 +172,6 @@ public class MainHubMenu extends BaseMenu {
     private void sendMessage(String message) {
         Component component = LegacyComponentSerializer.legacyAmpersand()
                 .deserialize(plugin.getConfigManager().getPrefix() + message);
-        plugin.audiences().player(player).sendMessage(component);
+        plugin.audiences().player(getPlayer()).sendMessage(component);
     }
 }

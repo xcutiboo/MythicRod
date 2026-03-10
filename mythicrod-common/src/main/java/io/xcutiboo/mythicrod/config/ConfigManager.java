@@ -2,13 +2,11 @@ package io.xcutiboo.mythicrod.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
 import io.xcutiboo.mythicrod.MythicRodPlugin;
 import io.xcutiboo.mythicrod.api.platform.PlatformConfiguration;
+import io.xcutiboo.mythicrod.constants.UIConstants;
 
 /**
  * Production-Grade Configuration Manager for MythicRod
@@ -38,12 +36,10 @@ public class ConfigManager {
     private PlatformConfiguration config;
     private File statsFile;
     private PlatformConfiguration statsConfig;
-    private File dropsFile;
-    private File messagesFile;
     private static final int CURRENT_CONFIG_VERSION = 4;
 
     // CACHED VALUES (primary source of truth at runtime)
-    private String prefix = "&6&l[MythicRod] &r";
+    private String prefix = UIConstants.PREFIX;
     private boolean soundsEnabled = true;
     private boolean particlesEnabled = true;
     private boolean biomeDropsEnabled = true;
@@ -60,15 +56,13 @@ public class ConfigManager {
     private static final int MAX_STATS_INTERVAL = 3600;
     private static final int MIN_HOOK_INTERVAL = 60;
     private static final int MAX_HOOK_INTERVAL = 1800;
-    private static final String[] VALID_PROFILES = {"lightweight", "balanced", "performance"};
-    private static final String[] VALID_LANGUAGES = {"en_US", "ja_JP"};
 
     public ConfigManager(MythicRodPlugin plugin) {
         this.plugin = plugin;
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdirs();
         }
-        initialize();
+        validateAndCache();
     }
 
     /**
@@ -76,6 +70,10 @@ public class ConfigManager {
      * Called at startup and on reload(). No validation errors are fatal -
      * safe defaults always apply.
      */
+    public void reload() {
+        validateAndCache();
+    }
+
     private void validateAndCache() {
         // Validate boolean flags (always safe - fallback to default if malformed)
         soundsEnabled = config.getBoolean("features.sounds.enabled", true);
@@ -86,9 +84,9 @@ public class ConfigManager {
         debugEnabled = config.getBoolean("features.debug.enabled", false);
 
         // Validate prefix (non-empty)
-        prefix = config.getString("ui.prefix", "&6&l[MythicRod] &r");
+        prefix = config.getString("ui.prefix", UIConstants.PREFIX);
         if (prefix == null || prefix.isEmpty()) {
-            prefix = "&6&l[MythicRod] &r";
+            prefix = UIConstants.PREFIX;
             logWarning("ui.prefix is empty, using default");
         }
 
@@ -246,6 +244,14 @@ public class ConfigManager {
     public String getLanguage() { return language; }
     public String getProfile() { return profile; }
     public String getPrefix() { return prefix; }
+
+    
+    public PlatformConfiguration getConfig() {
+        if (config == null) {
+            reloadConfig();
+        }
+        return config;
+    }
 
     public PlatformConfiguration getStatsConfig() {
         if (statsConfig == null) {

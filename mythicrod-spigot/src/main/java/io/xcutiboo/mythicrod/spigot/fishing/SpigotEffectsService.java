@@ -7,7 +7,9 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import io.xcutiboo.mythicrod.MythicRod;
-import io.xcutiboo.mythicrod.fishing.EffectsService;
+import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
+import io.xcutiboo.mythicrod.api.platform.PlatformLocation;
+import io.xcutiboo.mythicrod.api.service.EffectsService;
 
 public class SpigotEffectsService implements EffectsService {
     private final MythicRod plugin;
@@ -17,9 +19,13 @@ public class SpigotEffectsService implements EffectsService {
     }
 
     @Override
-    public void spawnCatchEffects(Player player, Location hookLocation) {
-        if (player == null || !player.isOnline()) return;
-        if (hookLocation == null || hookLocation.getWorld() == null) return;
+    public void spawnCatchEffects(PlatformPlayer platformPlayer, PlatformLocation platformLocation) {
+        if (platformPlayer == null || !platformPlayer.isOnline()) return;
+        Player player = Bukkit.getPlayer(platformPlayer.getUniqueId());
+        if (player == null) return;
+        
+        Location hookLocation = new Location(Bukkit.getWorld(platformLocation.getWorldName()), platformLocation.getX(), platformLocation.getY(), platformLocation.getZ());
+        if (hookLocation.getWorld() == null) return;
 
         if (plugin.getConfigManager().useParticles()) {
             spawnParticles(player, hookLocation);
@@ -31,12 +37,15 @@ public class SpigotEffectsService implements EffectsService {
     }
 
     @Override
-    public void spawnExperienceEffects(Player player, int xpAmount) {
-        if (player == null || !player.isOnline()) return;
+    public void spawnExperienceEffects(PlatformPlayer platformPlayer, int xpAmount) {
+        if (platformPlayer == null || !platformPlayer.isOnline()) return;
         if (!plugin.getConfigManager().useParticles()) return;
+        
+        Player player = Bukkit.getPlayer(platformPlayer.getUniqueId());
+        if (player == null) return;
 
         Location playerLoc = player.getLocation();
-        if (playerLoc != null && playerLoc.getWorld() != null) {
+        if (playerLoc.getWorld() != null) {
             playerLoc.getWorld().spawnParticle(
                 Particle.HAPPY_VILLAGER,
                 playerLoc.add(0, 1.2, 0),
@@ -66,7 +75,7 @@ public class SpigotEffectsService implements EffectsService {
             );
 
             Location playerLoc = player.getLocation();
-            if (playerLoc != null && playerLoc.getWorld() != null) {
+            if (playerLoc.getWorld() != null) {
                 playerLoc.getWorld().spawnParticle(
                     Particle.HAPPY_VILLAGER,
                     playerLoc.add(0, 1.5, 0),

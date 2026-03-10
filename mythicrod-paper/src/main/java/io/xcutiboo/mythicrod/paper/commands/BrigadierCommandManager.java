@@ -206,7 +206,7 @@ public class BrigadierCommandManager {
                 return 0;
             }
 
-            limit = Math.min(Math.max(limit, 1), 50);
+            limit = Math.clamp(limit, 1, 50);
             Map<UUID, Integer> topFishers = plugin.getStatisticsManager().getTopFishers(limit);
 
             if (topFishers.isEmpty()) {

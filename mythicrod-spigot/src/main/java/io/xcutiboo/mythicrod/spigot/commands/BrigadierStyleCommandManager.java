@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -85,7 +84,7 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
             return subcommands.stream()
                     .filter(s -> s.startsWith(partial))
                     .filter(s -> hasPermissionForSubcommand(sender, s))
-                    .collect(Collectors.toList());
+                    .toList();
         } else if (args.length == 2) {
             String subcommand = args[0].toLowerCase();
             if (subcommand.equals("stats") && sender.hasPermission("mythicrod.stats.view")) {
@@ -94,7 +93,7 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
                 return Bukkit.getOnlinePlayers().stream()
                         .map(Player::getName)
                         .filter(name -> name.toLowerCase().startsWith(partial))
-                        .collect(Collectors.toList());
+                        .toList();
             } else if (subcommand.equals("top") && sender.hasPermission("mythicrod.stats.leaderboard")) {
                 // Suggest common limits for top command
                 return Arrays.asList("5", "10", "25", "50", "100");
@@ -148,7 +147,7 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
 
     private boolean executeGui(CommandSender sender) {
         if (!sender.hasPermission("mythicrod.gui")) {
-            sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "command.help.gui"));
+            sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "command.help.gui"));
             return true;
         }
 
@@ -157,29 +156,29 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
             return true;
         }
 
-        sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "general.player_only"));
+        sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "general.player_only"));
         return true;
     }
 
     private boolean executeReload(CommandSender sender) {
         if (!sender.hasPermission("mythicrod.admin.reload")) {
-            sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "general.no_permission"));
+            sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "general.no_permission"));
             return true;
         }
 
-        sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "command.reload.start"));
+        sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "command.reload.start"));
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 plugin.reload();
                 // Schedule message back to main thread (required for thread safety)
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "command.reload.success"))
+                    sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "command.reload.success"))
                 );
             } catch (Exception e) {
                 // Schedule error message back to main thread (required for thread safety)
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "command.reload.failed",
+                    sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "command.reload.failed",
                         java.util.Map.of("error", e.getMessage())))
                 );
             }
@@ -190,7 +189,7 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
 
     private boolean executeStats(CommandSender sender, String[] args) {
         if (!sender.hasPermission("mythicrod.stats.view")) {
-            sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "stats.permission_denied"));
+            sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "stats.permission_denied"));
             return true;
         }
 
@@ -198,7 +197,7 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
         if (args.length < 2) {
             // Show own stats
             if (!(sender instanceof Player)) {
-                sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "stats.console_usage"));
+                sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "stats.console_usage"));
                 return true;
             }
             target = (Player) sender;
@@ -207,7 +206,7 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
             String targetName = args[1];
             target = Bukkit.getPlayerExact(targetName);
             if (target == null) {
-                sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "command.player_not_found",
+                sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "command.player_not_found",
                     java.util.Map.of("player", targetName)));
                 return true;
             }
@@ -218,7 +217,7 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
     }
 
     private void displayStats(CommandSender sender, Player target) {
-        Map<String, Object> stats = plugin.getStatisticsManager().getPlayerStatistics(target);
+        Map<String, Object> stats = plugin.getStatisticsManager().getPlayerStatistics(plugin.getPlatform().getPlayer(target.getUniqueId()));
 
         var audience = plugin.audiences().sender(sender);
         audience.sendMessage(Component.text("═════════════════════", NamedTextColor.AQUA, TextDecoration.BOLD));
@@ -238,7 +237,7 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
 
     private boolean executeTop(CommandSender sender, String[] args) {
         if (!sender.hasPermission("mythicrod.stats.leaderboard")) {
-            sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "general.no_permission"));
+            sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "general.no_permission"));
             return true;
         }
 
@@ -247,11 +246,11 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
             try {
                 limit = Integer.parseInt(args[1]);
                 if (limit < 1 || limit > 100) {
-                    sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "stats.limit_invalid"));
+                    sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "stats.limit_invalid"));
                     return true;
                 }
             } catch (NumberFormatException e) {
-                sendMessage(sender, plugin.getLanguageManager().trForSender(sender, "general.error"));
+                sendMessage(sender, plugin.getLanguageManager().trForSender((sender instanceof Player ? plugin.getPlatform().getPlayer(((Player) sender).getUniqueId()) : plugin.getPlatform().getCommandSender("CONSOLE")), "general.error"));
                 return true;
             }
         }
@@ -307,7 +306,7 @@ public class BrigadierStyleCommandManager implements CommandExecutor, TabComplet
 
         for (CustomDrop drop : drops) {
             Component line = Component.text("• ", net.kyori.adventure.text.format.NamedTextColor.GRAY)
-                    .append(Component.text(drop.getMaterial().name(), net.kyori.adventure.text.format.NamedTextColor.WHITE))
+                    .append(Component.text(drop.getIdentifier(), net.kyori.adventure.text.format.NamedTextColor.WHITE))
                     .append(Component.text(" (", net.kyori.adventure.text.format.NamedTextColor.GRAY))
                     .append(Component.text(String.format("%.2f%%", (double)drop.getChance()), net.kyori.adventure.text.format.NamedTextColor.AQUA))
                     .append(Component.text(")", net.kyori.adventure.text.format.NamedTextColor.GRAY));

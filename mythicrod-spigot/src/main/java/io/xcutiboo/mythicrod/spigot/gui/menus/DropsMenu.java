@@ -144,7 +144,7 @@ public class DropsMenu extends BaseMenu {
                 break;
             }
             List<String> lore = new ArrayList<>();
-            lore.add("&7Material: &f" + drop.getMaterial().name());
+            lore.add("&7Material: &f" + drop.getIdentifier());
             lore.add("&7Amount: &f" + drop.getAmount());
             lore.add("&7Drop Weight: &f" + drop.getChance());
             lore.add("");
@@ -165,7 +165,7 @@ public class DropsMenu extends BaseMenu {
                 lore.add("");
                 lore.add("&7Enchantments:");
                 drop.getEnchantments().forEach((enchant, level) -> {
-                    lore.add("  &8• &f" + formatEnchantName(((org.bukkit.Keyed) enchant).getKey().getKey()) + " " + level);
+                    lore.add("  &8• &f" + formatEnchantName(enchant) + " " + level);
                 });
             }
             // Add lore from drop
@@ -174,8 +174,8 @@ public class DropsMenu extends BaseMenu {
                 lore.add("&7Custom Lore:");
                 drop.getLore().forEach(line -> lore.add("  &8• &7" + line));
             }
-            ItemStack dropItem = new ItemBuilder(drop.getMaterial())
-                    .name("&e" + (drop.getCustomName() != null ? drop.getCustomName() : drop.getMaterial().name()))
+            ItemStack dropItem = new ItemBuilder(org.bukkit.Material.valueOf(drop.getIdentifier().toUpperCase().replace("MINECRAFT:", "")))
+                    .name("&e" + (drop.getCustomName() != null ? drop.getCustomName() : drop.getIdentifier()))
                     .lore(lore)
                     .glow(drop.isGlowing())
                     .build();

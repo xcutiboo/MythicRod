@@ -34,7 +34,7 @@ public class LanguageSwitchMenu extends BaseMenu {
     @Override
     protected String getTitle() {
         Player p = getPlayer();
-        return p != null ? plugin.getLanguageManager().trForSender(p, "gui.language.title") : "Language Selection";
+        return p != null ? plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.title") : "Language Selection";
     }
 
     @Override
@@ -46,24 +46,24 @@ public class LanguageSwitchMenu extends BaseMenu {
         // English option (United Kingdom flag texture)
         ItemStack englishItem = createLanguageHead(
             "http://textures.minecraft.net/texture/a9edcdd7b06173d7d221c7274c86cba35730170788bb6a1db09cc6810435b92c",
-            Component.text(plugin.getLanguageManager().trForSender(getPlayer(), "gui.language.languages.english.name")).color(NamedTextColor.AQUA).decorate(TextDecoration.BOLD),
+            Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.languages.english.name")).color(NamedTextColor.AQUA).decorate(TextDecoration.BOLD),
             List.of(
-                Component.text(plugin.getLanguageManager().trForSender(getPlayer(), "gui.language.languages.english.description"), NamedTextColor.GRAY),
-                Component.text(plugin.getLanguageManager().trForSender(getPlayer(), "gui.language.languages.english.region"), NamedTextColor.DARK_GRAY)
+                Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.languages.english.description"), NamedTextColor.GRAY),
+                Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.languages.english.region"), NamedTextColor.DARK_GRAY)
             ),
             currentLang.equals("en_US")
         );
         setItem(10, englishItem, event -> {
-            switchLanguage("en_US", plugin.getLanguageManager().trForSender(getPlayer(), "gui.language.languages.english.name"));
+            switchLanguage("en_US", plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.languages.english.name"));
         });
 
         // Current language info
         ItemStack infoItem = new ItemBuilder(Material.BOOK)
-            .name(plugin.getLanguageManager().trForSender(player, "gui.language.info.name"))
+            .name(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.info.name"))
             .lore(
-                plugin.getLanguageManager().trForSender(player, "gui.language.info.select"),
+                plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.info.select"),
                 "",
-                plugin.getLanguageManager().trForSender(player, "language.current", java.util.Map.of("language", formatLanguageName(currentLang)))
+                plugin.getLanguageManager().trForSender(getPlatformPlayer(), "language.current", java.util.Map.of("language", formatLanguageName(currentLang)))
             )
             .build();
         setItem(13, infoItem);
@@ -71,24 +71,24 @@ public class LanguageSwitchMenu extends BaseMenu {
         // Japanese option (Japan flag texture)
         ItemStack japaneseItem = createLanguageHead(
             "http://textures.minecraft.net/texture/d6c2ca7238666ae1b9dd9daa3d4fc829db22609fb569312dec1fb0c8d6dd6c1d",
-            Component.text(plugin.getLanguageManager().trForSender(player, "gui.language.languages.japanese.name")).color(NamedTextColor.LIGHT_PURPLE).decorate(TextDecoration.BOLD),
+            Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.languages.japanese.name")).color(NamedTextColor.LIGHT_PURPLE).decorate(TextDecoration.BOLD),
             List.of(
-                Component.text(plugin.getLanguageManager().trForSender(player, "gui.language.languages.japanese.description"), NamedTextColor.GRAY),
-                Component.text(plugin.getLanguageManager().trForSender(player, "gui.language.languages.japanese.region"), NamedTextColor.DARK_GRAY)
+                Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.languages.japanese.description"), NamedTextColor.GRAY),
+                Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.languages.japanese.region"), NamedTextColor.DARK_GRAY)
             ),
             currentLang.equals("ja_JP")
         );
         setItem(16, japaneseItem, event -> {
-            switchLanguage("ja_JP", plugin.getLanguageManager().trForSender(player, "gui.language.languages.japanese.name"));
+            switchLanguage("ja_JP", plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.languages.japanese.name"));
         });
 
         // Back button
         ItemStack backItem = new ItemBuilder(Material.ARROW)
-            .name(plugin.getLanguageManager().trForSender(player, "gui.language.back.name"))
-            .lore(plugin.getLanguageManager().trForSender(player, "gui.language.back.lore"))
+            .name(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.back.name"))
+            .lore(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.back.lore"))
             .build();
         setItem(24, backItem, event -> {
-            plugin.getGUIManager().openMenu(player, "config");
+            plugin.getGUIManager().openMenu(getPlayer(), "config");
         });
     }
 
@@ -98,10 +98,10 @@ public class LanguageSwitchMenu extends BaseMenu {
         if (meta != null) {
             // Add selection indicator to name if current
             if (isCurrent) {
-                Component displayName = Component.text(plugin.getLanguageManager().trForSender(player, "gui.language.indicator.prefix"), NamedTextColor.GREEN, TextDecoration.BOLD)
+                Component displayName = Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.indicator.prefix"), NamedTextColor.GREEN, TextDecoration.BOLD)
                     .append(name)
-                    .append(Component.text(plugin.getLanguageManager().trForSender(player, "gui.language.indicator.suffix"), NamedTextColor.GREEN, TextDecoration.BOLD));
-                plugin.audiences().player(player).sendMessage(displayName); // Cache for display
+                    .append(Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.indicator.suffix"), NamedTextColor.GREEN, TextDecoration.BOLD));
+                plugin.audiences().player(getPlayer()).sendMessage(displayName); // Cache for display
                 meta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(displayName));
             } else {
                 meta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(name));
@@ -116,14 +116,14 @@ public class LanguageSwitchMenu extends BaseMenu {
             loreLines.add("");
             if (isCurrent) {
                 loreLines.add(LegacyComponentSerializer.legacySection().serialize(
-                    Component.text(plugin.getLanguageManager().trForSender(player, "gui.language.separator"), NamedTextColor.DARK_GRAY)));
+                    Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.separator"), NamedTextColor.DARK_GRAY)));
                 loreLines.add(LegacyComponentSerializer.legacySection().serialize(
-                    Component.text(plugin.getLanguageManager().trForSender(player, "gui.language.status.active"), NamedTextColor.GREEN, TextDecoration.BOLD)));
+                    Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.status.active"), NamedTextColor.GREEN, TextDecoration.BOLD)));
                 loreLines.add(LegacyComponentSerializer.legacySection().serialize(
-                    Component.text(plugin.getLanguageManager().trForSender(player, "gui.language.separator"), NamedTextColor.DARK_GRAY)));
+                    Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.separator"), NamedTextColor.DARK_GRAY)));
             } else {
                 loreLines.add(LegacyComponentSerializer.legacySection().serialize(
-                    Component.text(plugin.getLanguageManager().trForSender(player, "gui.language.status.inactive"), NamedTextColor.YELLOW)));
+                    Component.text(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.status.inactive"), NamedTextColor.YELLOW)));
             }
             meta.setLore(loreLines);
 
@@ -177,30 +177,30 @@ public class LanguageSwitchMenu extends BaseMenu {
             if (p == null) return;
             plugin.getLanguageManager().setPlayerLanguage(p.getUniqueId(), langCode);
 
-            sendMessage(plugin.getLanguageManager().trForSender(p, "gui.language.changed", java.util.Map.of("name", displayName)));
-            sendMessage(plugin.getLanguageManager().trForSender(p, "gui.language.changed-info", java.util.Map.of("name", displayName)));
+            sendMessage(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.changed", java.util.Map.of("name", displayName)));
+            sendMessage(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.changed-info", java.util.Map.of("name", displayName)));
 
             // Refresh the menu to show updated selections
             refresh();
 
             // Play success sound
             if (plugin.getConfigManager().useSounds()) {
-                p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
+                getPlayer().playSound(getPlayer().getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
             }
         } catch (Exception e) {
-            sendMessage(plugin.getLanguageManager().trForSender(p, "gui.language.failed"));
+            sendMessage(plugin.getLanguageManager().trForSender(getPlatformPlayer(), "gui.language.failed"));
             plugin.getLogger().log(java.util.logging.Level.SEVERE, "[MythicRod-LanguageSwitchMenu] Critical error changing language. Language may not have been updated. Check configuration files.", e);
 
             // Play error sound
             if (plugin.getConfigManager().useSounds()) {
-                p.playSound(p.getLocation(), org.bukkit.Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                getPlayer().playSound(getPlayer().getLocation(), org.bukkit.Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
             }
         }
     }
 
     private String formatLanguageName(String code) {
         String key = "language.names." + code;
-        return plugin.getLanguageManager().trForSender(player, key);
+        return plugin.getLanguageManager().trForSender(getPlatformPlayer(), key);
     }
 
     private void fillBorder() {
@@ -222,6 +222,6 @@ public class LanguageSwitchMenu extends BaseMenu {
     private void sendMessage(String message) {
         Component component = LegacyComponentSerializer.legacyAmpersand()
             .deserialize(plugin.getConfigManager().getPrefix() + message);
-        plugin.audiences().player(player).sendMessage(component);
+        plugin.audiences().player(getPlayer()).sendMessage(component);
     }
 }

@@ -5,7 +5,7 @@ spigot = "1.21.4-R0.1-SNAPSHOT"
 
 # Gradle Plugins
 paperweight = "1.7.7"
-shadow = "8.1.1"
+shadow = "8.3.5"
 run-paper = "2.3.1"
 
 # Dependencies
@@ -55,7 +55,7 @@ adventure-text-serializer-legacy = { module = "net.kyori:adventure-text-serializ
 
 [plugins]
 paperweight-userdev = { id = "io.papermc.paperweight.userdev", version.ref = "paperweight" }
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
 
 [bundles]

@@ -85,7 +85,7 @@ public class PaperEffectsService implements EffectsService {
             player.playSound(hookLocation, Sound.ENTITY_FISHING_BOBBER_SPLASH, 1.0f, 1.0f);
             player.playSound(hookLocation, Sound.ENTITY_FISHING_BOBBER_RETRIEVE, 0.8f, 1.2f);
             
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            plugin.getServer().getRegionScheduler().runDelayed(plugin, player.getLocation(), task -> {
                 if (player.isOnline()) {
                     Location playerLoc = player.getLocation();
                     if (playerLoc != null) {

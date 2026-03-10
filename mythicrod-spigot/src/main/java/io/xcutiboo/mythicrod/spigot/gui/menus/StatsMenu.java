@@ -37,7 +37,7 @@ public class StatsMenu extends BaseMenu {
     }
     private void buildPersonalStats() {
         fillBorder();
-        PlayerStats stats = plugin.getStatisticsManager().getPlayerStats(player);
+        PlayerStats stats = plugin.getStatisticsManager().getPlayerStats(getPlatformPlayer());
         // Total catches display
         ItemStack totalItem = new ItemBuilder(Material.FISHING_ROD)
                 .name("&e&lTotal Catches")
@@ -144,13 +144,13 @@ public class StatsMenu extends BaseMenu {
                 .name("&e← Back to Main Menu")
                 .build();
         setItem(45, backItem, event -> {
-            plugin.getGUIManager().openMainHub(player);
+            plugin.getGUIManager().openMainHub(getPlayer());
         });
         // Close button
         ItemStack closeItem = new ItemBuilder(Material.BARRIER)
                 .name("&c&lClose")
                 .build();
-        setItem(53, closeItem, event -> player.closeInventory());
+        setItem(53, closeItem, event -> getPlayer().closeInventory());
     }
     private void buildLeaderboard() {
         fillBorder();
@@ -190,7 +190,7 @@ public class StatsMenu extends BaseMenu {
                     case 3 -> Material.COPPER_BLOCK;
                     default -> Material.PLAYER_HEAD;
                 };
-                boolean isCurrentPlayer = entry.getKey().equals(player.getUniqueId());
+                boolean isCurrentPlayer = entry.getKey().equals(getPlayer().getUniqueId());
                 List<String> lore = new ArrayList<>();
                 lore.add("&7Player: &f" + playerName);
                 lore.add("&7Total Catches: &f" + catches);
@@ -233,7 +233,7 @@ public class StatsMenu extends BaseMenu {
         ItemStack closeItem = new ItemBuilder(Material.BARRIER)
                 .name("&c&lClose")
                 .build();
-        setItem(53, closeItem, event -> player.closeInventory());
+        setItem(53, closeItem, event -> getPlayer().closeInventory());
     }
     private void fillBorder() {
         ItemStack borderItem = new ItemBuilder(Material.PURPLE_STAINED_GLASS_PANE)
