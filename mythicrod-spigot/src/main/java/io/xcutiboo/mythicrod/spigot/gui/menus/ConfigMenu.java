@@ -378,7 +378,7 @@ public class ConfigMenu extends BaseMenu {
         if (p != null) {
             Component component = LegacyComponentSerializer.legacyAmpersand()
                     .deserialize(plugin.getConfigManager().getPrefix() + message);
-            plugin.audiences().player((org.bukkit.entity.Player) p).sendMessage(component);
+            plugin.audiences().player(p).sendMessage(component);
         }
     }
 }

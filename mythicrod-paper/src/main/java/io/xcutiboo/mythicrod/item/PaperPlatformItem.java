@@ -39,6 +39,7 @@ public class PaperPlatformItem implements PlatformItem {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public String getDisplayName() {
         if (itemStack.hasItemMeta() && itemStack.getItemMeta().hasDisplayName()) {
             return itemStack.getItemMeta().getDisplayName();
@@ -47,6 +48,7 @@ public class PaperPlatformItem implements PlatformItem {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public List<String> getLore() {
         if (itemStack.hasItemMeta() && itemStack.getItemMeta().hasLore()) {
             return itemStack.getItemMeta().getLore();

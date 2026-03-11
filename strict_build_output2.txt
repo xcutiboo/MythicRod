@@ -1,0 +1,42 @@
+Type-safe project accessors is an incubating feature.
+> Task :clean
+> Task :mythicrod-common:clean
+> Task :mythicrod-spigot:clean UP-TO-DATE
+> Task :compileJava NO-SOURCE
+> Task :processResources NO-SOURCE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :assemble
+> Task :check
+> Task :build
+> Task :mythicrod-common:compileJava
+> Task :mythicrod-common:processResources
+> Task :mythicrod-common:classes
+> Task :mythicrod-common:jar
+> Task :mythicrod-common:assemble
+> Task :mythicrod-common:check
+> Task :mythicrod-common:build
+
+> Task :mythicrod-spigot:compileJava FAILED
+/home/xcutiboo/Desktop/MythicRod/mythicrod-spigot/src/main/java/io/xcutiboo/mythicrod/spigot/gui/menus/BaseMenu.java:29: warning: [this-escape] possible 'this' escape before subclass is fully initialized
+        this.playerUuid = getPlayer().getUniqueId();
+                                   ^
+error: warnings found and -Werror specified
+/home/xcutiboo/Desktop/MythicRod/mythicrod-spigot/src/main/java/io/xcutiboo/mythicrod/spigot/gui/menus/ConfigMenu.java:381: warning: [cast] redundant cast to Player
+            plugin.audiences().player((org.bukkit.entity.Player) p).sendMessage(component);
+                                      ^
+1 error
+2 warnings
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mythicrod-spigot:compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 517ms
+8 actionable tasks: 7 executed, 1 up-to-date

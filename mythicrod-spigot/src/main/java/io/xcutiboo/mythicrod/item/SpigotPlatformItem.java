@@ -55,6 +55,7 @@ public class SpigotPlatformItem implements PlatformItem {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public Map<String, Integer> getEnchantments() {
         Map<String, Integer> enchants = new HashMap<>();
         itemStack.getEnchantments().forEach((enchant, level) -> 

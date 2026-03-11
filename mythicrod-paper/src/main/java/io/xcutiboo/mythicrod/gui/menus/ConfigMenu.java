@@ -1,5 +1,4 @@
 package io.xcutiboo.mythicrod.gui.menus;
-import java.io.IOException;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -9,17 +8,15 @@ import org.bukkit.inventory.ItemStack;
 import io.xcutiboo.mythicrod.MythicRod;
 import io.xcutiboo.mythicrod.config.ConfigManager;
 import io.xcutiboo.mythicrod.gui.utils.ItemBuilder;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 public class ConfigMenu extends BaseMenu {
     private static final String ADMIN_PERMISSION = "mythicrod.admin.config";
     
     public ConfigMenu(MythicRod plugin, Player player) {
-        super(plugin, player, ADMIN_PERMISSION);
+        super(plugin, player);
     }
     
     @Override
-    protected String getRequiredPermission() {
+    public String getRequiredPermission() {
         return ADMIN_PERMISSION;
     }
     @Override
@@ -82,7 +79,7 @@ public class ConfigMenu extends BaseMenu {
         ItemStack statsItem = new ItemBuilder(trackStats ? Material.WRITABLE_BOOK : Material.BOOK)
                 .name("&d&lStatistics Tracking " + (trackStats ? "&a✓" : "&c✗"))
                 .lore(
-                        "&7Track player fishing statistics",
+                        "&7Track getPlayer() fishing statistics",
                         "&7and maintain leaderboards",
                         "",
                         "&7Status: " + getStatusColor(trackStats) + "&l" + (trackStats ? "ENABLED" : "DISABLED"),
@@ -265,7 +262,7 @@ public class ConfigMenu extends BaseMenu {
                 .glow(true)
                 .build();
         setItem(33, languageItem, event -> {
-            plugin.getGUIManager().openMenu(player, "language");
+            plugin.getGUIManager().openMenu(getPlayer(), "language");
         });
         // === INFO PANEL ===
         // Configuration info
@@ -293,7 +290,7 @@ public class ConfigMenu extends BaseMenu {
                 .lore("&7Return to the main hub")
                 .build();
         setItem(45, backItem, event -> {
-            plugin.getGUIManager().openMainHub(player);
+            plugin.getGUIManager().openMainHub(getPlayer());
         });
         // Save and apply button
         ItemStack saveItem = new ItemBuilder(Material.EMERALD)
@@ -316,9 +313,9 @@ public class ConfigMenu extends BaseMenu {
                 sendMessage("&a✓ Configuration saved successfully!");
                 sendMessage("&7Changes are active. Use &e/mythicrod reload &7for full reload if needed.");
                 playSuccessSound();
-            } catch (IOException e) {
-                sendMessage("&c✗ Failed to save configuration! Check console.");
-                plugin.getLogger().severe("Failed to save config from GUI: " + e.getMessage());
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to save configuration: " + e.getMessage());
+                sendMessage("&c✗ Failed to save configuration!");
                 playErrorSound();
             }
         });
@@ -327,7 +324,7 @@ public class ConfigMenu extends BaseMenu {
                 .name("&c&lClose")
                 .lore("&7Close without saving")
                 .build();
-        setItem(53, closeItem, event -> player.closeInventory());
+        setItem(53, closeItem, event -> getPlayer().closeInventory());
     }
     private void fillBorder() {
         ItemStack borderItem = new ItemBuilder(Material.ORANGE_STAINED_GLASS_PANE)
@@ -369,22 +366,17 @@ public class ConfigMenu extends BaseMenu {
     }
     private void playClickSound() {
         if (plugin.getConfigManager().useSounds()) {
-            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
+            Player p = getPlayer(); if (p != null) p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
         }
     }
     private void playSuccessSound() {
         if (plugin.getConfigManager().useSounds()) {
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
+            Player p = getPlayer(); if (p != null) p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
         }
     }
     private void playErrorSound() {
         if (plugin.getConfigManager().useSounds()) {
-            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+            Player p = getPlayer(); if (p != null) p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
         }
-    }
-    private void sendMessage(String message) {
-        Component component = LegacyComponentSerializer.legacyAmpersand()
-                .deserialize(plugin.getConfigManager().getPrefix() + message);
-        player.sendMessage(component);
     }
 }

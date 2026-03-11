@@ -15,6 +15,9 @@ import org.bukkit.event.player.PlayerFishEvent;
 import io.xcutiboo.mythicrod.MythicRod;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
 import io.xcutiboo.mythicrod.fishing.EffectsService;
+import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
+import io.xcutiboo.mythicrod.paper.platform.PaperLocation;
+import io.xcutiboo.mythicrod.paper.platform.PaperServer;
 import io.xcutiboo.mythicrod.fishing.FishingService;
 import io.xcutiboo.mythicrod.fishing.FishingService.FishingResult;
 import io.xcutiboo.mythicrod.fishing.RewardService;
@@ -50,7 +53,7 @@ public class FishingListener implements Listener {
     }
 
     private void handleFishingStart(Player player, FishHook hook, UUID hookId) {
-        fishingService.startFishing(hookId, player.getUniqueId(), hook.getLocation());
+        fishingService.startFishing(hookId, player.getUniqueId(), PaperLocation.fromBukkit(hook.getLocation()));
         plugin.getLogger().fine("Player " + player.getName() + " started fishing with hook " + hookId);
     }
 
@@ -62,7 +65,8 @@ public class FishingListener implements Listener {
         }
 
         Location hookLoc = hook.getLocation();
-        FishingResult result = fishingService.processCatch(hookId, player, hookLoc);
+        String biomeName = hookLoc.getBlock().getBiome().getKey().getKey();
+        FishingResult result = fishingService.processCatch(hookId, new PaperPlayer(player), PaperLocation.fromBukkit(hookLoc), biomeName);
 
         if (!result.isSuccess()) {
             if (debugMode) {
@@ -75,7 +79,7 @@ public class FishingListener implements Listener {
         CustomDrop drop = result.getDrop();
         if (debugMode) {
             plugin.getLogger().info("  Biome: " + result.getBiomeName());
-            plugin.getLogger().info("  Selected drop: " + drop.getMaterial() + " x" + drop.getAmount());
+            plugin.getLogger().info("  Selected drop: " + drop.getIdentifier() + " x" + drop.getAmount());
         }
 
         Entity caughtEntity = event.getCaught();
@@ -86,23 +90,23 @@ public class FishingListener implements Listener {
             vanillaItem.remove();
         }
 
-        if (!rewardService.deliverReward(player, drop)) {
+        if (!rewardService.deliverReward(new PaperPlayer(player), drop, PaperLocation.fromBukkit(hookLoc))) {
             if (debugMode) {
                 plugin.getLogger().warning("  Failed to deliver reward");
             }
             return;
         }
 
-        rewardService.sendCatchMessage(player, drop);
-        effectsService.spawnCatchEffects(player, hookLoc);
+        rewardService.sendCatchMessage(new PaperPlayer(player), drop);
+        ((PaperEffectsService) effectsService).spawnCatchEffects(player, hookLoc);
 
         if (plugin.getConfigManager().trackStatistics()) {
-            plugin.getStatisticsManager().recordCatch(player, drop);
+            plugin.getStatisticsManager().recordCatch(new PaperPlayer(player), drop);
         }
 
         int xpAmount = rewardService.calculateExperience(drop);
-        rewardService.giveExperience(player, xpAmount);
-        effectsService.spawnExperienceEffects(player, xpAmount);
+        player.giveExp(xpAmount);
+        ((PaperEffectsService) effectsService).spawnExperienceEffects(player, xpAmount);
 
         if (debugMode) {
             plugin.getLogger().info("  SUCCESS - Custom drop given!");
@@ -124,6 +128,6 @@ public class FishingListener implements Listener {
 
 
     public void cleanupHooks() {
-        fishingService.cleanupStaleHooks(plugin.getServer());
+        fishingService.cleanupStaleHooks(new PaperServer(plugin.getServer()));
     }
 }

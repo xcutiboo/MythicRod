@@ -13,6 +13,7 @@ import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 public class DropManager {
     private final MythicRodPlugin plugin;
     private final Map<String, List<CustomDrop>> dropCategories = new HashMap<>();
+    private DropSelector selector;
     private boolean debugMode = false;
 
     public DropManager(MythicRodPlugin plugin) {
@@ -20,11 +21,12 @@ public class DropManager {
             throw new IllegalArgumentException("Plugin instance cannot be null");
         }
         this.plugin = plugin;
+        this.selector = new DropSelector(plugin.getLogger(), false, false);
     }
 
     public void setDebugMode(boolean debug) {
         this.debugMode = debug;
-        // In real life, we would also recreate or update selector's debugMode here
+        this.selector = new DropSelector(plugin.getLogger(), plugin.getConfigManager().usePermissions(), debug);
     }
 
     public void loadDrops(PlatformConfiguration config) {
@@ -182,106 +184,21 @@ public class DropManager {
             return null;
         }
         if (!player.isOnline()) {
-            plugin.getLogger().fine("Player " + player.getName() + " is offline, skipping drop");
+            plugin.getLogger().warning("Cannot get drop for offline player: " + player.getName());
             return null;
         }
-        List<CustomDrop> eligibleDrops = collectEligibleDrops(player, biomeName);
-        if (debugMode || eligibleDrops.isEmpty()) {
-            plugin.getLogger().info("Drop selection for " + player.getName() + ":");
-            plugin.getLogger().info("  Biome: " + (biomeName != null ? biomeName : "unknown"));
-            plugin.getLogger().info("  Eligible drops: " + eligibleDrops.size());
-            plugin.getLogger().info("  Permission mode: " + plugin.getConfigManager().usePermissions());
-        }
-        if (eligibleDrops.isEmpty()) {
+        
+        List<CustomDrop> allDrops = getAllDrops();
+        CustomDrop selected = selector.selectDrop(allDrops, player, biomeName);
+        
+        if (selected == null && debugMode) {
             plugin.getLogger().warning("No eligible drops for player " + player.getName() +
                 " in biome " + (biomeName != null ? biomeName : "unknown"));
             plugin.getLogger().warning("  Available categories: " + dropCategories.keySet());
             plugin.getLogger().warning("  Permissions enabled: " + plugin.getConfigManager().usePermissions());
-            if (plugin.getConfigManager().usePermissions()) {
-                plugin.getLogger().warning("  Player may need permission: mythicrod.drops.global");
-            }
-            return null;
         }
-        CustomDrop selected = selectWeightedRandom(eligibleDrops);
-        if (debugMode && selected != null) {
-            plugin.getLogger().info("  Selected: " + selected.getIdentifier() +
-                " (chance=" + selected.getChance() + ")");
-        }
+        
         return selected;
-    }
-    private List<CustomDrop> collectEligibleDrops(PlatformPlayer player, String biomeName) {
-        List<CustomDrop> eligibleDrops = new ArrayList<>();
-
-        if (dropCategories.containsKey("global")) {
-            if (!plugin.getConfigManager().usePermissions() ||
-                player.hasPermission("mythicrod.drops.global") ||
-                player.hasPermission("mythicrod.drops.*") ||
-                player.hasPermission("mythicrod.*")) {
-                eligibleDrops.addAll(dropCategories.get("global"));
-                if (debugMode) {
-                    plugin.getLogger().info("  Added " + dropCategories.get("global").size() + " global drops");
-                }
-            } else if (plugin.getConfigManager().usePermissions()) {
-                plugin.getLogger().fine("Player " + player.getName() + " lacks permission: mythicrod.drops.global");
-            }
-        }
-
-        for (Map.Entry<String, List<CustomDrop>> entry : dropCategories.entrySet()) {
-            String category = entry.getKey();
-            if (category.equals("global") || category.startsWith("biome_")) {
-                continue;
-            }
-
-            if (!plugin.getConfigManager().usePermissions() ||
-                player.hasPermission("mythicrod.drops." + category) ||
-                player.hasPermission("mythicrod.drops.*") ||
-                player.hasPermission("mythicrod.*")) {
-                for (CustomDrop drop : entry.getValue()) {
-                    if (drop.getPermission() == null || player.hasPermission(drop.getPermission())) {
-                        if (drop.getBiomes().isEmpty() ||
-                            (biomeName != null && drop.getBiomes().contains(biomeName.toUpperCase()))) {
-                            eligibleDrops.add(drop);
-                        }
-                    }
-                }
-                if (debugMode) {
-                    plugin.getLogger().info("  Added drops from category: " + category);
-                }
-            }
-        }
-
-        if (plugin.getConfigManager().enableBiomeSpecificDrops() && biomeName != null) {
-            String biomeCategory = "biome_" + biomeName.toLowerCase();
-            if (dropCategories.containsKey(biomeCategory)) {
-                eligibleDrops.addAll(dropCategories.get(biomeCategory));
-                if (debugMode) {
-                    plugin.getLogger().info("  Added biome-specific drops for: " + biomeName);
-                }
-            }
-        }
-        return eligibleDrops;
-    }
-    private CustomDrop selectWeightedRandom(List<CustomDrop> drops) {
-        if (drops.isEmpty()) {
-            return null;
-        }
-        int totalChance = drops.stream()
-            .mapToInt(CustomDrop::getChance)
-            .sum();
-        if (totalChance <= 0) {
-            plugin.getLogger().warning("Total drop chance is zero or negative - selecting random drop");
-            return drops.get(new java.util.Random().nextInt(drops.size()));
-        }
-        int randomValue = new java.util.Random().nextInt(totalChance);
-        int currentChance = 0;
-        for (CustomDrop drop : drops) {
-            currentChance += drop.getChance();
-            if (randomValue < currentChance) {
-                return drop;
-            }
-        }
-
-        return drops.get(drops.size() - 1);
     }
     public Map<String, List<CustomDrop>> getDropCategories() {
         return Collections.unmodifiableMap(dropCategories);

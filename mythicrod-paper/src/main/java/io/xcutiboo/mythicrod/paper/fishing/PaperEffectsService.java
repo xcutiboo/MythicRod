@@ -1,6 +1,5 @@
 package io.xcutiboo.mythicrod.paper.fishing;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -16,7 +15,6 @@ public class PaperEffectsService implements EffectsService {
         this.plugin = plugin;
     }
 
-    @Override
     public void spawnCatchEffects(Player player, Location hookLocation) {
         if (player == null || !player.isOnline()) return;
         if (hookLocation == null || hookLocation.getWorld() == null) return;
@@ -30,7 +28,6 @@ public class PaperEffectsService implements EffectsService {
         }
     }
 
-    @Override
     public void spawnExperienceEffects(Player player, int xpAmount) {
         if (player == null || !player.isOnline()) return;
         if (!plugin.getConfigManager().useParticles()) return;

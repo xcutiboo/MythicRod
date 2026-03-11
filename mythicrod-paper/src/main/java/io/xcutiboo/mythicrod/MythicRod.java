@@ -5,7 +5,6 @@ import java.util.logging.Level;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.inject.Guice;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import io.xcutiboo.mythicrod.api.MythicRodAPI;
 import io.xcutiboo.mythicrod.config.ConfigManager;
@@ -21,6 +20,8 @@ import io.xcutiboo.mythicrod.metrics.StatisticsManager;
 import io.xcutiboo.mythicrod.paper.commands.BrigadierCommandManager;
 import io.xcutiboo.mythicrod.paper.di.PaperModule;
 import io.xcutiboo.mythicrod.paper.fishing.FishingListener;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -110,15 +111,20 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin {
         if (languageManager != null) {
             languageManager.setLanguage(configManager.getConfig().getString("language", "en"));
         }
-        dropManager.reload();
+        dropManager.reload(configManager.getConfig());
         statisticsManager.reload();
     }
 
     @Override
-    public void sendFormattedMessage(org.bukkit.entity.Player player, String message) {
-        Component component = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-            .legacyAmpersand().deserialize(message);
-        player.sendMessage(component);
+    public void sendFormattedMessage(io.xcutiboo.mythicrod.api.platform.PlatformPlayer player, String message) {
+        // Paper module doesn't use platform abstraction - direct Bukkit player access
+        // This method is here for interface compliance but not used in Paper module
+    }
+    
+    @Override
+    public io.xcutiboo.mythicrod.api.platform.PlatformServer getPlatform() {
+        // Paper module doesn't use platform abstraction
+        return null;
     }
 
     @Override
@@ -133,18 +139,18 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin {
     public MythicRodAPI getAPI() { return api; }
     
     private void setupMetricsCharts() {
-        metrics.addCustomChart(new Metrics.SimplePie("server_type", () -> "Paper"));
+        metrics.addCustomChart(new org.bstats.charts.SimplePie("server_type", () -> "Paper"));
         
-        metrics.addCustomChart(new Metrics.SimplePie("language", () -> 
+        metrics.addCustomChart(new org.bstats.charts.SimplePie("language", () -> 
             languageManager != null ? languageManager.getLanguage() : "en"));
         
-        metrics.addCustomChart(new Metrics.SimplePie("statistics_enabled", () -> 
+        metrics.addCustomChart(new org.bstats.charts.SimplePie("statistics_enabled", () -> 
             configManager.trackStatistics() ? "Enabled" : "Disabled"));
         
-        metrics.addCustomChart(new Metrics.SimplePie("biome_drops_enabled", () -> 
+        metrics.addCustomChart(new org.bstats.charts.SimplePie("biome_drops_enabled", () -> 
             configManager.enableBiomeSpecificDrops() ? "Enabled" : "Disabled"));
         
-        metrics.addCustomChart(new Metrics.SingleLineChart("total_catches", () -> 
+        metrics.addCustomChart(new org.bstats.charts.SingleLineChart("total_catches", () -> 
             statisticsManager != null ? statisticsManager.getTotalCatches() : 0));
     }
 }

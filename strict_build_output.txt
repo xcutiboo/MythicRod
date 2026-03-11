@@ -1,0 +1,35 @@
+Type-safe project accessors is an incubating feature.
+> Task :clean
+> Task :mythicrod-common:clean
+> Task :mythicrod-spigot:clean
+> Task :compileJava NO-SOURCE
+> Task :processResources NO-SOURCE
+> Task :classes UP-TO-DATE
+> Task :jar
+> Task :assemble
+> Task :check
+> Task :build
+
+> Task :mythicrod-common:compileJava FAILED
+/home/xcutiboo/Desktop/MythicRod/mythicrod-common/src/main/java/io/xcutiboo/mythicrod/exceptions/MythicRodConfigurationException.java:3: warning: [serial] serializable class MythicRodConfigurationException has no definition of serialVersionUID
+public class MythicRodConfigurationException extends RuntimeException {
+       ^
+error: warnings found and -Werror specified
+/home/xcutiboo/Desktop/MythicRod/mythicrod-common/src/main/java/io/xcutiboo/mythicrod/exceptions/DropGenerationException.java:3: warning: [serial] serializable class DropGenerationException has no definition of serialVersionUID
+public class DropGenerationException extends RuntimeException {
+       ^
+1 error
+2 warnings
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mythicrod-common:compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 438ms
+5 actionable tasks: 5 executed

@@ -1,4 +1,5 @@
-package io.xcutiboo.mythicrod.spigot.gui.menus;
+package io.xcutiboo.mythicrod.gui.menus;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -12,10 +13,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import io.xcutiboo.mythicrod.MythicRod;
-import io.xcutiboo.mythicrod.spigot.gui.MythicRodMenuHolder;
+import io.xcutiboo.mythicrod.gui.MythicRodMenuHolder;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
+/**
+ * Base class for all Paper GUI menus using Adventure API for modern text handling
+ */
 public abstract class BaseMenu {
     protected final MythicRod plugin;
     protected final UUID playerUuid;
@@ -36,10 +40,14 @@ public abstract class BaseMenu {
     protected Player getPlayer() {
         return plugin.getServer().getPlayer(playerUuid);
     }
-
-    public io.xcutiboo.mythicrod.api.platform.PlatformPlayer getPlatformPlayer() {
-        Player p = getPlayer();
-        return p != null ? plugin.getPlatform().getPlayer(p.getUniqueId()) : null;
+    
+    protected boolean validatePermission() {
+        String permission = getRequiredPermission();
+        if (permission == null || permission.isEmpty()) {
+            return true;
+        }
+        Player player = getPlayer();
+        return player != null && getPlayer().hasPermission(permission);
     }
 
     public Inventory getInventory() {
@@ -52,12 +60,13 @@ public abstract class BaseMenu {
             return;
         }
         try {
-            Component titleComponent = LegacyComponentSerializer.legacyAmpersand().deserialize(getTitle());
-            inventory = Bukkit.createInventory(new MythicRodMenuHolder(this), getSize(), LegacyComponentSerializer.legacySection().serialize(titleComponent));
+            // Use Adventure API for title - parse legacy color codes to Component
+            Component titleComponent = MiniMessage.miniMessage().deserialize(getTitle());
+            inventory = Bukkit.createInventory(new MythicRodMenuHolder(this), getSize(), titleComponent);
             build();
             player.openInventory(inventory);
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "[MythicRod-BaseMenu] Error opening menu for " + player.getName() + ". Menu may not display correctly.", e);
+            plugin.getLogger().log(Level.WARNING, "[MythicRod-BaseMenu] Error opening menu for " + player.getName(), e);
         }
     }
 
@@ -150,5 +159,21 @@ public abstract class BaseMenu {
 
     public MythicRod getPlugin() {
         return plugin;
+    }
+    
+    public String getRequiredPermission() {
+        return null;
+    }
+    
+    /**
+     * Send a message to the player viewing this menu.
+     * Supports legacy color codes with & prefix.
+     */
+    protected void sendMessage(String message) {
+        Player player = getPlayer();
+        if (player != null && player.isOnline()) {
+            player.sendMessage(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+                .legacyAmpersand().deserialize(message));
+        }
     }
 }

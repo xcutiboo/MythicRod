@@ -100,7 +100,7 @@ public class BrigadierCommandManager {
             }
             return executeHelp(context);
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), plugin.getLanguageManager().trForSender(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), io.xcutiboo.mythicrod.paper.util.PaperLanguageHelper.tr(plugin.getLanguageManager(), context.getSource().getSender(), "general.error"));
             plugin.getLogger().log(Level.SEVERE, "Error executing default command", e);
             return 0;
         }
@@ -112,10 +112,10 @@ public class BrigadierCommandManager {
                 plugin.getGUIManager().openMainHub(player);
                 return Command.SINGLE_SUCCESS;
             }
-            sendMessage(context.getSource().getSender(), plugin.getLanguageManager().trForSender(context.getSource().getSender(), "general.player_only"));
+            sendMessage(context.getSource().getSender(), io.xcutiboo.mythicrod.paper.util.PaperLanguageHelper.tr(plugin.getLanguageManager(), context.getSource().getSender(), "general.player_only"));
             return 0;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), plugin.getLanguageManager().trForSender(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), io.xcutiboo.mythicrod.paper.util.PaperLanguageHelper.tr(plugin.getLanguageManager(), context.getSource().getSender(), "general.error"));
             plugin.getLogger().log(Level.SEVERE, "Error executing gui command", e);
             return 0;
         }
@@ -124,10 +124,10 @@ public class BrigadierCommandManager {
     private int executeReload(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
         try {
             plugin.reload();
-            sendMessage(context.getSource().getSender(), plugin.getLanguageManager().trForSender(context.getSource().getSender(), "command.reload.success"));
+            sendMessage(context.getSource().getSender(), io.xcutiboo.mythicrod.paper.util.PaperLanguageHelper.tr(plugin.getLanguageManager(), context.getSource().getSender(), "command.reload.success"));
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), plugin.getLanguageManager().trForSender(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), io.xcutiboo.mythicrod.paper.util.PaperLanguageHelper.tr(plugin.getLanguageManager(), context.getSource().getSender(), "general.error"));
             plugin.getLogger().log(Level.SEVERE, "Error executing reload command", e);
             return 0;
         }
@@ -136,13 +136,13 @@ public class BrigadierCommandManager {
     private int executeStatsOwnPlayer(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
         try {
             if (!(context.getSource().getSender() instanceof Player player)) {
-                sendMessage(context.getSource().getSender(), plugin.getLanguageManager().trForSender(context.getSource().getSender(), "stats.console_usage"));
+                sendMessage(context.getSource().getSender(), io.xcutiboo.mythicrod.paper.util.PaperLanguageHelper.tr(plugin.getLanguageManager(), context.getSource().getSender(), "stats.console_usage"));
                 return 0;
             }
             handleStats(context.getSource().getSender(), new String[0]);
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), plugin.getLanguageManager().trForSender(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), io.xcutiboo.mythicrod.paper.util.PaperLanguageHelper.tr(plugin.getLanguageManager(), context.getSource().getSender(), "general.error"));
             plugin.getLogger().log(Level.SEVERE, "Error executing stats command", e);
             return 0;
         }
@@ -154,7 +154,7 @@ public class BrigadierCommandManager {
             handleStats(context.getSource().getSender(), new String[]{"stats", playerName});
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), plugin.getLanguageManager().trForSender(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), io.xcutiboo.mythicrod.paper.util.PaperLanguageHelper.tr(plugin.getLanguageManager(), context.getSource().getSender(), "general.error"));
             plugin.getLogger().log(Level.SEVERE, "Error executing stats command", e);
             return 0;
         }
@@ -181,7 +181,7 @@ public class BrigadierCommandManager {
             }
             target = (Player) sender;
         }
-        StatisticsManager.PlayerStats stats = plugin.getStatisticsManager().getPlayerStats(target);
+        StatisticsManager.PlayerStats stats = plugin.getStatisticsManager().getPlayerStats(target.getUniqueId());
         sendMessage(sender, plugin.getLanguageManager().tr("stats.header",
             Map.of("player", target.getName() != null ? target.getName() : "Unknown")));
         sendMessage(sender, plugin.getLanguageManager().tr("stats.total-catches",
@@ -291,7 +291,7 @@ public class BrigadierCommandManager {
         sendMessage(sender, plugin.getLanguageManager().tr("drops.category-header",
             Map.of("category", category)));
         for (CustomDrop drop : drops) {
-            String name = drop.getCustomName() != null ? drop.getCustomName() : drop.getMaterial().name();
+            String name = drop.getCustomName() != null ? drop.getCustomName() : drop.getIdentifier();
             sendMessage(sender, plugin.getLanguageManager().tr("drops.drop-entry",
                 Map.of("name", name, "chance", String.valueOf(drop.getChance()), "amount", String.valueOf(drop.getAmount()))));
         }
