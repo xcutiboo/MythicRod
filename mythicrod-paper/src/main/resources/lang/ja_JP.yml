@@ -72,6 +72,14 @@ command:
     bubble-set: '<green>✓ <gray>バブルパーティクルを <white>%type%</white><gray> に設定しました。'
     success-set: '<green>✓ <gray>成功パーティクルを <white>%type%</white><gray> に設定しました。'
     xp-set: '<green>✓ <gray>XP パーティクルを <white>%type%</white><gray> に設定しました。'
+  status:
+    header: '<gold><bold>=== MythicRod ステータス ===</bold></gold>'
+    version: '<gray>プラグイン: <white>%version%'
+    runtime: '<gray>ランタイム: <white>%mode%</white>（Minecraft <white>%minecraft%</white>）'
+    drops: '<gray>ドロップ: <white>%drops%</white>（<white>%categories%</white> カテゴリ）'
+    language: '<gray>言語: <white>%active%</white>（読み込み済み <white>%loaded%</white>: <white>%list%</white>）'
+    nexo: '<gray>Nexo 連携: %status%'
+    stats: '<gray>追跡中のプレイヤー: <white>%players%'
   debug:
     header: '<gold><bold>=== MythicRod デバッグ情報 ===</bold></gold>'
     runtime: '<gray>実行情報: <white>%drops%<gray> ドロップ / <white>%categories%<gray> カテゴリ, <white>%players%<gray> 記録プレイヤー, リロード後 <white>%catches%<gray> 釣果'

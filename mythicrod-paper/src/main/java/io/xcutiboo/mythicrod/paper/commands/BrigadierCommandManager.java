@@ -194,6 +194,9 @@ public class BrigadierCommandManager {
             .then(Commands.literal("debug")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
                 .executes(this::executeDebug))
+            .then(Commands.literal("status")
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
+                .executes(this::executeStatus))
             .then(Commands.literal("validate")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
                 .executes(this::executeValidate))
@@ -1828,6 +1831,60 @@ public class BrigadierCommandManager {
             }
         }
         return builder.buildFuture();
+    }
+
+    private int executeStatus(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        try {
+            sendMessage(sender, tr(sender, "command.status.header"));
+
+            String version = plugin.getPluginMeta() != null
+                ? plugin.getPluginMeta().getVersion()
+                : "unknown";
+            String paperVersion = Bukkit.getServer().getMinecraftVersion();
+            String mode = plugin.isFoliaRuntime() ? "Folia" : "Paper";
+            int categoryCount = plugin.getDropManager() != null
+                ? plugin.getDropManager().getDropCategories().size()
+                : 0;
+            int dropCount = plugin.getDropManager() != null
+                ? plugin.getDropManager().getTotalDropCount()
+                : 0;
+            List<String> locales = plugin.getLanguageManager() != null
+                ? plugin.getLanguageManager().getAvailableLanguages()
+                : List.of();
+            String activeLocale = plugin.getConfigManager() != null
+                ? plugin.getConfigManager().getLanguage()
+                : "en_US";
+            boolean nexoOn = plugin.getPlatformServer() != null
+                && plugin.getPlatformServer().isNexoEnabled();
+            int trackedPlayers = plugin.getStatisticsManager() != null
+                ? plugin.getStatisticsManager().getAllStats().size()
+                : 0;
+
+            sendMessage(sender, tr(sender, "command.status.version",
+                Map.of("version", version)));
+            sendMessage(sender, tr(sender, "command.status.runtime",
+                Map.of("mode", mode, "minecraft", paperVersion)));
+            sendMessage(sender, tr(sender, "command.status.drops",
+                Map.of(
+                    "categories", String.valueOf(categoryCount),
+                    "drops", String.valueOf(dropCount))));
+            sendMessage(sender, tr(sender, "command.status.language",
+                Map.of(
+                    "active", activeLocale,
+                    "loaded", String.valueOf(locales.size()),
+                    "list", String.join(", ", locales))));
+            sendMessage(sender, tr(sender, "command.status.nexo",
+                Map.of("status", tr(sender, nexoOn ? "general.enabled" : "general.disabled"))));
+            sendMessage(sender, tr(sender, "command.status.stats",
+                Map.of("players", String.valueOf(trackedPlayers))));
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing status command", e);
+            return 0;
+        }
     }
 
     private int executeDebug(CommandContext<CommandSourceStack> context) {

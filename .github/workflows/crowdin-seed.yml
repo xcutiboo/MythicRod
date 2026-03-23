@@ -1,0 +1,38 @@
+name: Crowdin seed translations
+
+# One-shot manual workflow. Uploads bundled non-source locale files
+# (en_GB, ja_JP, any other locale already in
+# mythicrod-paper/src/main/resources/lang) into Crowdin so they appear in
+# the project. The scheduled crowdin.yml workflow only uploads en_US.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crowdin-seed
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    if: ${{ vars.CROWDIN_PROJECT_ID != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Upload sources and bundled translations
+        uses: crowdin/github-action@8868a33591d21088edfc398968173a3b98d51706 # v2
+        with:
+          upload_sources: true
+          upload_translations: true
+          auto_approve_imported: false
+          import_eq_suggestions: false
+          download_translations: false
+          create_pull_request: false
+          config: crowdin.yml
+        env:
+          CROWDIN_PROJECT_ID: ${{ vars.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
