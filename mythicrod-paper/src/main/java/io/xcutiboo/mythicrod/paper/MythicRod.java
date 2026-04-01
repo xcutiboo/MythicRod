@@ -279,15 +279,26 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
             scheduleStatisticsSaveTask();
 
             logger.info("MythicRod reload completed successfully");
+            fireReloadEvent(true);
             return true;
         } catch (Exception e) {
             logger.error("Error during reload", e);
+            fireReloadEvent(false);
             return false;
         } finally {
             if (restartStatisticsAutosave && statisticsSaveTask == null) {
                 scheduleStatisticsSaveTask();
             }
             reloadInProgress.set(false);
+        }
+    }
+
+    private void fireReloadEvent(boolean success) {
+        try {
+            getServer().getPluginManager().callEvent(
+                new io.xcutiboo.mythicrod.paper.events.MythicRodReloadEvent(success));
+        } catch (RuntimeException e) {
+            logger.warn("MythicRodReloadEvent listener failed", e);
         }
     }
 
