@@ -506,37 +506,37 @@ public class BrigadierCommandManager {
     }
 
     private void sendHelpMessage(CommandSender sender) {
-        sendMessage(sender, tr("commands.help-header"));
+        sendMessage(sender, tr("command.help.header"));
         if (sender instanceof Player player) {
             if (player.hasPermission("mythicrod.gui")) {
-                sendMessage(sender, tr("commands.help-gui"));
+                sendMessage(sender, tr("command.help.gui"));
             }
             if (player.hasPermission("mythicrod.stats.view")) {
-                sendMessage(sender, tr("commands.help-stats"));
+                sendMessage(sender, tr("command.help.stats"));
             }
             if (player.hasPermission("mythicrod.stats.leaderboard")) {
-                sendMessage(sender, tr("commands.help-top"));
+                sendMessage(sender, tr("command.help.top"));
             }
             if (player.hasPermission("mythicrod.drops.view")) {
-                sendMessage(sender, tr("commands.help-drops"));
+                sendMessage(sender, tr("command.help.drops"));
             }
             if (player.hasPermission("mythicrod.admin.reload")) {
-                sendMessage(sender, tr("commands.help-reload"));
+                sendMessage(sender, tr("command.help.reload"));
             }
             if (player.hasPermission("mythicrod.admin.give")) {
-                sendMessage(sender, tr("commands.help-give"));
+                sendMessage(sender, tr("command.help.give"));
             }
             if (player.hasPermission("mythicrod.admin.debug")) {
-                sendMessage(sender, tr("commands.help-debug"));
+                sendMessage(sender, tr("command.help.debug"));
             }
         } else {
-            sendMessage(sender, tr("commands.help-reload"));
-            sendMessage(sender, tr("commands.help-stats"));
-            sendMessage(sender, tr("commands.help-top"));
-            sendMessage(sender, tr("commands.help-drops"));
-            sendMessage(sender, tr("commands.help-debug"));
+            sendMessage(sender, tr("command.help.reload"));
+            sendMessage(sender, tr("command.help.stats"));
+            sendMessage(sender, tr("command.help.top"));
+            sendMessage(sender, tr("command.help.drops"));
+            sendMessage(sender, tr("command.help.debug"));
         }
-        sendMessage(sender, tr("commands.help-help"));
+        sendMessage(sender, tr("command.help.footer"));
     }
 
     private void sendMessage(CommandSender sender, Component message) {
