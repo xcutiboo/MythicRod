@@ -63,9 +63,9 @@ public class ConfigMenu extends BaseMenu {
                         tr("gui.config.particles_settings.lore2"),
                         "",
                         tr("gui.config.particles_settings.lore3"),
-                        tr("gui.config.particles_settings.current_catch", Map.of("%particle%", catchParticle)),
-                        tr("gui.config.particles_settings.current_bubble", Map.of("%particle%", bubbleParticle)),
-                        tr("gui.config.particles_settings.current_success", Map.of("%particle%", successParticle)),
+                        tr("gui.config.particles_settings.current_catch", Map.of("particle", catchParticle)),
+                        tr("gui.config.particles_settings.current_bubble", Map.of("particle", bubbleParticle)),
+                        tr("gui.config.particles_settings.current_success", Map.of("particle", successParticle)),
                         "",
                         tr("gui.config.particles_settings.click_change")
                 )
@@ -104,16 +104,16 @@ public class ConfigMenu extends BaseMenu {
         // Drop to Inventory Toggle
         boolean dropToInv = config.dropToInventory();
         ItemStack dropToInvItem = new ItemBuilder(dropToInv ? Material.CHEST : Material.FISHING_ROD)
-                .name(tr("gui.config.drop_to_inv.name", Map.of("%status%", dropToInv ? "<green>✓" : "<red>✗")))
+                .name(tr("gui.config.drop_to_inv.name", Map.of("status", dropToInv ? "<green>✓" : "<red>✗")))
                 .lore(
                         tr("gui.config.drop_to_inv.lore1"),
                         tr("gui.config.drop_to_inv.lore2"),
                         "",
-                        tr("gui.config.drop_to_inv.status", Map.of("%color%", getStatusColor(dropToInv), "%status%", dropToInv ? tr("gui.config.enabled") : tr("gui.config.disabled"))),
+                        tr("gui.config.drop_to_inv.status", Map.of("color", getStatusColor(dropToInv), "status", dropToInv ? tr("gui.config.enabled") : tr("gui.config.disabled"))),
                         "",
                         dropToInv ? tr("gui.config.drop_to_inv.enabled_desc") : tr("gui.config.drop_to_inv.disabled_desc"),
                         "",
-                        tr("gui.config.drop_to_inv.click", Map.of("%action%", dropToInv ? tr("gui.config.disable") : tr("gui.config.enable"))),
+                        tr("gui.config.drop_to_inv.click", Map.of("action", dropToInv ? tr("gui.config.disable") : tr("gui.config.enable"))),
                         ""
                 )
                 .glow(dropToInv)
@@ -126,18 +126,18 @@ public class ConfigMenu extends BaseMenu {
         });
         boolean usePerms = config.usePermissions();
         ItemStack permsItem = new ItemBuilder(usePerms ? Material.DIAMOND : Material.COAL)
-                .name(tr("gui.config.perms.name", Map.of("%status%", usePerms ? "<green>✓" : "<red>✗")))
+                .name(tr("gui.config.perms.name", Map.of("status", usePerms ? "<green>✓" : "<red>✗")))
                 .lore(
                         tr("gui.config.perms.lore1"),
                         tr("gui.config.perms.lore2"),
                         "",
-                        tr("gui.config.perms.status", Map.of("%color%", getStatusColor(usePerms), "%status%", usePerms ? tr("gui.config.enabled") : tr("gui.config.disabled"))),
+                        tr("gui.config.perms.status", Map.of("color", getStatusColor(usePerms), "status", usePerms ? tr("gui.config.enabled") : tr("gui.config.disabled"))),
                         "",
                         usePerms ? tr("gui.config.perms.active") : tr("gui.config.perms.inactive"),
                         "",
                         tr("gui.config.perms.warning"),
                         "",
-                        tr("gui.config.perms.click", Map.of("%action%", usePerms ? tr("gui.config.disable") : tr("gui.config.enable")))
+                        tr("gui.config.perms.click", Map.of("action", usePerms ? tr("gui.config.disable") : tr("gui.config.enable")))
                 )
                 .glow(usePerms)
                 .build();
@@ -154,7 +154,7 @@ public class ConfigMenu extends BaseMenu {
                         tr("gui.config.save_interval.lore1"),
                         tr("gui.config.save_interval.lore2"),
                         "",
-                        tr("gui.config.save_interval.current", Map.of("%time%", formatTime(statsSaveInterval), "%seconds%", String.valueOf(statsSaveInterval))),
+                        tr("gui.config.save_interval.current", Map.of("%time%", formatTime(statsSaveInterval), "seconds", String.valueOf(statsSaveInterval))),
                         "",
                         statsSaveInterval <= 300 ? tr("gui.config.save_interval.frequent") : statsSaveInterval <= 600 ? tr("gui.config.save_interval.balanced") : tr("gui.config.save_interval.infrequent"),
                         "",
@@ -190,7 +190,7 @@ public class ConfigMenu extends BaseMenu {
                         tr("gui.config.cleanup.lore1"),
                         tr("gui.config.cleanup.lore2"),
                         "",
-                        tr("gui.config.cleanup.current", Map.of("%time%", formatTime(hookCleanup), "%seconds%", String.valueOf(hookCleanup))),
+                        tr("gui.config.cleanup.current", Map.of("%time%", formatTime(hookCleanup), "seconds", String.valueOf(hookCleanup))),
                         "",
                         hookCleanup <= 300 ? tr("gui.config.cleanup.frequent") : hookCleanup <= 600 ? tr("gui.config.cleanup.balanced") : tr("gui.config.cleanup.infrequent"),
                         "",
@@ -221,18 +221,18 @@ public class ConfigMenu extends BaseMenu {
         });
         boolean debugMode = config.isDebugMode();
         ItemStack debugItem = new ItemBuilder(debugMode ? Material.REDSTONE_TORCH : Material.TORCH)
-                .name(tr("gui.config.debug.name", Map.of("%status%", debugMode ? "<green>✓" : "<red>✗")))
+                .name(tr("gui.config.debug.name", Map.of("status", debugMode ? "<green>✓" : "<red>✗")))
                 .lore(
                         tr("gui.config.debug.lore1"),
                         tr("gui.config.debug.lore2"),
                         "",
-                        tr("gui.config.debug.status", Map.of("%color%", getStatusColor(debugMode), "%status%", debugMode ? tr("gui.config.enabled") : tr("gui.config.disabled"))),
+                        tr("gui.config.debug.status", Map.of("color", getStatusColor(debugMode), "status", debugMode ? tr("gui.config.enabled") : tr("gui.config.disabled"))),
                         "",
                         debugMode ? tr("gui.config.debug.active") : tr("gui.config.debug.inactive"),
                         "",
                         tr("gui.config.debug.warning"),
                         "",
-                        tr("gui.config.debug.click", Map.of("%action%", debugMode ? tr("gui.config.disable") : tr("gui.config.enable")))
+                        tr("gui.config.debug.click", Map.of("action", debugMode ? tr("gui.config.disable") : tr("gui.config.enable")))
                 )
                 .glow(debugMode)
                 .build();
@@ -250,7 +250,7 @@ public class ConfigMenu extends BaseMenu {
                         tr("gui.config.language.lore1"),
                         tr("gui.config.language.lore2"),
                         "",
-                        tr("gui.config.language.current", Map.of("%lang%", formatLanguageName(plugin.getLanguageManager().getLanguage()))),
+                        tr("gui.config.language.current", Map.of("lang", formatLanguageName(plugin.getLanguageManager().getLanguage()))),
                         "",
                         tr("gui.config.language.available"),
                         "<dark_gray>• English (UK) <gray>- English language</gray></dark_gray>",

@@ -33,6 +33,7 @@ import io.xcutiboo.mythicrod.gui.menus.ConfigMenu;
 import io.xcutiboo.mythicrod.gui.menus.DropsMenu;
 import io.xcutiboo.mythicrod.gui.menus.LanguageSwitchMenu;
 import io.xcutiboo.mythicrod.gui.menus.MainHubMenu;
+import io.xcutiboo.mythicrod.gui.menus.EditDropMenu;
 import io.xcutiboo.mythicrod.gui.menus.RodMenu;
 import io.xcutiboo.mythicrod.gui.menus.StatsMenu;
 import io.xcutiboo.mythicrod.metrics.StatisticsManager;
@@ -55,21 +56,21 @@ import org.bstats.charts.SingleLineChart;
 public final class MythicRod extends JavaPlugin implements MythicRodPlugin, MythicRodAPI {
     private final Logger logger = getSLF4JLogger();
     private PrettyLogger prettyLogger;
-    
+
     private PlatformServer platformServer;
     private PlatformScheduler platformScheduler;
-    
+
     private ConfigManager configManager;
     private LanguageManager languageManager;
     private DropManager dropManager;
     private DropRegistry dropRegistry;
     private StatisticsManager statisticsManager;
-    
+
     private BrigadierCommandManager commandManager;
     private FishingListener fishingListener;
     private GUIManager guiManager;
     private PlayerDataService playerDataService;
-    
+
     private MythicRodCache cache;
     private MythicRodAPI api;
     private Metrics metrics;
@@ -86,41 +87,41 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
         try {
             this.platformServer = new PaperServer(super.getServer(), this);
             this.platformScheduler = new FoliaSchedulerService(this);
-            
+
             File configFile = new File(getDataFolder(), "config.yml");
             if (!configFile.exists()) {
                 saveDefaultConfig();
             }
             PlatformConfiguration platformConfig = platformServer.loadConfiguration(configFile);
-            
+
             this.configManager = new ConfigManager(this, platformConfig);
             this.configManager.setConfigFile(configFile);
-            
+
             this.languageManager = new LanguageManager(this, configManager);
             loadLanguageFiles();
-            
+
             this.dropManager = new DropManager(getLogger());
             dropManager.loadDrops(platformConfig);
             this.dropRegistry = buildDropRegistry();
-            
+
             this.statisticsManager = new StatisticsManager(this);
-            
+
             // Initialize stats config
             File statsFile = new File(getDataFolder(), "statistics.yml");
             PlatformConfiguration statsConfig = platformServer.loadConfiguration(statsFile);
             configManager.setStatsConfig(statsFile, statsConfig);
             statisticsManager.initialize();
-            
+
             this.commandManager = new BrigadierCommandManager(this);
             commandManager.initialize();
-            
+
             this.fishingListener = new FishingListener(this);
-            
+
             this.guiManager = new GUIManager(this, platformScheduler);
             guiManager.initialize();
             this.playerDataService = new PlayerDataService(this);
             this.cache = new MythicRodCache();
-            
+
             this.api = new PaperMythicRodAPI(
                 getPluginMeta().getVersion(),
                 dropManager,
@@ -132,16 +133,17 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
             super.getServer().getServicesManager().register(
                 MythicRodAPI.class, this, this, ServicePriority.Normal);
             this.metrics = new Metrics(this, 23847);
-            
+
             super.getServer().getPluginManager().registerEvents(fishingListener, this);
-            
-            guiManager.registerMenu("main", MainHubMenu::new);
-            guiManager.registerMenu("config", ConfigMenu::new);
-            guiManager.registerMenu("drops", DropsMenu::new);
-            guiManager.registerMenu("stats", StatsMenu::new);
+
+            guiManager.registerMenu("main",     MainHubMenu::new);
+            guiManager.registerMenu("config",   ConfigMenu::new);
+            guiManager.registerMenu("drops",    DropsMenu::new);
+            guiManager.registerMenu("editdrop", EditDropMenu::new);
+            guiManager.registerMenu("stats",    StatsMenu::new);
             guiManager.registerMenu("language", LanguageSwitchMenu::new);
-            guiManager.registerMenu("rod", RodMenu::new);
-            
+            guiManager.registerMenu("rod",      RodMenu::new);
+
             setupMetricsCharts();
 
             long ms = (System.nanoTime() - start) / 1_000_000;
@@ -177,7 +179,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
         File configFile = new File(getDataFolder(), "config.yml");
         PlatformConfiguration newConfig = platformServer.loadConfiguration(configFile);
         configManager.reload(newConfig);
-        
+
         if (languageManager != null) {
             languageManager.setLanguage(configManager.getLanguage());
         }
@@ -198,7 +200,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
         if (bukkitPlayer == null || !bukkitPlayer.isOnline()) {
             return;
         }
-        
+
         try {
             Component prefixComponent = MiniMessage.miniMessage().deserialize(configManager.getPrefix());
             Component messageComponent = MiniMessage.miniMessage().deserialize(message);
@@ -209,7 +211,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
             bukkitPlayer.sendMessage(message);
         }
     }
-    
+
     @Override
     public PlatformServer getPlatform() {
         return platformServer;
@@ -226,7 +228,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
     public GUIManager getGUIManager() { return guiManager; }
     public PlayerDataService getPlayerDataService() { return playerDataService; }
     public MythicRodAPI getAPI() { return api; }
-    
+
     // =========================================================================
     // MythicRodAPI delegation — all abstract methods delegated to PaperMythicRodAPI
     // =========================================================================
@@ -281,22 +283,22 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
     public MythicRodCache getCache() { return cache; }
     public int getActiveFishingCount() { return fishingListener != null ? fishingListener.getActiveFishingCount() : 0; }
     public boolean isFoliaSupported() { return platformScheduler instanceof FoliaSchedulerService; }
-    
+
     @Override
     public void saveDefaultConfig() {
         super.saveDefaultConfig();
     }
-    
+
     @Override
     public PlatformConfiguration loadConfig(File file) {
         return platformServer.loadConfiguration(file);
     }
-    
+
     @Override
     public PlatformConfiguration createEmptyConfig() {
         return platformServer.createEmptyConfiguration();
     }
-    
+
     public PlatformServer getPlatformServer() {
         return platformServer;
     }
@@ -304,16 +306,16 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
     public PlatformScheduler getPlatformScheduler() {
         return platformServer.getScheduler();
     }
-    
+
     private void setupMetricsCharts() {
         metrics.addCustomChart(new SimplePie("server_type", () -> "Paper"));
-        metrics.addCustomChart(new SimplePie("language", () -> 
+        metrics.addCustomChart(new SimplePie("language", () ->
             languageManager != null ? languageManager.getLanguage() : "en"));
-        metrics.addCustomChart(new SimplePie("statistics_enabled", () -> 
+        metrics.addCustomChart(new SimplePie("statistics_enabled", () ->
             configManager.trackStatistics() ? "Enabled" : "Disabled"));
-        metrics.addCustomChart(new SimplePie("biome_drops_enabled", () -> 
+        metrics.addCustomChart(new SimplePie("biome_drops_enabled", () ->
             configManager.enableBiomeSpecificDrops() ? "Enabled" : "Disabled"));
-        metrics.addCustomChart(new SingleLineChart("total_catches", () -> 
+        metrics.addCustomChart(new SingleLineChart("total_catches", () ->
             statisticsManager != null ? (int) Math.min(statisticsManager.getTotalCatches(), Integer.MAX_VALUE) : 0));
     }
 

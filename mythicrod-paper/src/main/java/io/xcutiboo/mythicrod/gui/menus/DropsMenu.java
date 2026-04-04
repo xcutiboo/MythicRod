@@ -28,7 +28,7 @@ public class DropsMenu extends BaseMenu {
     @Override
     protected String getTitle() {
         if (viewingCategory && selectedCategory != null) {
-            return tr("gui.drops.category_title", Map.of("%category%", selectedCategory));
+            return tr("gui.drops.category_title", Map.of("category", selectedCategory));
         }
         return tr("gui.drops.title");
     }
@@ -70,13 +70,13 @@ public class DropsMenu extends BaseMenu {
                     .mapToInt(CustomDrop::getChance)
                     .sum();
             ItemStack categoryItem = new ItemBuilder(icon)
-                    .name(tr("gui.drops.category_name", Map.of("%category%", formatCategoryName(category))))
+                    .name(tr("gui.drops.category_name", Map.of("category", formatCategoryName(category))))
                     .lore(
                             tr("gui.drops.category_lore1"),
                             tr("gui.drops.category_lore2"),
                             "",
-                            tr("gui.drops.category_count", Map.of("%count%", String.valueOf(drops.size()))),
-                            tr("gui.drops.category_weight", Map.of("%weight%", String.valueOf(totalWeight))),
+                            tr("gui.drops.category_count", Map.of("count", String.valueOf(drops.size()))),
+                            tr("gui.drops.category_weight", Map.of("weight", String.valueOf(totalWeight))),
                             "",
                             tr("gui.drops.category_click")
                     )
@@ -93,8 +93,8 @@ public class DropsMenu extends BaseMenu {
         ItemStack infoItem = new ItemBuilder(Material.KNOWLEDGE_BOOK)
                 .name(tr("gui.drops.info_name"))
                 .lore(
-                        tr("gui.drops.info_lore1", Map.of("%count%", String.valueOf(categories.size()))),
-                        tr("gui.drops.info_lore2", Map.of("%total%", String.valueOf(plugin.getDropManager().getTotalDropCount()))),
+                        tr("gui.drops.info_lore1", Map.of("count", String.valueOf(categories.size()))),
+                        tr("gui.drops.info_lore2", Map.of("total", String.valueOf(plugin.getDropManager().getTotalDropCount()))),
                         "",
                         tr("gui.drops.info_lore3"),
                         tr("gui.drops.info_lore4"),
@@ -140,9 +140,9 @@ public class DropsMenu extends BaseMenu {
                 break;
             }
             List<String> lore = new ArrayList<>();
-            lore.add(tr("gui.drops.material_label", Map.of("%material%", formatMaterialName(drop.getIdentifier()))));
-            lore.add(tr("gui.drops.amount_label", Map.of("%amount%", String.valueOf(drop.getAmount()))));
-            lore.add(tr("gui.drops.weight_label", Map.of("%weight%", String.valueOf(drop.getChance()))));
+            lore.add(tr("gui.drops.material_label", Map.of("material", formatMaterialName(drop.getIdentifier()))));
+            lore.add(tr("gui.drops.amount_label", Map.of("amount", String.valueOf(drop.getAmount()))));
+            lore.add(tr("gui.drops.weight_label", Map.of("weight", String.valueOf(drop.getChance()))));
             lore.add("");
             // Add custom name if present
             if (drop.getCustomName() != null) {
@@ -172,15 +172,23 @@ public class DropsMenu extends BaseMenu {
             }
             Material material = Material.matchMaterial(drop.getIdentifier());
             if (material == null) material = Material.PAPER;
-            String displayName = drop.getCustomName() != null 
-                ? drop.getCustomName() 
+            String displayName = drop.getCustomName() != null
+                ? drop.getCustomName()
                 : formatMaterialName(drop.getIdentifier());
             ItemStack dropItem = new ItemBuilder(material)
-                    .name(tr("gui.drops.drop_name", Map.of("%name%", displayName)))
+                    .name(tr("gui.drops.drop_name", Map.of("name", displayName)))
                     .lore(lore)
                     .glow(drop.isGlowing())
                     .build();
-            setItem(slot, dropItem);
+            final CustomDrop dropFinal = drop;
+            setItem(slot, dropItem, event -> {
+                Player p = getPlayer();
+                if (p != null && p.hasPermission("mythicrod.admin.config")) {
+                    playClickSound();
+                    plugin.getGUIManager().openMenu(p, "editdrop",
+                        Map.of("drop", dropFinal, "category", selectedCategory));
+                }
+            });
             displaySlot++;
         }
         // Category info

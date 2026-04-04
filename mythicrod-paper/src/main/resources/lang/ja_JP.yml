@@ -1,97 +1,609 @@
-# MythicRod 日本語 (JP) 言語ファイル
-# MiniMessage形式を使用: <red>テキスト</red>, <#ff0000>16進数カラー</#ff0000>
+# ╔══════════════════════════════════════════════════════════╗
+# ║         MythicRod — 日本語 (ja_JP) 言語ファイル            ║
+# ║         MiniMessage形式を使用                              ║
+# ║         en_US.yml と同じキー構造                           ║
+# ╚══════════════════════════════════════════════════════════╝
 
-plugin:
-  prefix: "<dark_gray>[</dark_gray><gold>MythicRod</gold><dark_gray>]</dark_gray> "
-  enabled: "<green>MythicRodが有効化されました！</green>"
-  disabled: "<red>MythicRodが無効化されました。</red>"
-  reloaded: "<green>設定が正常に再読み込みされました！</green>"
+# ═══════════════════════════════════════════════════════════
+# 一般
+# ═══════════════════════════════════════════════════════════
+general:
+  no_permission: '<red>✗ <dark_red>このコマンドを実行する権限がありません。'
+  error: '<red>✗ <dark_red>エラーが発生しました。サーバーログを確認してください。'
+  player_only: '<red>✗ <dark_red>このコマンドはプレイヤーのみ使用できます！'
+  prefix: '<dark_gray>[<gold><bold>MythicRod</bold><dark_gray>] <reset>'
+  enabled: '<green>✓ 有効'
+  disabled: '<red>✗ 無効'
 
-commands:
-  no_permission: "<red>このコマンドを使用する権限がありません。</red>"
-  player_only: "<red>このコマンドはプレイヤーのみ使用できます。</red>"
-  invalid_usage: "<red>無効な使用方法。使用法: <yellow>%usage%</yellow></red>"
-  
-  debug:
-    header: "<gold>=== MythicRod デバッグ情報 ===</gold>"
-    cache_stats: "<gray>キャッシュ: <yellow>%hits%</yellow> ヒット, <yellow>%misses%</yellow> ミス (%.2f%% ヒット率)</gray>"
-    active_fishing: "<gray>アクティブな釣りセッション: <yellow>%count%</yellow></gray>"
-    scheduler_tasks: "<gray>スケジュールされたタスク: <yellow>%count%</yellow></gray>"
-    rod_tier_usage: "<gray>竿の使用 - 基本: <yellow>%basic%</yellow>, 上級: <yellow>%advanced%</yellow>, 伝説: <yellow>%legendary%</yellow></gray>"
-  
-  stats:
-    self_header: "<gold>=== あなたの釣り統計 ===</gold>"
-    other_header: "<gold>=== %player%の釣り統計 ===</gold>"
-    total_caught: "<gray>合計捕獲: <yellow>%count%</yellow></gray>"
-    rare_caught: "<gray>レア捕獲: <yellow>%count%</yellow></gray>"
-    legendary_caught: "<gold>伝説の捕獲: <yellow>%count%</yellow></gold>"
-    preferred_rod: "<gray>お気に入りの竿: <yellow>%rod%</yellow></gray>"
-    no_stats: "<red>このプレイヤーの釣り統計が見つかりません。</red>"
-  
-  gui:
-    opened: "<green>釣り管理GUIを開きました。</green>"
+# ═══════════════════════════════════════════════════════════
+# コマンド
+# ═══════════════════════════════════════════════════════════
+command:
+  help:
+    header: '<gold><st>             </st> <bold>MythicRodコマンド</bold> <st>             </st>'
+    gui: '<yellow>  /mythicrod gui <dark_gray>→ <gray>メインGUIを開く'
+    reload: '<yellow>  /mythicrod reload <dark_gray>→ <gray>設定を再読み込み'
+    stats: '<yellow>  /mythicrod stats <dark_gray>[<white>プレイヤー<dark_gray>] → <gray>釣り統計を表示'
+    top: '<yellow>  /mythicrod top <dark_gray>[<white>上限<dark_gray>] → <gray>ランキングを表示'
+    drops: '<yellow>  /mythicrod drops <dark_gray>[<white>カテゴリ<dark_gray>] → <gray>ドロップを閲覧'
+    give: '<yellow>  /mythicrod give <dark_gray><white>プレイヤー ティア<dark_gray> → <gray>MythicRodを付与'
+    debug: '<yellow>  /mythicrod debug <dark_gray>→ <gray>デバッグ情報を表示'
+    help: '<yellow>  /mythicrod help <dark_gray>→ <gray>このヘルプを表示'
+    footer: '<dark_gray><st>                                            </st>'
+  reload:
+    start: '<yellow>⟳ <gray>設定を再読み込み中...'
+    success: '<green>✓ <gray>設定の再読み込みが完了しました！'
+    failed: '<red>✗ <dark_red>再読み込みに失敗しました: <yellow>%error%'
+  player_not_found: '<red>✗ <dark_red><yellow>%player%<dark_red> というプレイヤーが見つかりません。'
 
+# ═══════════════════════════════════════════════════════════
+# 統計（コマンド用）
+# ═══════════════════════════════════════════════════════════
+stats:
+  permission_denied: '<red>✗ <dark_red>統計を閲覧する権限がありません。'
+  header: '<gold><st>══</st><bold> 釣り統計: <yellow>%player% </bold><gold><st>══</st>'
+  total_catches: '<gray>  合計捕獲: <white>%total%'
+  total-catches: '<gray>  合計捕獲: <white>%total%'
+  items_caught: '<gray>  取得アイテム: <white>%items%'
+  unique_types: '<gray>  固有タイプ: <white>%unique%'
+  rare_catches: '<gray>  レア捕獲: <yellow>%rare%'
+  rare-catches: '<gray>  レア捕獲: <yellow>%rare%'
+  console_usage: '<red>✗ <dark_red>コンソールから使用する場合はプレイヤー名を指定してください。'
+  console-usage: '<red>✗ <dark_red>コンソールから使用する場合はプレイヤー名を指定してください。'
+  disabled: '<red>✗ <dark_red>統計追跡は現在無効です。'
+  player-not-found: '<red>✗ <dark_red>プレイヤー <yellow>%player%<dark_red> が見つかりません。'
+  no-stats: '<gray>まだ釣り統計が記録されていません。'
+  top-header: '<gold><st>══</st><bold> 上位 %limit% 釣り師 </bold><gold><st>══</st>'
+  top-entry: '<yellow>  %rank%. <white>%player%<dark_gray> — <yellow>%catches% <gray>回捕獲'
+  top-materials: '<gray>  よく捕獲するアイテム:'
+  material-count: '<gray>    <dark_gray>• <white>%material%<gray>: <yellow>%count%'
+  limit_invalid: '<red>✗ <dark_red>上限は <yellow>1<dark_red> 以上 <yellow>100<dark_red> 以下にしてください。'
+
+# ═══════════════════════════════════════════════════════════
+# ドロップ（コマンド用）
+# ═══════════════════════════════════════════════════════════
+drops:
+  header: '<gold><st>══</st><bold> 利用可能なドロップ </bold><gold><st>══</st>'
+  category_header: '<gold><st>══</st><bold> ドロップ: <yellow>%category% </bold><gold><st>══</st>'
+  category-header: '<gold><st>══</st><bold> ドロップ: <yellow>%category% </bold><gold><st>══</st>'
+  category_entry: '<yellow>  %category%<gray>: <white>%count% ドロップ'
+  category-entry: '<yellow>  %category%<gray>: <white>%count% ドロップ'
+  category_not_found: '<red>✗ <dark_red>カテゴリ <yellow>%category%<dark_red> にドロップが見つかりません。'
+  category-not-found: '<red>✗ <dark_red>カテゴリ <yellow>%category%<dark_red> にドロップが見つかりません。'
+  available_categories: '<gray>  利用可能: <white>%categories%'
+  available-categories: '<gray>  利用可能: <white>%categories%'
+  usage: '<gray>  <yellow>/mythicrod drops %category%<gray> でアイテムを確認。'
+  drop-entry: '<dark_gray>  • <white>%name% <gray>(<yellow>%chance%%<gray> · <yellow>×%amount%<gray>)'
+
+# ═══════════════════════════════════════════════════════════
+# 釣りキャッチメッセージ
+# ═══════════════════════════════════════════════════════════
 fishing:
-  # 竿のメッセージ
-  rod_basic_name: "<gray>基本の釣り竿</gray>"
-  rod_advanced_name: "<aqua>上級釣り竿</aqua>"
-  rod_legendary_name: "<gold><bold>伝説の釣り竿</bold></gold>"
-  
-  rod_lore_header: "<dark_gray>=== 竿の統計 ===</dark_gray>"
-  rod_tier: "<gray> tier: <yellow>%tier%</yellow></gray>"
-  rod_durability: "<gray>耐久度: <yellow>%current%</yellow>/<yellow>%max%</yellow></gray>"
-  rod_enchantments: "<gray>エンチャント: <yellow>%enchants%</yellow></gray>"
-  
-  # 捕獲メッセージ
-  catch_common: "<gray><white>%item%</white>を捕まえた！</gray>"
-  catch_uncommon: "<gray><green>%item%</green>を捕まえた！</gray>"
-  catch_rare: "<gold>✦ レアな<aqua>%item%</aqua>を捕まえた！ ✦</gold>"
-  catch_legendary: "<gold><bold>✦ 伝説の捕獲！ %item%を捕まえた！ ✦</bold></gold>"
-  
-  # ミニゲームメッセージ
-  minigame_start: "<yellow>⚡ 魚がかかった！緑のゾーンで<key>を押せ！ ⚡</yellow>"
-  minigame_success: "<green>✓ 完璧なキャッチ！魚にチャンスはなかった！</green>"
-  minigame_fail: "<red>✗ 魚が逃げた！次回はもっとうまくやろう。</red>"
-  minigame_tension_high: "<red>⚠ テンション危機的！慎重に巻け！</red>"
-  minigame_tension_low: "<green>テンション正常。巻き続けよう！</green>"
+  catch-normal: '<green>✓ <gray><white>%amount%× %item%<gray> を釣り上げた！'
+  catch-rare: '<aqua>✦ <bold>レアキャッチ！</bold> <white><yellow>%amount%× %item%<white> を釣り上げた！'
+  catch-legendary: '<light_purple>✦ <bold>伝説のキャッチ！</bold> <white><yellow>%amount%× %item%<white> を発見した！'
+  stats-recorded: '<dark_gray>  +1 捕獲記録'
 
-errors:
-  database_connection: "<red>データベースへの接続に失敗しました。設定を確認してください。</red>"
-  invalid_biome: "<red>無効なバイオーム設定: %biome%</red>"
-  invalid_drop: "<red>無効なドロップ設定: %drop%</red>"
-  rod_broken: "<red>釣り竿が壊れた！新しい竿を作って釣りを続けよう。</red>"
+# ═══════════════════════════════════════════════════════════
+# リーダーボード
+# ═══════════════════════════════════════════════════════════
+leaderboard:
+  header_top: '<aqua><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st>'
+  title: '<gold><bold>  トップ釣り師ランキング'
+  entry_suffix: '<gray> — %count% 回捕獲'
+  footer_bottom: '<aqua><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st>'
 
-# GUIタイトル (MiniMessage形式)
+# ═══════════════════════════════════════════════════════════
+# GUI — メインハブ (MainHubMenu.java)
+# ═══════════════════════════════════════════════════════════
 gui:
-  main_title: "<black>MythicRod 釣りマネージャー</black>"
-  stats_title: "<black>釣り統計</black>"
-  drops_title: "<black>ドロップテーブル</black>"
-  config_title: "<black>設定</black>"
+  main:
+    title: '<black>✦ MythicRod'
+    decoration: '<dark_gray>·'
 
-# GUI内のアイテム名
-gui_items:
-  close: "<red>閉じる</red>"
-  back: "<yellow>戻る</yellow>"
-  next_page: "<aqua>次のページ →</aqua>"
-  prev_page: "<aqua>← 前のページ</aqua>"
-  
-  # メインメニューアイテム
-  view_stats: "<gold>📊 統計を見る</gold>"
-  view_stats_lore:
-    - "<gray>あなたの釣り統計と</gray>"
-    - "<gray>実績を見る</gray>"
-  
-  view_drops: "<aqua>🎣 ドロップテーブルを見る</aqua>"
-  view_drops_lore:
-    - "<gray>異なるバイオームで</gray>"
-    - "<gray>何が捕まるか見る</gray>"
-  
-  manage_rods: "<green>🔧 竿を管理</green>"
-  manage_rods_lore:
-    - "<gray>あなたの釣り竿を</gray>"
-    - "<gray>見てアップグレードする</gray>"
-  
-  settings: "<yellow>⚙ 設定</yellow>"
-  settings_lore:
-    - "<gray>釣りの設定を</gray>"
-    - "<gray>変更する</gray>"
+    config:
+      name: '<gold><bold>⚙ 設定'
+      lore1: '<gray>プラグイン設定を管理'
+      lore2: '<dark_gray>機能を切り替え:'
+      lore3: '<dark_gray>  ○ <gray>サウンドエフェクト'
+      lore4: '<dark_gray>  ○ <gray>パーティクルエフェクト'
+      lore5: '<dark_gray>  ○ <gray>統計追跡'
+      lore6: '<dark_gray>  ○ <gray>バイオーム固有ドロップ'
+      lore7: ''
+      lore8: '<yellow>▶ 左クリック <gray>で開く'
+      lore9: '<dark_gray>管理者権限が必要'
+
+    drops:
+      name: '<aqua><bold>🎣 ドロップブラウザ'
+      lore1: '<gray>カスタム釣りドロップを閲覧'
+      lore2: '<dark_gray>カテゴリ:'
+      lore3: '<dark_gray>  ○ <gray>グローバルドロップ'
+      lore4: '<dark_gray>  ○ <gray>バイオーム固有ドロップ'
+      lore5: ''
+      lore6: '<gray>合計ドロップ: <white>%count%'
+      lore7: '<gray>カテゴリ数: <white>%categories%'
+      lore8: ''
+      lore9: '<yellow>▶ 左クリック <gray>で閲覧'
+
+    stats:
+      name: '<green><bold>📊 統計'
+      lore1: '<gray>釣りの進捗を追跡'
+      lore2: '<dark_gray>利用可能な統計:'
+      lore3: '<dark_gray>  ○ <gray>合計捕獲数'
+      lore4: '<dark_gray>  ○ <gray>レア・伝説の捕獲'
+      lore5: '<dark_gray>  ○ <gray>トップ釣り師'
+      enabled: '<green>✓ <gray>統計: <white>有効'
+      disabled: '<red>✗ <gray>統計: <white>無効'
+      click_view: '<yellow>▶ 左クリック <gray>で統計を表示'
+      enable_first: '<red>まず設定で統計を有効にしてください'
+      lore9: '<dark_gray>リアルタイムで更新'
+
+    info:
+      name: '<yellow><bold>ℹ 情報'
+      lore1: '<gray>MythicRodについて'
+      lore2: ''
+      lore3: '<gray>バージョン: <white>%version%'
+      lore4: '<gray>プラットフォーム: <white>Paper 1.21+'
+      lore5: ''
+      lore6: '<dark_gray>機能:'
+      lore7: '<dark_gray>  ○ <gray>カスタム釣りドロップ'
+      lore8: '<dark_gray>  ○ <gray>バイオーム固有ルート'
+
+    reload:
+      name: '<red><bold>↻ 再読み込み'
+      lore1: '<gray>全ての設定ファイルを再読み込み'
+      lore2: '<gray>サーバー再起動なしで適用'
+      lore3: ''
+      lore4: '<yellow>⚠ 再読み込み対象:'
+      lore5: '<dark_gray>  ○ <gray>config.yml'
+      lore6: '<dark_gray>  ○ <gray>drops.yml'
+
+    close:
+      name: '<red><bold>✗ 閉じる'
+      lore: '<gray>このメニューを閉じる'
+
+    help:
+      name: '<aqua><bold>❓ ヘルプ'
+      lore1: '<gray>コマンドリファレンス:'
+      lore2: ''
+      lore3: '<yellow>/mythicrod gui <dark_gray>→ <gray>GUIを開く'
+      lore4: '<yellow>/mythicrod reload <dark_gray>→ <gray>設定を再読み込み'
+      lore5: '<yellow>/mythicrod stats <dark_gray>→ <gray>統計を表示'
+      lore6: '<yellow>/mythicrod top <dark_gray>→ <gray>ランキング'
+      lore7: '<yellow>/mythicrod drops <dark_gray>→ <gray>ドロップを閲覧'
+
+    stats_disabled: '<red>✗ <dark_red>統計が無効です。まず設定で有効にしてください。'
+    reload_success: '<green>✓ <gray>設定の再読み込みが完了しました！'
+    reload_failed: '<red>✗ <dark_red>設定の再読み込みに失敗しました！'
+
+  # レガシーエイリアス（後方互換性のため維持）
+  main_hub:
+    title: '<black>✦ MythicRod'
+    config:
+      name: '<gold><bold>⚙ 設定'
+      lore: '<gray>プラグイン設定を管理'
+    drops:
+      name: '<aqua><bold>🎣 ドロップブラウザ'
+      lore: '<gray>釣りドロップを表示・管理'
+    stats:
+      name: '<green><bold>📊 統計'
+      lore: '<gray>釣り統計を表示'
+    info:
+      name: '<yellow><bold>ℹ 情報'
+      lore: '<gray>プラグイン情報とヘルプ'
+    reload:
+      name: '<red><bold>↻ 再読み込み'
+      lore: '<gray>全ての設定ファイルを再読み込み'
+    close:
+      name: '<red><bold>✗ 閉じる'
+      lore: '<gray>このメニューを閉じる'
+    help:
+      name: '<aqua><bold>❓ ヘルプ'
+      lore: '<gray>コマンドヘルプを表示'
+
+  # ═════════════════════════════════════════════════════════
+  # GUI — 言語選択 (LanguageSwitchMenu.java)
+  # ═════════════════════════════════════════════════════════
+  language:
+    title: '<black>🌐 言語選択'
+    info:
+      name: '<gold><bold>言語設定'
+      select: '<gray>お好みの言語を選択'
+    languages:
+      english:
+        name: 'English'
+        description: '英語に切り替え'
+        region: 'United Kingdom'
+      japanese:
+        name: '日本語'
+        description: '日本語に切り替える'
+        region: 'Japan · 日本'
+    back:
+      name: '<yellow>← 設定に戻る'
+      lore: '<gray>設定メニューに戻る'
+    indicator:
+      prefix: '✓ '
+      suffix: ' ✓'
+    status:
+      active: '<green>✓ 現在選択中'
+      inactive: '<gray>クリックして選択'
+    separator: '<dark_gray>──────────────────'
+    changed: '<green>✓ <gray>言語を <white>%name%<gray> に変更しました！'
+    changed-info: '<dark_gray>全てのメニューとメッセージが %name% で表示されます。'
+    failed: '<red>✗ <dark_red>言語の変更に失敗しました！コンソールを確認してください。'
+
+  # ═════════════════════════════════════════════════════════
+  # GUI — ドロップブラウザ (DropsMenu.java)
+  # ═════════════════════════════════════════════════════════
+  drops:
+    title: '<black>🎣 釣りドロップ'
+    category_title: '<black>🎣 %category% ドロップ'
+    category_name: '<yellow><bold>%category%'
+    category_lore1: '<gray>クリックして全ドロップを表示'
+    category_lore2: '<gray>このカテゴリを確認'
+    category_count: '<gray>アイテム数: <white>%count%'
+    category_weight: '<gray>合計ウェイト: <white>%weight%'
+    category_click: '<yellow>▶ 左クリック <gray>で閲覧'
+    info_name: '<gold><bold>📚 ドロップ情報'
+    info_lore1: '<gray>カテゴリ数: <white>%count%'
+    info_lore2: '<gray>合計ドロップ: <white>%total%'
+    info_lore3: ''
+    info_lore4: '<dark_gray>drops.yml で設定'
+    info_lore5: '<yellow>/mythicrod drops <カテゴリ>'
+    back_name: '<yellow>← メインハブに戻る'
+    material_label: '<gray>素材: <white>%material%'
+    amount_label: '<gray>数量: <white>%amount%'
+    weight_label: '<gray>ウェイト: <white>%weight%'
+    drop_name: '<white>%name%'
+
+  # ═════════════════════════════════════════════════════════
+  # GUI — 設定 (ConfigMenu.java)
+  # ═════════════════════════════════════════════════════════
+  config:
+    enabled: '<green>✓ 有効'
+    disabled: '<red>✗ 無効'
+    enable: '<green>有効化'
+    disable: '<red>無効化'
+    title: '<black>⚙ 設定'
+
+    sounds: '<gold><bold>🔊 サウンドエフェクト'
+    sounds_lore: '<gray>釣りのサウンドエフェクトをオン/オフ'
+
+    particles: '<gold><bold>✨ パーティクルエフェクト'
+    particles_lore: '<gray>パーティクルエフェクトをオン/オフ'
+
+    stats: '<gold><bold>📊 統計'
+    stats_lore: '<gray>統計追跡をオン/オフ'
+
+    biome_drops: '<gold><bold>🌍 バイオームドロップ'
+    biome_drops_lore: '<gray>バイオーム固有ドロップをオン/オフ'
+
+    particles_settings:
+      name: '<gold><bold>✨ パーティクル設定'
+      lore1: '<gray>パーティクルエフェクトを設定'
+      lore2: '<gray>釣りイベントごとに設定'
+      lore3: ''
+      current_catch: '<gray>  キャッチ: <white>%particle%'
+      current_bubble: '<gray>  バブル: <white>%particle%'
+      current_success: '<gray>  成功: <white>%particle%'
+      click_change: '<yellow>▶ クリック <gray>でパーティクルコマンドを表示'
+
+    drop_to_inv:
+      name: '<gold><bold>📦 インベントリにドロップ <gray>[%status%]'
+      lore1: '<gray>有効時、捕獲アイテムは'
+      lore2: '<gray>直接インベントリへ入ります'
+      click: '<yellow>▶ クリックして %action%'
+      status: '%color%%status%'
+      enabled_desc: '<green>✓ <gray>アイテムはインベントリへ'
+      disabled_desc: '<red>✗ <gray>アイテムは地面に落ちる'
+
+    perms:
+      name: '<gold><bold>🔒 権限システム <gray>[%status%]'
+      lore1: '<gray>レア・伝説ドロップ取得に'
+      lore2: '<gray>権限を必要とする'
+      click: '<yellow>▶ クリックして %action%'
+      status: '%color%%status%'
+      active: '<green>✓ <gray>権限が強制適用'
+      inactive: '<gray>全ドロップが自由に入手可能'
+      warning: '<yellow>⚠ 一部のドロップが制限される場合があります'
+
+    debug:
+      name: '<gold><bold>🐛 デバッグモード <gray>[%status%]'
+      lore1: '<gray>詳細なコンソールログを有効化'
+      lore2: '<gray>トラブルシューティング用'
+      status: '%color%%status%'
+      active: '<yellow>⚠ <gray>デバッグログ有効'
+      inactive: '<gray>デバッグログ無効'
+      click: '<yellow>▶ クリックして %action%'
+      warning: '<red>⚠ サーバーパフォーマンスに影響する場合があります'
+
+    save:
+      name: '<green><bold>💾 変更を保存'
+      lore1: '<gray>全ての設定変更を'
+      lore2: '<gray>すぐにディスクへ保存'
+      lore3: ''
+      lore4: '<yellow>▶ クリックして保存'
+      lore5: ''
+
+    close:
+      name: '<red><bold>✗ 閉じる'
+      lore: '<gray>このメニューを閉じる'
+
+    reload:
+      name: '<red><bold>↻ 再読み込みと保存'
+      lore1: '<gray>設定を再読み込みして'
+      lore2: '<gray>保留中の変更を全て保存'
+      lore3: ''
+      lore4: '<yellow>▶ クリックして再読み込み'
+      lore5: '<red>⚠ 全ての保留中の変更を適用'
+
+    back:
+      name: '<yellow>← 戻る'
+      lore: '<gray>メインハブに戻る'
+
+    save_interval:
+      name: '<gold><bold>⏱ 統計保存間隔'
+      lore1: '<gray>プレイヤー統計を'
+      lore2: '<gray>どの頻度でディスクに保存するか'
+      current: '<gray>現在: <white>%time% <dark_gray>(%seconds%秒)'
+      frequent: '<green>✓ <gray>頻繁に保存'
+      balanced: '<yellow>⚡ <gray>バランス保存'
+      infrequent: '<red>⚠ <gray>保存頻度が低い'
+      controls: '<yellow>操作:'
+      left_click: '<yellow>  左クリック: <gray>+1分'
+      right_click: '<yellow>  右クリック: <gray>-1分'
+      shift_left: '<gold>  Shift+左: <gray>+5分'
+      shift_right: '<gold>  Shift+右: <gray>-5分'
+      minimum: '<dark_gray>範囲: 60秒 → 3600秒'
+
+    cleanup:
+      name: '<gold><bold>🎣 フック掃除間隔'
+      lore1: '<gray>古い釣りフックを'
+      lore2: '<gray>どの頻度で掃除するか'
+      current: '<gray>現在: <white>%time% <dark_gray>(%seconds%秒)'
+      frequent: '<green>✓ <gray>頻繁に掃除'
+      balanced: '<yellow>⚡ <gray>バランス掃除'
+      infrequent: '<red>⚠ <gray>掃除頻度が低い'
+      controls: '<yellow>操作:'
+      left_click: '<yellow>  左クリック: <gray>+1分'
+      right_click: '<yellow>  右クリック: <gray>-1分'
+      shift_left: '<gold>  Shift+左: <gray>+5分'
+      shift_right: '<gold>  Shift+右: <gray>-5分'
+      minimum: '<dark_gray>範囲: 60秒 → 1800秒'
+
+    info:
+      name: '<aqua><bold>ℹ MythicRodについて'
+      lore1: '<gray>MythicRod'
+      lore2: '<gray>Paper 1.21.11+'
+      lore3: '<gray>高度な釣りシステム'
+      lore4: ''
+      lore5: '<yellow>github.com/xcutiboo/MythicRod'
+
+    language:
+      name: '<gold><bold>🌐 言語'
+      lore1: '<gray>メニューとメッセージの'
+      lore2: '<gray>表示言語を変更'
+      current: '<gray>現在: <white>%lang%'
+      available: '<dark_gray>利用可能な言語:'
+      click: '<yellow>▶ クリックして言語変更'
+
+  # ═════════════════════════════════════════════════════════
+  # GUI — 統計 (StatsMenu.java)
+  # ═════════════════════════════════════════════════════════
+  stats:
+    title: '<black>📊 あなたの統計'
+    leaderboard_title: '<black>🏆 トップ釣り師'
+
+    total_catches: '<gold><bold>🎣 合計捕獲数'
+    total_catches_lore1: '<gray>全期間の釣り捕獲数'
+    total_catches_lore2: '<gray>合計: <white>%count%'
+    total_catches_lore3: '<dark_gray>レベルアップするために釣り続けよう！'
+
+    rare_catches: '<aqua><bold>✦ レア捕獲'
+    rare_catches_lore1: '<gray>レア・伝説のドロップ'
+    rare_catches_lore2: '<gray>を釣り上げた数'
+    rare_catches_lore3: '<gray>レア+: <white>%count%'
+    rare_catches_lore4: '<dark_gray>低確率 = 高報酬！'
+
+    drop_rate: '<yellow><bold>📈 ドロップ率'
+    drop_rate_lore1: '<gray>レア捕獲率'
+    drop_rate_lore2: '<gray>合計捕獲との比較'
+    drop_rate_lore3: '<gray>率: <white>%rate%'
+    drop_rate_lore4: '<dark_gray>合計セッション数に基づく'
+
+    top_materials: '<gold><bold>📦 よく捕獲するアイテム'
+    top_materials_lore: '<gray>最もよく釣り上げるアイテム'
+
+    material_name: '<white>%material%'
+    material_caught: '<gray>捕獲: <white>%count%×'
+    material_percentage: '<dark_gray>全捕獲の %percent%'
+
+    no_data: '<gray><bold>データなし'
+    no_data_lore1: '<gray>釣りを始めて統計を記録しよう！'
+    no_data_lore2: '<dark_gray>最初の捕獲後にデータが表示されます'
+
+    view_leaderboard: '<gold><bold>🏆 ランキングを見る'
+    view_leaderboard_lore1: '<gray>サーバーの他の釣り師との'
+    view_leaderboard_lore2: '<gray>順位を確認'
+
+    back_main: '<yellow>← メインハブに戻る'
+    close: '<red><bold>✗ 閉じる'
+
+    no_statistics: '<gray><bold>統計なし'
+    no_statistics_lore1: '<gray>まだ釣りをしたプレイヤーがいません！'
+    no_statistics_lore2: '<dark_gray>最初に釣り竿を投げよう'
+
+    player_label: '<gray>プレイヤー: <white>%name%'
+    player_catches: '<gray>合計捕獲: <white>%count%'
+    you_indicator: '<green>★ <gray>これはあなたです！'
+    place_indicator: '<yellow>%ordinal% 位'
+    player_entry: '<yellow>%rank%. <white>%name%'
+
+    leaderboard_info: '<gold><bold>📊 ランキング情報'
+    leaderboard_info_lore1: '<gray>ランキングは'
+    leaderboard_info_lore2: '<gray>合計捕獲数に基づく'
+    leaderboard_info_lore3: '<dark_gray>セッションごとに更新'
+
+    back_stats: '<yellow>← 統計に戻る'
+
+  # ═════════════════════════════════════════════════════════
+  # GUI — ドロップ編集 (EditDropMenu.java)
+  # ═════════════════════════════════════════════════════════
+  edit_drop:
+    title: '<black>✏ ドロップ編集: %identifier%'
+    enabled: '<green>✓ 有効'
+    disabled: '<red>✗ 無効'
+    enable: '<green>有効化'
+    disable: '<red>無効化'
+    preview:
+      default_name: '<gold>%material%'
+      lore_header: '<dark_gray>── 説明文 ──'
+      stats_header: '<dark_gray>── ステータス ──'
+      chance: '<gray>確率: <white>%chance%'
+      amount: '<gray>数量: <white>%amount%'
+      glow: '<gray>グロー: %status%'
+    chance:
+      name: '<gold><bold>🎯 ドロップ確率'
+      current: '<gray>現在: <white>%chance%'
+      left_click: '<yellow>  左クリック: <gray>+1'
+      right_click: '<yellow>  右クリック: <gray>-1'
+      shift_left: '<gold>  Shift+左: <gray>+10'
+      shift_right: '<gold>  Shift+右: <gray>-10'
+      range: '<dark_gray>範囲: 1 → 100'
+    amount:
+      name: '<gold><bold>📦 アイテム数量'
+      current: '<gray>現在: <white>%amount%'
+      left_click: '<yellow>  左クリック: <gray>+1'
+      right_click: '<yellow>  右クリック: <gray>-1'
+      shift_click: '<gold>  Shift: <gray>±10'
+      range: '<dark_gray>範囲: 1 → 64'
+    glow:
+      name: '<gold><bold>✨ エンチャントグロー'
+      current: '<gray>グロー: %status%'
+      toggle: '<yellow>▶ クリックして切り替え'
+      lore1: '<gray>エンチャントグローエフェクトを追加'
+      lore2: '<gray>エンチャントなしで適用'
+    name:
+      name: '<gold><bold>🏷 カスタム名'
+      current: '<gray>名前: %name%'
+      click: '<yellow>▶ クリックして編集'
+      click_cycle: '<yellow>▶ クリックでサイクル'
+      click_save: '<yellow>▶ クリックして保存'
+      none: '<dark_gray>なし (素材名を使用)'
+    lore:
+      name: '<gold><bold>📝 アイテム説明文'
+      current: '<gray>行数: %count%'
+      click: '<yellow>▶ クリックして編集'
+      lines: '<gray>%count% 行'
+      max: '<red>⚠ 最大10行'
+      left_click: '<yellow>  左クリック: <gray>行を追加'
+      right_click: '<yellow>  右クリック: <gray>最後の行を削除'
+    save:
+      name: '<green><bold>💾 変更を保存'
+      lore1: '<gray>このドロップを'
+      lore2: '<gray>設定ファイルに保存'
+      click: '<yellow>▶ クリックして保存'
+      chance: '<gray>確率: <white>%chance%%'
+      amount: '<gray>数量: <white>%amount%'
+      glow: '<gray>グロー: %status%'
+    back:
+      name: '<yellow>← 戻る'
+      lore: '<gray>ドロップメニューに戻る'
+    delete:
+      name: '<red><bold>🗑 ドロップを削除'
+      lore1: '<red>⚠ 完全に削除されます'
+      lore2: '<red>このカスタムドロップ'
+    reset:
+      name: '<red><bold>↺ 変更をリセット'
+      lore1: '<gray>未保存の変更を全て元に戻す'
+      lore2: '<gray>元の値に戻す'
+    info:
+      name: '<aqua><bold>ℹ ドロップ情報'
+      lore1: '<gray>編集中: <white>%identifier%'
+      lore2: '<gray>素材: <white>%material%'
+      lore3: '<dark_gray>変更は保存時に適用されます'
+      lore4: ''
+    yes: '<green><bold>✓ はい'
+    no: '<red><bold>✗ いいえ'
+
+  # ═════════════════════════════════════════════════════════
+  # GUI — ロッドメニュー (RodMenu.java)
+  # ═════════════════════════════════════════════════════════
+  rod:
+    title: '<black>🎣 MythicRodメニュー'
+    upgrade:
+      name: '<gold><bold>⬆ ロッドをアップグレード'
+      lore1: '<gray>釣り竿をアップグレードして'
+      lore2: '<gray>より良い能力を解放'
+    info:
+      name: '<aqua><bold>ℹ ロッド情報'
+      lore1: '<gray>現在のティア: <white>%tier%'
+      lore2: '<gray>特殊能力:'
+      lore3: '<dark_gray>  ○ %ability%'
+    back:
+      name: '<yellow>← 戻る'
+      lore: '<gray>メインメニューに戻る'
+
+  # ═════════════════════════════════════════════════════════
+  # GUI — 統計メニュー（レガシーエイリアス）
+  # ═════════════════════════════════════════════════════════
+  stats_menu:
+    title: '<black>📊 釣り統計'
+    personal:
+      name: '<gold><bold>👤 あなたの統計'
+      lore1: '<gray>合計捕獲: <white>%total%'
+      lore2: '<gray>レア捕獲: <yellow>%rare%'
+      lore3: '<gray>取得アイテム: <white>%items%'
+    leaderboard:
+      name: '<gold><bold>🏆 ランキング'
+      lore1: '<gray>合計捕獲数による'
+      lore2: '<gray>トップ釣り師'
+    top_entry: '<yellow>%rank%. <white>%player% <dark_gray>— <yellow>%count%'
+    back:
+      name: '<yellow>← 戻る'
+      lore: '<gray>メインハブに戻る'
+
+# ═══════════════════════════════════════════════════════════
+# 言語名
+# ═══════════════════════════════════════════════════════════
+language:
+  names:
+    en_US: '<white>English'
+    en: '<white>English'
+    ja_JP: '<white>日本語'
+    jp: '<white>日本語'
+  current: '<yellow>現在の言語: <white>%language%'
+
+# ═══════════════════════════════════════════════════════════
+# バナー（起動ログ）
+# ═══════════════════════════════════════════════════════════
+banner:
+  paper:
+    title: 'MythicRod-Paper'
+    platform: 'Paper 1.21.11'
+    brigadier_native: 'Brigadier ✓'
+    version_label: 'v%version%'
+
+# ═══════════════════════════════════════════════════════════
+# ログ
+# ═══════════════════════════════════════════════════════════
+logging:
+  startup_adventure_ready: '[MythicRod] Adventure Platform initialized and ready'
+  loaded_drops: '[MythicRod] %count% 件のカスタムドロップを設定から読み込みました'
+  startup_success: '[MythicRod] 全システムが %ms%ms で初期化されました'
+  reload_start: '[MythicRod] 設定の再読み込みを開始'
+  reload_success: '[MythicRod] 設定と全マネージャーの再読み込みが完了'
+  reload_failed: '[MythicRod] 設定の再読み込みで致命的エラー。YAML構文を確認してください。'
+  shutdown_success: '[MythicRod] プラグインが正常に無効化されました'
+  shutdown_error: '[MythicRod] シャットダウン中に致命的エラー。データ損失を確認してください。'
+  gui_unknown_menu: '[MythicRod-GUI] 不明なメニューID: %menu%'
+  gui_open_error: '[MythicRod-GUI] メニューのオープンエラー: %menu%'
+  gui_close_warning: '[MythicRod-GUI] メニューのクローズで非致命的エラー'
+  gui_click_error: '[MythicRod-GUI] メニュー操作の処理でエラー'
+  menu_open_error: '[MythicRod-GUI] %player% のメニューオープンでエラー'
+  mainhub_reload_error: '[MythicRod-MainHub] GUIからの再読み込みで致命的エラー'
+  config_save_error: '[MythicRod-Config] GUIからの設定保存でエラー'
+  lang_invalid_url_format: '[MythicRod-Lang] 言語ヘッドの無効なテクスチャURL: %url%'
+  lang_fetch_failed: '[MythicRod-Lang] テクスチャの取得に失敗: %url% — %error%'
+  lang_apply_failed: '[MythicRod-Lang] 言語ヘッドテクスチャの適用でエラー'
+  lang_change_failed: '[MythicRod-Lang] 言語変更で致命的エラー'

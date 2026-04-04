@@ -73,8 +73,8 @@ public class MainHubMenu extends BaseMenu {
                         tr("gui.main.drops.lore4"),
                         tr("gui.main.drops.lore5"),
                         "",
-                        tr("gui.main.drops.lore6", Map.of("%count%", String.valueOf(plugin.getDropManager().getTotalDropCount()))),
-                        tr("gui.main.drops.lore7", Map.of("%categories%", String.valueOf(plugin.getDropManager().getDropCategories().size()))),
+                        tr("gui.main.drops.lore6", Map.of("count", String.valueOf(plugin.getDropManager().getTotalDropCount()))),
+                        tr("gui.main.drops.lore7", Map.of("categories", String.valueOf(plugin.getDropManager().getDropCategories().size()))),
                         "",
                         tr("gui.main.drops.lore8"),
                         tr("gui.main.drops.lore9")
@@ -118,7 +118,7 @@ public class MainHubMenu extends BaseMenu {
                 .lore(
                         tr("gui.main.info.lore1"),
                         "",
-                        tr("gui.main.info.lore2", Map.of("%version%", plugin.getPluginMeta().getVersion())),
+                        tr("gui.main.info.lore2", Map.of("version", plugin.getPluginMeta().getVersion())),
                         tr("gui.main.info.lore3"),
                         "",
                         tr("gui.main.info.lore4"),

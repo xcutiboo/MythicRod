@@ -71,7 +71,7 @@ public class StatsMenu extends BaseMenu {
                         tr("gui.stats.total_catches_lore1"),
                         "",
                         tr("gui.stats.total_catches_lore2",
-                                Map.of("%count%", String.valueOf(stats.getTotalCaught()))),
+                                Map.of("count", String.valueOf(stats.getTotalCaught()))),
                         "",
                         tr("gui.stats.total_catches_lore3")
                 )
@@ -87,7 +87,7 @@ public class StatsMenu extends BaseMenu {
                         tr("gui.stats.rare_catches_lore2"),
                         "",
                         tr("gui.stats.rare_catches_lore3",
-                                Map.of("%count%", String.valueOf(stats.getRareCaught()))),
+                                Map.of("count", String.valueOf(stats.getRareCaught()))),
                         "",
                         tr("gui.stats.rare_catches_lore4")
                 )
@@ -107,7 +107,7 @@ public class StatsMenu extends BaseMenu {
                         tr("gui.stats.drop_rate_lore2"),
                         "",
                         tr("gui.stats.drop_rate_lore3",
-                                Map.of("%rate%", String.format("%.2f%%", rareRate))),
+                                Map.of("rate", String.format("%.2f%%", rareRate))),
                         "",
                         tr("gui.stats.drop_rate_lore4")
                 )
@@ -135,13 +135,13 @@ public class StatsMenu extends BaseMenu {
                     double pct = entry.getValue() * 100.0 / Math.max(1, total);
                     ItemStack materialItem = new ItemBuilder(material)
                             .name(tr("gui.stats.material_name",
-                                    Map.of("%material%", formatMaterialName(entry.getKey()))))
+                                    Map.of("material", formatMaterialName(entry.getKey()))))
                             .lore(
                                     tr("gui.stats.material_caught",
-                                            Map.of("%count%", String.valueOf(entry.getValue()))),
+                                            Map.of("count", String.valueOf(entry.getValue()))),
                                     "",
                                     tr("gui.stats.material_percentage",
-                                            Map.of("%percent%", String.format("%.1f%%", pct)))
+                                            Map.of("percent", String.format("%.1f%%", pct)))
                             )
                             .build();
                     setItem(slot, materialItem);
@@ -247,20 +247,20 @@ public class StatsMenu extends BaseMenu {
                 };
 
                 List<String> lore = new ArrayList<>();
-                lore.add(tr("gui.stats.player_label",   Map.of("%name%",  playerName)));
-                lore.add(tr("gui.stats.player_catches",  Map.of("%count%", String.valueOf(catches))));
+                lore.add(tr("gui.stats.player_label",   Map.of("name",  playerName)));
+                lore.add(tr("gui.stats.player_catches",  Map.of("count", String.valueOf(catches))));
                 lore.add("");
                 if (isCurrentPlayer) {
                     lore.add(tr("gui.stats.you_indicator"));
                 }
                 if (rank <= 3) {
                     lore.add(tr("gui.stats.place_indicator",
-                            Map.of("%ordinal%", getOrdinal(rank))));
+                            Map.of("ordinal", getOrdinal(rank))));
                 }
 
                 ItemStack playerItem = new ItemBuilder(icon)
                         .name(tr("gui.stats.player_entry",
-                                Map.of("%rank%", String.valueOf(rank), "%name%", playerName)))
+                                Map.of("rank", String.valueOf(rank), "name", playerName)))
                         .lore(lore)
                         .glow(isCurrentPlayer)
                         .build();
