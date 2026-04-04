@@ -9,9 +9,9 @@ import org.bukkit.inventory.ItemStack;
 
 import io.xcutiboo.mythicrod.api.platform.PlatformItem;
 
-/**
- * Paper implementation of PlatformItem wrapping a Bukkit ItemStack
- */
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+
 public class PaperPlatformItem implements PlatformItem {
 
     private final String identifier;
@@ -39,19 +39,21 @@ public class PaperPlatformItem implements PlatformItem {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public String getDisplayName() {
-        if (itemStack.hasItemMeta() && itemStack.getItemMeta().hasDisplayName()) {
-            return itemStack.getItemMeta().getDisplayName();
+        Component displayName = itemStack.getData(io.papermc.paper.datacomponent.DataComponentTypes.ITEM_NAME);
+        if (displayName != null) {
+            return PlainTextComponentSerializer.plainText().serialize(displayName);
         }
-        return itemStack.getType().name(); // Fallback
+        return itemStack.getType().name();
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public List<String> getLore() {
-        if (itemStack.hasItemMeta() && itemStack.getItemMeta().hasLore()) {
-            return itemStack.getItemMeta().getLore();
+        List<Component> lore = itemStack.lore();
+        if (lore != null) {
+            return lore.stream()
+                .map(component -> PlainTextComponentSerializer.plainText().serialize(component))
+                .toList();
         }
         return new ArrayList<>();
     }
@@ -67,17 +69,13 @@ public class PaperPlatformItem implements PlatformItem {
 
     @Override
     public List<String> getItemFlags() {
-        List<String> flags = new ArrayList<>();
-        if (itemStack.hasItemMeta()) {
-            itemStack.getItemMeta().getItemFlags().forEach(flag -> flags.add(flag.name()));
-        }
-        return flags;
+        return new ArrayList<>();
     }
 
     @Override
     public boolean isGlowing() {
-        if (!itemStack.hasItemMeta()) return false;
-        return itemStack.getItemMeta().hasEnchants() && itemStack.getItemMeta().hasItemFlag(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+        Boolean glint = itemStack.getData(io.papermc.paper.datacomponent.DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
+        return glint != null && glint;
     }
 
     @Override

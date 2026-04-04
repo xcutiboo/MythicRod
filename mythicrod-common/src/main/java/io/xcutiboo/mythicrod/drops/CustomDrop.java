@@ -7,16 +7,18 @@ import java.util.Map;
 
 import io.xcutiboo.mythicrod.api.platform.PlatformDrop;
 import io.xcutiboo.mythicrod.api.platform.PlatformItem;
+import lombok.Getter;
 
+@Getter
 public class CustomDrop implements PlatformDrop {
     private final DropConfigurationRecord config;
     private final Map<String, Integer> enchantments = new HashMap<>();
-    private final List<String> itemFlags = new ArrayList<>();
+    private final List<String> itemFlags;
 
     public CustomDrop(DropConfigurationRecord config) {
         this.config = config;
         this.enchantments.putAll(config.enchantments());
-        this.itemFlags.addAll(config.itemFlags());
+        this.itemFlags = new ArrayList<>(config.itemFlags());
     }
 
     public static CustomDrop createNexoDrop(String nexoItemId, int chance, int amount) {
@@ -26,36 +28,54 @@ public class CustomDrop implements PlatformDrop {
     }
 
     @Override
-    public String getIdentifier() { return isNexoItem() ? "nexo:" + config.nexoItemId() : config.identifier(); }
+    public String getIdentifier() { 
+        return isNexoItem() ? "nexo:" + config.nexoItemId() : config.identifier(); 
+    }
     
     @Override
-    public int getChance() { return config.chance(); }
+    public int getChance() { 
+        return config.chance(); 
+    }
     
     @Override
-    public int getAmount() { return config.amount(); }
+    public int getAmount() { 
+        return config.amount(); 
+    }
     
-    public int getCustomModelData() { return config.customModelData(); }
+    public int getCustomModelData() { 
+        return config.customModelData(); 
+    }
     
-    public String getCustomName() { return config.customName(); }
+    public String getCustomName() { 
+        return config.customName(); 
+    }
     
-    public List<String> getLore() { return config.lore(); }
+    public List<String> getLore() { 
+        return config.lore(); 
+    }
     
-    public Map<String, Integer> getEnchantments() { return enchantments; }
-    
-    public List<String> getItemFlags() { return itemFlags; }
-    
-    public boolean isGlowing() { return config.glowing(); }
-    
-    @Override
-    public String getPermission() { return config.permission(); }
-    
-    @Override
-    public List<String> getBiomes() { return config.biomes(); }
-    
-    public String getNexoItemId() { return config.nexoItemId(); }
+    public boolean isGlowing() { 
+        return config.glowing(); 
+    }
     
     @Override
-    public boolean isNexoItem() { return config.nexoItemId() != null && !config.nexoItemId().isEmpty(); }
+    public String getPermission() { 
+        return config.permission(); 
+    }
+    
+    @Override
+    public List<String> getBiomes() { 
+        return config.biomes(); 
+    }
+    
+    public String getNexoItemId() { 
+        return config.nexoItemId(); 
+    }
+    
+    @Override
+    public boolean isNexoItem() { 
+        return config.nexoItemId() != null && !config.nexoItemId().isEmpty(); 
+    }
 
     @Override
     public PlatformItem createItem() { return null; }

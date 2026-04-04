@@ -3,24 +3,27 @@ package io.xcutiboo.mythicrod.fishing;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
-import io.xcutiboo.mythicrod.MythicRodPlugin;
 import io.xcutiboo.mythicrod.api.platform.PlatformLocation;
 import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 import io.xcutiboo.mythicrod.api.platform.PlatformServer;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
+import io.xcutiboo.mythicrod.drops.DropManager;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class FishingService {
-    private final MythicRodPlugin plugin;
+    private final DropManager dropManager;
+    @NonNull
+    private final Logger logger;
+    
     private final Map<UUID, FishingState> activeFishing = new ConcurrentHashMap<>();
-
-    public FishingService(MythicRodPlugin plugin) {
-        this.plugin = plugin;
-    }
 
     public void startFishing(UUID hookId, UUID playerId, PlatformLocation castLocation) {
         FishingState state = new FishingState(playerId, castLocation);
-        activeFishing.put(hookId, state);
+        activeFishing.putIfAbsent(hookId, state);
     }
 
     public FishingResult processCatch(UUID hookId, PlatformPlayer player, PlatformLocation hookLocation, String biomeName) {
@@ -41,7 +44,9 @@ public class FishingService {
             return FishingResult.invalidLocation();
         }
 
-        CustomDrop drop = plugin.getDropManager().getRandomDrop(player, biomeName);
+        logger.fine("[FISH-SERVICE] Getting random drop for " + player.getName() + " in biome " + biomeName);
+        CustomDrop drop = dropManager.getRandomDrop(player, biomeName);
+        logger.fine("[FISH-SERVICE] Drop result: " + (drop != null ? drop.getIdentifier() : "NULL"));
 
         if (drop == null) {
             activeFishing.remove(hookId);

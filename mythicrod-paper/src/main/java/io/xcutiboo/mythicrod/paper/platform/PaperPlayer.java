@@ -4,16 +4,16 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
+import io.xcutiboo.mythicrod.api.platform.PlatformInventory;
 import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
+import lombok.RequiredArgsConstructor;
 
-/**
- * Paper implementation of PlatformPlayer that wraps a native Bukkit Player
- */
+@RequiredArgsConstructor
 public class PaperPlayer implements PlatformPlayer {
     private final Player player;
     
-    public PaperPlayer(Player player) {
-        this.player = player;
+    public Player getBukkitPlayer() {
+        return player;
     }
     
     @Override
@@ -51,10 +51,8 @@ public class PaperPlayer implements PlatformPlayer {
         player.closeInventory();
     }
     
-    /**
-     * Get the underlying native Bukkit Player
-     */
-    public Player getBukkitPlayer() {
-        return player;
+    @Override
+    public PlatformInventory getInventory() {
+        return new PaperInventory(player.getInventory());
     }
 }

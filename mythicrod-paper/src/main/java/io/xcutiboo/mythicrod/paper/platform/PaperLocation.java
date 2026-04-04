@@ -4,14 +4,8 @@ import org.bukkit.Location;
 
 import io.xcutiboo.mythicrod.api.platform.PlatformLocation;
 
-/**
- * Factory for converting between Bukkit Location and PlatformLocation
- */
 public class PaperLocation {
     
-    /**
-     * Convert a Bukkit Location to a PlatformLocation
-     */
     public static PlatformLocation fromBukkit(Location location) {
         if (location == null) {
             return null;
@@ -27,9 +21,6 @@ public class PaperLocation {
         );
     }
     
-    /**
-     * Convert a PlatformLocation to a Bukkit Location
-     */
     public static Location toBukkit(PlatformLocation platformLocation, org.bukkit.Server server) {
         if (platformLocation == null) {
             return null;

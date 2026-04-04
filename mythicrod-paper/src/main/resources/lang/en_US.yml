@@ -1,0 +1,513 @@
+# Authoritative base language for MythicRod (Crowdin-ready)
+# Keys are stable, descriptive, and namespaced.
+
+# ==================== GENERAL ====================
+general:
+  no_permission: "<red>You don't have permission to do that."
+  error: '<red>Something went wrong. Check the server logs for details.'
+  player_only: '<red>This command can only be used by players!'
+  prefix: '<gold><bold>[MythicRod] <reset>'
+  enabled: '<green>Enabled'
+  disabled: '<red>Disabled'
+
+# ==================== COMMANDS ====================
+command:
+  help:
+    header: '<gold><bold>━━━ <white>MythicRod Commands <gold><bold>━━━'
+    gui: '<yellow>/mythicrod gui <gray>- Open main GUI'
+    reload: '<yellow>/mythicrod reload <gray>- Reload configuration (admin only)'
+    stats: '<yellow>/mythicrod stats [player] <gray>- View fishing statistics'
+    top: '<yellow>/mythicrod top [limit] <gray>- View leaderboard'
+    drops: '<yellow>/mythicrod drops [category] <gray>- View available drops'
+    help: '<yellow>/mythicrod help <gray>- Show this help message'
+  reload:
+    start: '<yellow>Reloading configuration...'
+    success: '<green>Configuration reloaded successfully!'
+    failed: '<red>Failed to reload: <yellow>%error%'
+  player_not_found: '<red>No player named <yellow>%player%<red> found.'
+
+# ==================== STATISTICS ====================
+stats:
+  permission_denied: "<red>You don't have permission to view stats."
+  header: '<gold><bold>━━━ <white>Fishing Stats: <yellow>%player% <gold><bold>━━━'
+  total_catches: '<gray>Total Catches: <white>%total%'
+  items_caught: '<gray>Items Caught: <white>%items%'
+  unique_types: '<gray>Unique Types: <white>%unique%'
+  rare_catches: '<gray>Rare Catches: <yellow>%rare%'
+  console_usage: '<red>Please specify a player name when using this from console.'
+  limit_invalid: '<red>Limit must be between <yellow>1<red> and <yellow>100<red>.'
+  disabled: '<red>Statistics tracking is disabled.'
+  player-not-found: '<red>Player <yellow>%player%<red> not found.'
+  top-header: '<gold><bold>━━━ Top %limit% Fishers <gold><bold>━━━'
+  top-entry: '<yellow>%rank%. <white>%player%<gray>: <yellow>%count% catches'
+  material-count: '<gray>  - <white>%material%<gray>: <yellow>%count%'
+  top-materials: '<gray>Top Materials:'
+
+# ==================== LEADERBOARD ====================
+leaderboard:
+  header_top: '<aqua><bold>═══════════════════════════'
+  title: '<gold><bold>Top Fishers Leaderboard'
+  entry_suffix: '<gray> - %count% catches'
+  footer_bottom: '<aqua><bold>═══════════════════════════'
+
+# ==================== DROPS ====================
+drops:
+  header: '<gold><bold>━━━ <white>Available Drops <gold><bold>━━━'
+  category_header: '<gold><bold>━━━ <white>Drops: <yellow>%category% <gold><bold>━━━'
+  category_entry: '<yellow>%category%<gray>: <white>%count% items'
+  category_not_found: '<red>No drops found in category <yellow>%category%<red>.'
+  available_categories: '<gray>Available categories: <white>%categories%'
+  usage: '<gray>Use <yellow>/mythicrod drops %category%<gray> to see items.'
+
+# ==================== FISHING ====================
+fishing:
+  catch-normal: '<green>✓ <green>Caught <yellow>%amount%× %item%<green>!'
+  catch-rare: '<aqua><bold>✦ RARE CATCH! <white>You reeled in <yellow>%amount%× %item%<white>!'
+  catch-legendary: '<light_purple><bold>✦ LEGENDARY! <white>You discovered <yellow>%amount%× %item%<white>!'
+  stats-recorded: '<gray>+1 Fishing Stat Recorded'
+
+# ==================== GUI ====================
+gui:
+
+  # ==================== GUI - MAIN HUB ====================
+  # Keys used by MainHubMenu.java
+  main:
+    title: '<gold><bold>MythicRod <dark_gray>⚡ <gray>Main Hub'
+    decoration: '<gray>✦'
+
+    config:
+      name: '<gold><bold>⚙ Configuration'
+      lore1: '<gray>Manage plugin settings'
+      lore2: '<gray>Toggle Features:'
+      lore3: '<dark_gray>• <gray>Sound Effects'
+      lore4: '<dark_gray>• <gray>Particle Effects'
+      lore5: '<dark_gray>• <gray>Statistics Tracking'
+      lore6: '<dark_gray>• <gray>Biome-Specific Drops'
+      lore7: '<yellow>Left-Click <gray>to open'
+      lore8: '<yellow>Admin only'
+
+    drops:
+      name: '<aqua><bold>🎣 Drop Manager'
+      lore1: '<gray>View all fishing drops'
+      lore2: '<gray>Browse by category'
+      lore3: '<gray>Drop Categories:'
+      lore4: '<dark_gray>• <gray>Global Drops'
+      lore5: '<dark_gray>• <gray>Biome Drops'
+      lore6: '<gray>Total Drops: <white>%count%'
+      lore7: '<gray>Categories: <white>%categories%'
+      lore8: '<yellow>Left-Click <gray>to browse'
+      lore9: '<gray>Available to all players'
+
+    stats:
+      name: '<green><bold>📊 Statistics'
+      lore1: '<gray>Track your fishing progress'
+      lore2: '<gray>View Stats:'
+      lore3: '<dark_gray>• <gray>Total Catches'
+      lore4: '<dark_gray>• <gray>Rare Catches'
+      lore5: '<dark_gray>• <gray>Top Fishers'
+      enabled: '<green>✓ Statistics: <white>Enabled'
+      disabled: '<red>✗ Statistics: <white>Disabled'
+      click_view: '<yellow>Left-Click <gray>to view stats'
+      enable_first: '<red>Enable stats in Config first'
+      lore9: '<gray>Updated in real-time'
+
+    info:
+      name: '<yellow><bold>ℹ Information'
+      lore1: '<gray>About MythicRod'
+      lore2: '<gray>Version: <white>%version%'
+      lore3: '<gray>Platform: <white>Paper 1.21+'
+      lore4: '<gray>Features:'
+      lore5: '<dark_gray>• <gray>Custom Fishing Drops'
+      lore6: '<dark_gray>• <gray>Biome-Specific Loot'
+      lore7: '<dark_gray>• <gray>Player Statistics'
+      lore8: '<yellow>https://github.com/xcutiboo/MythicRod'
+
+    reload:
+      name: '<red><bold>↻ Reload Config'
+      lore1: '<gray>Reload all configuration'
+      lore2: '<gray>files without restart'
+      lore3: '<yellow>⚠ This will reload:'
+      lore4: '<dark_gray>• <gray>config.yml'
+      lore5: '<dark_gray>• <gray>drops.yml'
+      lore6: '<yellow>Left-Click <gray>to reload'
+
+    close:
+      name: '<red><bold>✗ Close'
+      lore: '<gray>Close this menu'
+
+    help:
+      name: '<blue><bold>❓ Help'
+      lore1: '<gray>Command Reference:'
+      lore2: '<yellow>/mythicrod gui <gray>- Open GUI'
+      lore3: '<yellow>/mythicrod reload <gray>- Reload config'
+      lore4: '<yellow>/mythicrod stats <gray>- View stats'
+      lore5: '<yellow>/mythicrod top <gray>- Leaderboard'
+      lore6: '<yellow>/mythicrod drops <gray>- Browse drops'
+      lore7: '<yellow>Left-Click <gray>to close'
+
+    stats_disabled: '<red>Statistics are disabled. Enable them in Config first.'
+    reload_success: '<green>✓ Configuration reloaded successfully!'
+    reload_failed: '<red>✗ Failed to reload configuration!'
+
+  # ==================== GUI - MAIN HUB (legacy alias) ====================
+  main_hub:
+    title: '<gold><bold>MythicRod <dark_gray>⚡ <gray>Main Hub'
+    config:
+      name: '<gold><bold>⚙ Configuration'
+      lore: '<gray>Manage plugin settings'
+    drops:
+      name: '<aqua><bold>🎣 Drop Manager'
+      lore: '<gray>View and manage fishing drops'
+    stats:
+      name: '<green><bold>📊 Statistics'
+      lore: '<gray>View fishing statistics'
+    info:
+      name: '<yellow><bold>ℹ Information'
+      lore: '<gray>Plugin information and help'
+    reload:
+      name: '<red><bold>↻ Reload Config'
+      lore: '<gray>Reload all configuration files'
+    close:
+      name: '<red><bold>✗ Close'
+      lore: '<gray>Close this menu'
+    help:
+      name: '<blue><bold>❓ Help'
+      lore: '<gray>View command help'
+
+  # ==================== GUI - LANGUAGE ====================
+  language:
+    title: '<gold><bold>MythicRod <dark_gray>🌐 <gray>Language Selection'
+    info:
+      name: '<gold><bold>Language Settings'
+      select: '<gray>Choose your preferred language'
+    languages:
+      english:
+        name: 'English'
+        description: 'Switch to English'
+        region: 'United Kingdom'
+      japanese:
+        name: '日本語'
+        description: '日本語に切り替える'
+        region: 'Japan · 日本'
+    back:
+      name: '<yellow>← Back to Configuration'
+      lore: '<gray>Return to the configuration menu'
+    indicator:
+      prefix: '✓ '
+      suffix: ' ✓'
+    status:
+      active: '✓ Currently Active'
+      inactive: 'Click to activate'
+    separator: '━━━━━━━━━━━━━━━'
+    changed: '<green>✓ Language changed to <white>%name%<green>!'
+    changed-info: '<gray>All menus and messages will now display in %name%.'
+    failed: '<red>✗ Failed to change language! Check console for errors.'
+
+  # ==================== GUI - DROPS ====================
+  # Keys used by DropsMenu.java
+  drops:
+    title: '<gold><bold>🎣 Fishing Drops'
+    category_title: '<gold><bold>🎣 %category% Drops'
+    category_name: '<yellow>%category%'
+    category_lore1: '<gray>Click to view drops'
+    category_lore2: '<gray>in this category'
+    category_count: '<gray>Items: <white>%count%'
+    category_weight: '<gray>Total Weight: <white>%weight%'
+    category_click: '<yellow>Click to browse'
+    info_name: '<gold><bold>📚 Drop Information'
+    info_lore1: '<gray>Categories: <white>%count%'
+    info_lore2: '<gray>Total Drops: <white>%total%'
+    info_lore3: '<gray>Configure drops in'
+    info_lore4: '<gray>the drops.yml file'
+    info_lore5: '<yellow>/mythicrod drops <category>'
+    back_name: '<yellow>← Back to Main Hub'
+    material_label: '<gray>Material: <white>%material%'
+    amount_label: '<gray>Amount: <white>%amount%'
+    weight_label: '<gray>Weight: <white>%weight%'
+    drop_name: '<gold>%name%'
+
+  # ==================== GUI - CONFIG ====================
+  # Keys used by ConfigMenu.java
+  config:
+    enabled: '<green>Enabled'
+    disabled: '<red>Disabled'
+    enable: '<green>Enable'
+    disable: '<red>Disable'
+    title: '<gold><bold>⚙ Configuration'
+
+    sounds: '<gold><bold>🔊 Sound Effects'
+    sounds_lore: '<gray>Toggle fishing sound effects'
+
+    particles: '<gold><bold>✨ Particles'
+    particles_lore: '<gray>Toggle particle effects'
+
+    stats: '<gold><bold>📊 Statistics'
+    stats_lore: '<gray>Toggle statistics tracking'
+
+    biome_drops: '<gold><bold>🌍 Biome Drops'
+    biome_drops_lore: '<gray>Toggle biome-specific drops'
+
+    particles_settings:
+      name: '<gold><bold>✨ Particle Settings'
+      lore1: '<gray>Configure particle effects'
+      lore2: '<gray>for fishing events'
+      lore3: '<gray>Current Settings:'
+      current_catch: '<gray>  Catch: <white>%particle%'
+      current_bubble: '<gray>  Bubble: <white>%particle%'
+      current_success: '<gray>  Success: <white>%particle%'
+      click_change: '<yellow>Click for commands'
+
+    drop_to_inv:
+      name: '<gold><bold>📦 Drop to Inventory <gray>[%status%]'
+      lore1: '<gray>When enabled, caught items'
+      lore2: '<gray>go directly to inventory'
+      click: '<yellow>Click to %action%'
+      status: '%color%Status: %status%'
+      enabled_desc: '<green>✓ Items go to inventory'
+      disabled_desc: '<red>✗ Items drop on ground'
+
+    perms:
+      name: '<gold><bold>🔒 Permission System <gray>[%status%]'
+      lore1: '<gray>Require permissions for'
+      lore2: '<gray>rare fishing drops'
+      click: '<yellow>Click to %action%'
+      status: '%color%Status: %status%'
+      active: '<green>✓ Permissions enforced'
+      inactive: '<red>✗ All drops available'
+      warning: '<yellow>⚠ May restrict some drops'
+
+    debug:
+      name: '<gold><bold>🐛 Debug Mode <gray>[%status%]'
+      lore1: '<gray>Enable detailed logging'
+      lore2: '<gray>for troubleshooting'
+      status: '%color%Status: %status%'
+      active: '<yellow>⚠ Debug enabled'
+      inactive: '<gray>Debug disabled'
+      click: '<yellow>Click to %action%'
+      warning: '<red>May impact performance'
+
+    save:
+      name: '<green><bold>💾 Save Changes'
+      lore1: '<gray>Save all configuration'
+      lore2: '<gray>changes to disk'
+      lore3: '<yellow>Click to save'
+      lore4: '<gray>Requires reload to'
+      lore5: '<gray>fully apply changes'
+
+    close:
+      name: '<red><bold>✗ Close'
+      lore: '<gray>Close this menu'
+
+    reload:
+      name: '<red><bold>↻ Reload & Save'
+      lore1: '<gray>Reload configuration'
+      lore2: '<gray>and save changes'
+      lore3: '<yellow>Click to reload'
+      lore4: '<red>⚠ This will apply'
+      lore5: '<red>all pending changes'
+
+    back:
+      name: '<yellow><bold>← Back'
+      lore: '<gray>Return to main hub'
+
+    save_interval:
+      name: '<gold><bold>⏱ Stats Save Interval'
+      lore1: '<gray>How often to save'
+      lore2: '<gray>player statistics'
+      current: '<gray>Current: <white>%time% <gray>(%seconds%s)'
+      frequent: '<green>✓ Saves frequently'
+      balanced: '<yellow>⚡ Balanced saving'
+      infrequent: '<red>⚠ Saves infrequently'
+      controls: '<yellow>Controls:'
+      left_click: '<yellow>L-Click: +1min'
+      right_click: '<yellow>R-Click: -1min'
+      shift_left: '<gold>Shift+L: +5min'
+      shift_right: '<gold>Shift+R: -5min'
+      minimum: '<gray>Min: 60s | Max: 3600s'
+
+    cleanup:
+      name: '<gold><bold>🎣 Hook Cleanup Interval'
+      lore1: '<gray>How often to clean up'
+      lore2: '<gray>old fishing hooks'
+      current: '<gray>Current: <white>%time% <gray>(%seconds%s)'
+      frequent: '<green>✓ Cleans frequently'
+      balanced: '<yellow>⚡ Balanced cleanup'
+      infrequent: '<red>⚠ Cleans infrequently'
+      controls: '<yellow>Controls:'
+      left_click: '<yellow>L-Click: +1min'
+      right_click: '<yellow>R-Click: -1min'
+      shift_left: '<gold>Shift+L: +5min'
+      shift_right: '<gold>Shift+R: -5min'
+      minimum: '<gray>Min: 60s | Max: 1800s'
+
+    info:
+      name: '<blue><bold>ℹ About'
+      lore1: '<gray>MythicRod'
+      lore2: '<gray>Paper 1.21.11+'
+      lore3: '<gray>Advanced Fishing System'
+      lore4: '<gray>by xcutiboo'
+      lore5: '<yellow>https://github.com/xcutiboo/MythicRod'
+
+    language:
+      name: '<gold><bold>🌐 Language'
+      lore1: '<gray>Change display language'
+      lore2: '<gray>for menus and messages'
+      current: '<gray>Current: <white>%lang%'
+      available: '<gray>Available languages:'
+      click: '<yellow>Click to change'
+
+  # ==================== GUI - EDIT DROP ====================
+  edit_drop:
+    title: '<gold><bold>✏ Edit Drop <gray>%identifier%'
+    enabled: '<green>Enabled'
+    disabled: '<red>Disabled'
+    enable: '<green>Enable'
+    disable: '<red>Disable'
+    preview:
+      default_name: '<gold>%material%'
+      lore_header: '<gray>---- Lore ----'
+      stats_header: '<gray>---- Stats ----'
+      chance: '<gray>Chance: <white>%chance%'
+      amount: '<gray>Amount: <white>%amount%'
+      glow: '<gray>Glow: %status%'
+    chance:
+      name: '<gold><bold>🎯 Drop Chance'
+      current: '<gray>Current: <white>%chance%'
+      left_click: '<yellow>L-Click: +1'
+      right_click: '<yellow>R-Click: -1'
+      shift_left: '<gold>Shift+L: +10'
+      shift_right: '<gold>Shift+R: -10'
+      range: '<gray>Range: 1-100'
+    amount:
+      name: '<gold><bold>📦 Item Amount'
+      current: '<gray>Current: <white>%amount%'
+      left_click: '<yellow>L-Click: +1'
+      right_click: '<yellow>R-Click: -1'
+      shift_click: '<gold>Shift: ±10'
+      range: '<gray>Range: 1-64'
+    glow:
+      name: '<gold><bold>✨ Enchantment Glow'
+      current: '<gray>Current: %status%'
+      toggle: '<yellow>Click to toggle'
+      lore1: '<gray>Makes item glow like'
+      lore2: '<gray>enchanted items'
+    name:
+      name: '<gold><bold>🏷 Custom Name'
+      current: '<gray>Name: %name%'
+      click: '<yellow>Click to edit'
+      click_cycle: '<yellow>Click to cycle'
+      click_save: '<yellow>Click to save'
+      none: '<gray>None (use material name)'
+    lore:
+      name: '<gold><bold>📝 Item Lore'
+      current: '<gray>Lines: %count%'
+      click: '<yellow>Click to edit'
+      lines: '<gray>%count% lines'
+      max: '<red>Max 10 lines'
+      left_click: '<yellow>L-Click: Add line'
+      right_click: '<yellow>R-Click: Remove line'
+    save:
+      name: '<green><bold>💾 Save Changes'
+      lore1: '<gray>Save this drop'
+      lore2: '<gray>to configuration'
+      click: '<yellow>Click to save'
+      chance: '<gray>Chance: <white>%chance%%'
+      amount: '<gray>Amount: <white>%amount%'
+      glow: '<gray>Glow: %status%'
+    back:
+      name: '<yellow><bold>← Back'
+      lore: '<gray>Return to drops menu'
+    delete:
+      name: '<red><bold>🗑 Delete Drop'
+      lore1: '<red>⚠ Permanently removes'
+      lore2: '<red>this custom drop'
+    reset:
+      name: '<red><bold>↺ Reset Changes'
+      lore1: '<gray>Revert all changes'
+      lore2: '<gray>to original values'
+    info:
+      name: '<blue><bold>ℹ Drop Info'
+      lore1: '<gray>Editing: <white>%identifier%'
+      lore2: '<gray>Material: <white>%material%'
+      lore3: '<gray>Changes auto-save'
+      lore4: '<gray>on confirmation'
+    yes: '<green>Yes'
+    no: '<red>No'
+
+  # ==================== GUI - STATS ====================
+  # Keys used by StatsMenu.java
+  stats_menu:
+    title: '<gold><bold>📊 Fishing Statistics'
+    personal:
+      name: '<gold><bold>👤 Your Stats'
+      lore1: '<gray>Total Catches: <white>%total%'
+      lore2: '<gray>Rare Catches: <yellow>%rare%'
+      lore3: '<gray>Items Caught: <white>%items%'
+    leaderboard:
+      name: '<gold><bold>🏆 Leaderboard'
+      lore1: '<gray>Top fishers by'
+      lore2: '<gray>total catches'
+    top_entry: '<yellow>%rank%. <white>%player% <gray>- <yellow>%count%'
+    back:
+      name: '<yellow><bold>← Back'
+      lore: '<gray>Return to main hub'
+
+  # ==================== GUI - ROD ====================
+  rod:
+    title: '<gold><bold>🎣 MythicRod Menu'
+    upgrade:
+      name: '<gold><bold>⬆ Upgrade Rod'
+      lore1: '<gray>Upgrade your fishing'
+      lore2: '<gray>rod abilities'
+    info:
+      name: '<blue><bold>ℹ Rod Information'
+      lore1: '<gray>Current Tier: <white>%tier%'
+      lore2: '<gray>Special Abilities:'
+      lore3: '<gray>- %ability%'
+    back:
+      name: '<yellow><bold>← Back'
+      lore: '<gray>Return to main menu'
+
+# ==================== BANNER ====================
+banner:
+  spigot:
+    title: 'MythicRod-Spigot'
+    platform: 'Spigot 1.21.4'
+    brigadier_style: 'Brigadier-Style ✓'
+    version_label: 'v%version%'
+  paper:
+    title: 'MythicRod-Paper'
+    platform: 'Paper 1.21.4'
+    brigadier_native: 'Brigadier ✓'
+    version_label: 'v%version%'
+
+# ==================== LOGGING ====================
+logging:
+  startup_adventure_ready: '[MythicRod-Spigot] Adventure Platform initialized and ready'
+  loaded_drops: '[MythicRod-Spigot] Loaded %count% custom drops from configuration'
+  startup_success: '[MythicRod-Spigot] All systems initialized successfully in %ms%ms'
+  reload_start: '[MythicRod-Spigot] Configuration reload initiated by admin or plugin'
+  reload_success: '[MythicRod-Spigot] Configuration and all managers reloaded successfully'
+  reload_failed: '[MythicRod-Spigot] Critical error reloading configuration. Check YAML syntax and file permissions.'
+  shutdown_success: '[MythicRod-Spigot] Plugin disabled successfully'
+  shutdown_error: '[MythicRod-Spigot] Critical error during plugin shutdown. Check for data loss.'
+  gui_unknown_menu: '[MythicRod-GUIManager] Unknown menu ID: %menu%. Verify configuration and menu registration.'
+  gui_open_error: "[MythicRod-GUIManager] Critical error opening menu '%menu%'. Check stack trace and menu configuration."
+  gui_close_warning: '[MythicRod-GUIManager] Non-fatal error closing menu. Player session may be incomplete.'
+  gui_click_error: '[MythicRod-GUIManager] Error handling menu interaction. Player action may not have been processed.'
+  menu_open_error: '[MythicRod-BaseMenu] Error opening menu for %player%. Menu may not display correctly.'
+  mainhub_reload_error: '[MythicRod-MainHubMenu] Critical error during reload from GUI. Configuration may be corrupted. Check file permissions and YAML syntax.'
+  config_save_error: '[MythicRod-ConfigMenu] Critical error saving configuration from GUI. Changes may not be persisted. Check file permissions and disk space.'
+  lang_invalid_url_format: '[MythicRod-LanguageSwitchMenu] Invalid texture URL format for language head: %url%. Using default skin instead.'
+  lang_fetch_failed: '[MythicRod-LanguageSwitchMenu] Failed to fetch language head texture from URL: %url%. Reason: %error%'
+  lang_apply_failed: '[MythicRod-LanguageSwitchMenu] Error applying language head texture. Using default skin instead. Check texture URL format.'
+  lang_change_failed: '[MythicRod-LanguageSwitchMenu] Critical error changing language. Language may not have been updated. Check configuration files.'
+
+# ==================== LANGUAGE NAMES ====================
+language:
+  names:
+    en_US: '<white>English'
+    en: '<white>English'
+    ja_JP: '<white>日本語'
+    jp: '<white>日本語'
+  current: '<yellow>Currently speaking: <white>%language%'

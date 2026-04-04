@@ -15,12 +15,14 @@ public class ItemProviderManager {
     }
 
     public void registerProvider(String prefix, CustomItemProvider provider) {
-        providers.put(prefix.toLowerCase(), provider);
+        if (prefix == null || provider == null) return;
+        providers.put(prefix.toLowerCase(java.util.Locale.ROOT), provider);
     }
 
     public Optional<PlatformItem> buildItem(String fullId, ItemContext context) {
+        if (fullId == null || fullId.isEmpty()) return Optional.empty();
         String[] parts = fullId.split(":", 2);
-        String prefix = parts.length > 1 ? parts[0].toLowerCase() : "minecraft";
+        String prefix = parts.length > 1 ? parts[0].toLowerCase(java.util.Locale.ROOT) : "minecraft";
         String id = parts.length > 1 ? parts[1] : fullId;
 
         CustomItemProvider provider = providers.get(prefix);
@@ -33,7 +35,6 @@ public class ItemProviderManager {
             return item;
         }
 
-        // Fallback to vanilla
         CustomItemProvider vanilla = providers.get("minecraft");
         if (vanilla != null) {
             return vanilla.buildItem(id, context);

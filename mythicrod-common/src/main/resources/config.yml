@@ -18,8 +18,9 @@ profile: balanced
 # UI & MESSAGES
 ################################################################################
 ui:
-  # Chat prefix for all plugin messages
-  prefix: '&6&l[MythicRod] &r'
+  # Chat prefix for all plugin messages (MiniMessage format)
+  # Examples: '<gold><bold>[MythicRod]</bold></gold> ' or '<gold><bold>[MythicRod] <reset>'
+  prefix: '<gold><bold>[MythicRod]</bold></gold> '
 
 language:
   # Supported: en_US, ja_JP (defaults to en_US if invalid)

@@ -24,8 +24,17 @@ authors:
 # Plugin load order: POSTWORLD ensures world data is available
 load: POSTWORLD
 
-# Folia support (async/threaded server): Currently not supported
-folia-supported: false
+# Folia support (async/threaded server): Enabled for modern scheduling
+folia-supported: true
+
+################################################################################
+# SOFT DEPENDENCIES (Optional - plugin works without these)
+################################################################################
+# These are optional integrations that enhance functionality but are not required
+softdepend:
+  - Nexo              # Custom item support via reflection
+  - PlaceholderAPI    # Statistics placeholders for scoreboards/holograms
+  - Oraxen            # Alternative custom item support
 
 ################################################################################
 # PERMISSIONS STRUCTURE
@@ -73,9 +82,24 @@ permissions:
     default: op
     children:
       mythicrod.admin.reload: true
+      mythicrod.admin.give: true
+      mythicrod.admin.debug: true
+      mythicrod.admin.config: true
+
+  mythicrod.admin.config:
+    description: Allows editing of custom drops and plugin settings via GUI
+    default: op
 
   mythicrod.admin.reload:
     description: Reload plugin configuration without restart
+    default: op
+
+  mythicrod.admin.give:
+    description: Give MythicRods to players
+    default: op
+
+  mythicrod.admin.debug:
+    description: Access debug information
     default: op
 
   # ============================================================================
@@ -127,6 +151,14 @@ permissions:
 
   mythicrod.drops.legendary:
     description: Receive drops from the legendary category (restricted)
+    default: op
+
+  mythicrod.rod.advanced:
+    description: Use advanced rod tier
+    default: op
+
+  mythicrod.rod.legendary:
+    description: Use legendary rod tier
     default: op
 ################################################################################
 # PERMISSION SETUP GUIDE

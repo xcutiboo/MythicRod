@@ -1,10 +1,12 @@
 package io.xcutiboo.mythicrod.gui.menus;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import io.xcutiboo.mythicrod.MythicRod;
-import io.xcutiboo.mythicrod.gui.utils.ItemBuilder;
+import io.xcutiboo.mythicrod.item.ItemBuilder;
 public abstract class PaginatedMenu<T> extends BaseMenu {
     protected int currentPage = 0;
     protected List<T> items;
@@ -25,13 +27,12 @@ public abstract class PaginatedMenu<T> extends BaseMenu {
     protected void build() {
         items = getItems();
         if (items == null) {
-            items = new java.util.ArrayList<>();
+            items = new ArrayList<>();
         }
         if (items.isEmpty()) {
             buildEmptyState();
             return;
         }
-        // Calculate pagination
         int itemsPerPage = getItemsPerPage();
         if (itemsPerPage <= 0) {
             itemsPerPage = 45; // Fallback to default
@@ -40,7 +41,6 @@ public abstract class PaginatedMenu<T> extends BaseMenu {
         currentPage = Math.max(0, Math.min(currentPage, maxPage));
         int startIndex = currentPage * itemsPerPage;
         int endIndex = Math.min(startIndex + itemsPerPage, items.size());
-        // Display items for current page
         int slot = 0;
         for (int i = startIndex; i < endIndex; i++) {
             if (i >= items.size()) break; // Safety check
@@ -52,61 +52,56 @@ public abstract class PaginatedMenu<T> extends BaseMenu {
                 slot++;
             }
         }
-        // Add navigation buttons
         buildNavigationBar(currentPage, maxPage);
     }
     protected void buildNavigationBar(int page, int maxPage) {
-        // Previous page button
         if (page > 0) {
             ItemStack prevButton = new ItemBuilder(Material.ARROW)
-                    .name("&e← Previous Page")
+                    .name(tr("gui.paginated.prev_name"))
                     .lore(
-                            "&7Page: &f" + page + "&7/&f" + (maxPage + 1),
+                            tr("gui.paginated.page_info", Map.of("%current%", String.valueOf(page), "%total%", String.valueOf(maxPage + 1))),
                             "",
-                            "&eClick to go back"
+                            tr("gui.paginated.prev_click")
                     )
                     .build();
             setItem(45, prevButton, event -> {
+                playClickSound();
                 currentPage--;
                 refresh();
             });
         } else {
-            // Filler when no previous page
             setItem(45, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
                     .name(" ")
                     .build());
         }
-        // Page indicator in center
         ItemStack pageIndicator = new ItemBuilder(Material.BOOK)
-                .name("&6Page Information")
+                .name(tr("gui.paginated.info_name"))
                 .lore(
-                        "&7Current Page: &f" + (page + 1),
-                        "&7Total Pages: &f" + (maxPage + 1),
-                        "&7Total Items: &f" + items.size()
+                        tr("gui.paginated.current_page", Map.of("%page%", String.valueOf(page + 1))),
+                        tr("gui.paginated.total_pages", Map.of("%total%", String.valueOf(maxPage + 1))),
+                        tr("gui.paginated.total_items", Map.of("%count%", String.valueOf(items.size())))
                 )
                 .build();
         setItem(49, pageIndicator);
-        // Next page button
         if (page < maxPage) {
             ItemStack nextButton = new ItemBuilder(Material.ARROW)
-                    .name("&eNext Page →")
+                    .name(tr("gui.paginated.next_name"))
                     .lore(
-                            "&7Page: &f" + (page + 2) + "&7/&f" + (maxPage + 1),
+                            tr("gui.paginated.page_info", Map.of("%current%", String.valueOf(page + 2), "%total%", String.valueOf(maxPage + 1))),
                             "",
-                            "&eClick to continue"
+                            tr("gui.paginated.next_click")
                     )
                     .build();
             setItem(53, nextButton, event -> {
+                playClickSound();
                 currentPage++;
                 refresh();
             });
         } else {
-            // Filler when no next page
             setItem(53, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
                     .name(" ")
                     .build());
         }
-        // Fill remaining bottom row slots
         ItemStack filler = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
                 .name(" ")
                 .build();
@@ -118,11 +113,10 @@ public abstract class PaginatedMenu<T> extends BaseMenu {
     }
     protected void buildEmptyState() {
         ItemStack emptyIcon = new ItemBuilder(Material.BARRIER)
-                .name("&cNo Items")
-                .lore("&7There are no items to display.")
+                .name(tr("gui.paginated.empty_name"))
+                .lore(tr("gui.paginated.empty_lore"))
                 .build();
         setItem(22, emptyIcon); // Center of inventory
-        // Fill with glass panes
         ItemStack filler = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
                 .name(" ")
                 .build();

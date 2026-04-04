@@ -2,7 +2,6 @@ package io.xcutiboo.mythicrod.gui;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.entity.Player;
@@ -16,19 +15,16 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 
 import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.api.platform.PlatformScheduler;
+import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import io.xcutiboo.mythicrod.gui.menus.BaseMenu;
+import lombok.RequiredArgsConstructor;
 
-/**
- * Modern Paper GUI Manager using Adventure Components.
- */
+@RequiredArgsConstructor
 public class GUIManager implements Listener {
     private final MythicRod plugin;
-    private final Map<UUID, BaseMenu> openMenus = new HashMap<>();
+    private final PlatformScheduler scheduler;
     private final Map<String, MenuFactory> menuFactories = new HashMap<>();
-
-    public GUIManager(MythicRod plugin) {
-        this.plugin = plugin;
-    }
 
     public void initialize() {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -36,7 +32,7 @@ public class GUIManager implements Listener {
     }
 
     public void registerMenu(String menuId, MenuFactory factory) {
-        menuFactories.put(menuId.toLowerCase(), factory);
+        menuFactories.put(menuId.toLowerCase(java.util.Locale.ROOT), factory);
     }
 
     public boolean openMenu(Player player, String menuId) {
@@ -48,14 +44,16 @@ public class GUIManager implements Listener {
             return false;
         }
 
-        MenuFactory factory = menuFactories.get(menuId.toLowerCase());
+        MenuFactory factory = menuFactories.get(menuId.toLowerCase(java.util.Locale.ROOT));
         if (factory == null) {
-            plugin.getLogger().log(java.util.logging.Level.WARNING, "Unknown menu: " + menuId);
+            plugin.getLogger().log(Level.WARNING, "Unknown menu: " + menuId);
             return false;
         }
 
         try {
-            closeMenu(player);
+            // Close any existing inventory first
+            player.closeInventory();
+            
             BaseMenu menu = factory.create(plugin, player);
             if (menu == null) {
                 return false;
@@ -64,11 +62,9 @@ public class GUIManager implements Listener {
                 menu.setContext(context);
             }
             menu.open();
-            openMenus.put(player.getUniqueId(), menu);
             return true;
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to open menu: " + menuId, e);
-            openMenus.remove(player.getUniqueId());
             return false;
         }
     }
@@ -79,24 +75,22 @@ public class GUIManager implements Listener {
 
     public void closeMenu(Player player) {
         if (player == null) return;
-        BaseMenu menu = openMenus.remove(player.getUniqueId());
-        if (menu != null) {
-            try {
-                menu.onClose();
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "Error closing menu", e);
-            }
-        }
+        // Simply close the inventory - InventoryHolder pattern handles the rest
+        player.closeInventory();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        BaseMenu menu = openMenus.get(player.getUniqueId());
+        // Use InventoryHolder pattern - no need for ConcurrentHashMap lookup
+        if (!(event.getInventory().getHolder() instanceof MythicRodMenuHolder holder)) {
+            return;
+        }
+
+        BaseMenu menu = holder.getMenu();
         if (menu == null) return;
 
-        // Check for specific exploit vectors like offhand swap, number key swap, and drop
         switch (event.getClick()) {
             case NUMBER_KEY:
             case SWAP_OFFHAND:
@@ -112,7 +106,6 @@ public class GUIManager implements Listener {
         if (clicked == null) return;
 
         if (!menu.isMenuInventory(clicked)) {
-            // Prevent shift-clicking items from bottom inventory into the menu
             if (event.isShiftClick()) {
                 event.setCancelled(true);
             }
@@ -120,38 +113,25 @@ public class GUIManager implements Listener {
         }
 
         event.setCancelled(true);
-        
-        // Security Check: Ensure only admins can interact with GUIs
-        if (!player.hasPermission("mythicrod.admin") && !player.isOp()) {
-            player.closeInventory();
-            return;
-        }
 
         try {
             menu.handleClick(event);
         } catch (Exception e) {
-            plugin.getLogger().log(java.util.logging.Level.SEVERE, "[MythicRod-GUIManager] Error handling menu interaction. Player action may not have been processed.", e);
-            closeMenu(player);
+            plugin.getLogger().log(Level.SEVERE, "[MythicRod-GUIManager] Error handling menu interaction. Player action may not have been processed.", e);
+            player.closeInventory();
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-
-        BaseMenu menu = openMenus.get(player.getUniqueId());
-        if (menu == null) return;
+        // Use InventoryHolder pattern
+        if (!(event.getInventory().getHolder() instanceof MythicRodMenuHolder)) {
+            return;
+        }
 
         if (event.getRawSlots().stream().anyMatch(slot ->
                 slot < event.getView().getTopInventory().getSize())) {
             event.setCancelled(true);
-            
-            // Security Check: Ensure only admins can interact with GUIs
-            if (!player.hasPermission("mythicrod.admin") && !player.isOp()) {
-                player.closeInventory();
-                plugin.getLogger().log(Level.WARNING, "Error validating drag permission for player: " + player.getName());
-                closeMenu(player);
-            }
         }
     }
 
@@ -159,41 +139,41 @@ public class GUIManager implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player player)) return;
 
-        BaseMenu menu = openMenus.get(player.getUniqueId());
+        // Use InventoryHolder pattern
+        if (!(event.getInventory().getHolder() instanceof MythicRodMenuHolder holder)) {
+            return;
+        }
+
+        BaseMenu menu = holder.getMenu();
         if (menu == null) return;
 
-        if (menu.isMenuInventory(event.getInventory())) {
-            if (menu.shouldReopenOnClose()) {
-                plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    if (player.isOnline()) {
-                        BaseMenu current = openMenus.get(player.getUniqueId());
-                        if (current == menu) {
-                            try {
-                                menu.open();
-                            } catch (Exception e) {
-                                plugin.getLogger().log(Level.WARNING, "Error reopening menu", e);
-                                closeMenu(player);
-                            }
-                        }
+        if (menu.shouldReopenOnClose()) {
+            scheduler.runForPlayer(new PaperPlayer(player), () -> {
+                if (player.isOnline()) {
+                    try {
+                        menu.open();
+                    } catch (Exception e) {
+                        plugin.getLogger().log(Level.WARNING, "Error reopening menu", e);
                     }
-                });
-            } else {
-                openMenus.remove(player.getUniqueId());
-                try {
-                    menu.onClose();
-                } catch (Exception e) {
-                    plugin.getLogger().log(Level.WARNING, "Error on menu close", e);
                 }
+            });
+        } else {
+            try {
+                menu.onClose();
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Error on menu close", e);
             }
         }
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        BaseMenu menu = openMenus.remove(event.getPlayer().getUniqueId());
-        if (menu != null) {
+        Player player = event.getPlayer();
+        // Close inventory on quit - InventoryHolder pattern will handle cleanup
+        if (player.getOpenInventory() != null && 
+            player.getOpenInventory().getTopInventory().getHolder() instanceof MythicRodMenuHolder holder) {
             try {
-                menu.onClose();
+                holder.getMenu().onClose();
             } catch (Exception e) {
                 plugin.getLogger().log(Level.WARNING, "Error closing menu on quit", e);
             }
@@ -201,14 +181,18 @@ public class GUIManager implements Listener {
     }
 
     public void shutdown() {
-        for (Map.Entry<UUID, BaseMenu> entry : openMenus.entrySet()) {
-            Player player = plugin.getServer().getPlayer(entry.getKey());
-            if (player != null) {
+        // Close all open menus using InventoryHolder pattern
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            if (player.getOpenInventory() != null && 
+                player.getOpenInventory().getTopInventory().getHolder() instanceof MythicRodMenuHolder holder) {
                 player.closeInventory();
+                try {
+                    holder.getMenu().onClose();
+                } catch (Exception e) {
+                    plugin.getLogger().log(Level.WARNING, "Error during menu shutdown", e);
+                }
             }
-            entry.getValue().onClose();
         }
-        openMenus.clear();
         menuFactories.clear();
     }
 

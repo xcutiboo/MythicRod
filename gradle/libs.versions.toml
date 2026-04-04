@@ -1,7 +1,6 @@
 [versions]
-# Minecraft Platform
-paper = "1.21.4-R0.1-SNAPSHOT"
-spigot = "1.21.4-R0.1-SNAPSHOT"
+paper = "1.21.11-R0.1-SNAPSHOT"
+spigot = "1.21.11-R0.1-SNAPSHOT"
 
 # Gradle Plugins
 paperweight = "1.7.7"
@@ -9,6 +8,7 @@ shadow = "8.3.5"
 run-paper = "2.3.1"
 
 # Dependencies
+lombok = "1.18.34"
 nexo = "0.1.0-dev.130"
 guice = "7.0.0"
 configurate = "4.1.2"
@@ -19,6 +19,8 @@ hikaricp = "5.1.0"
 lettuce = "6.3.2.RELEASE"
 folia-scheduler = "v1.0.2"
 bstats = "3.1.0"
+caffeine = "3.1.8"
+placeholderapi = "2.11.6"
 
 # Build
 java = "21"
@@ -29,10 +31,14 @@ paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
 spigot-api = { module = "org.spigotmc:spigot-api", version.ref = "spigot" }
 
 # Integrations
+placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
 nexo = { module = "com.nexomc:nexo", version.ref = "nexo" }
 
 # Dependency Injection
 guice = { module = "com.google.inject:guice", version.ref = "guice" }
+
+# Code Generation
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 
 # Configuration
 configurate-hocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate" }
@@ -44,7 +50,8 @@ lettuce-core = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
 # Scheduler
 folia-scheduler = { module = "com.github.CJCrafter:FoliaScheduler", version.ref = "folia-scheduler" }
 
-# Metrics
+# Caching
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 bstats-bukkit = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
 bstats-base = { module = "org.bstats:bstats-base", version.ref = "bstats" }
 

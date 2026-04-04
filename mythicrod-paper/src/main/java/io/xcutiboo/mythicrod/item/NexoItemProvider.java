@@ -7,13 +7,9 @@ import org.bukkit.inventory.ItemStack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Nexo custom item integration
- */
 public class NexoItemProvider {
     
     private final Logger logger;
-    private final Class<?> nexoItemsClass;
     private final java.lang.reflect.Method itemFromIdMethod;
     private final java.lang.reflect.Method existsMethod;
     private final boolean isAvailable;
@@ -38,7 +34,6 @@ public class NexoItemProvider {
             }
         }
 
-        this.nexoItemsClass = tempClass;
         this.itemFromIdMethod = tempItemMethod;
         this.existsMethod = tempExistsMethod;
         this.isAvailable = tempAvailable;

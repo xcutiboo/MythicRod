@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import io.xcutiboo.mythicrod.MythicRod;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
-import io.xcutiboo.mythicrod.gui.utils.ItemBuilder;
+import io.xcutiboo.mythicrod.item.ItemBuilder;
 
 public class DropsMenu extends BaseMenu {
     private boolean viewingCategory = false;
@@ -28,9 +28,9 @@ public class DropsMenu extends BaseMenu {
     @Override
     protected String getTitle() {
         if (viewingCategory && selectedCategory != null) {
-            return "&6&lDrops &8⚡ &7" + selectedCategory;
+            return tr("gui.drops.category_title", Map.of("%category%", selectedCategory));
         }
-        return "&6&lMythicRod &8⚡ &7Drop Categories";
+        return tr("gui.drops.title");
     }
 
     @Override
@@ -44,7 +44,7 @@ public class DropsMenu extends BaseMenu {
 
     private void buildCategoryList() {
         Map<String, List<CustomDrop>> categories = plugin.getDropManager().getDropCategories();
-        fillBorder();
+        fillBorder(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
         // Display each category as a clickable item
         List<String> categoryNames = new ArrayList<>(categories.keySet());
         int displaySlot = 0; // Index within content area
@@ -70,15 +70,15 @@ public class DropsMenu extends BaseMenu {
                     .mapToInt(CustomDrop::getChance)
                     .sum();
             ItemStack categoryItem = new ItemBuilder(icon)
-                    .name("&e&l" + formatCategoryName(category))
+                    .name(tr("gui.drops.category_name", Map.of("%category%", formatCategoryName(category))))
                     .lore(
-                            "&7This category contains various",
-                            "&7fishing drops with different rarities",
+                            tr("gui.drops.category_lore1"),
+                            tr("gui.drops.category_lore2"),
                             "",
-                            "&7Drops: &f" + drops.size(),
-                            "&7Total Weight: &f" + totalWeight,
+                            tr("gui.drops.category_count", Map.of("%count%", String.valueOf(drops.size()))),
+                            tr("gui.drops.category_weight", Map.of("%weight%", String.valueOf(totalWeight))),
                             "",
-                            "&eClick to view drops"
+                            tr("gui.drops.category_click")
                     )
                     .glow(category.equals("global"))
                     .build();
@@ -91,28 +91,28 @@ public class DropsMenu extends BaseMenu {
         }
         // Info panel
         ItemStack infoItem = new ItemBuilder(Material.KNOWLEDGE_BOOK)
-                .name("&6&lDrop Information")
+                .name(tr("gui.drops.info_name"))
                 .lore(
-                        "&7Total Categories: &f" + categories.size(),
-                        "&7Total Drops: &f" + plugin.getDropManager().getTotalDropCount(),
+                        tr("gui.drops.info_lore1", Map.of("%count%", String.valueOf(categories.size()))),
+                        tr("gui.drops.info_lore2", Map.of("%total%", String.valueOf(plugin.getDropManager().getTotalDropCount()))),
                         "",
-                        "&7Categories organize drops by",
-                        "&7type, biome, or permission group.",
+                        tr("gui.drops.info_lore3"),
+                        tr("gui.drops.info_lore4"),
                         "",
-                        "&7Click a category to view its drops!"
+                        tr("gui.drops.info_lore5")
                 )
                 .build();
         setItem(49, infoItem);
         // Back button
         ItemStack backItem = new ItemBuilder(Material.ARROW)
-                .name("&e← Back to Main Menu")
+                .name(tr("gui.drops.back_name"))
                 .build();
         setItem(45, backItem, event -> {
             plugin.getGUIManager().openMainHub(getPlayer());
         });
         // Close button
         ItemStack closeItem = new ItemBuilder(Material.BARRIER)
-                .name("&c&lClose")
+                .name("<red><bold>Close")
                 .build();
         setItem(53, closeItem, event -> getPlayer().closeInventory());
     }
@@ -125,7 +125,7 @@ public class DropsMenu extends BaseMenu {
             buildCategoryList(); // Build category list directly to avoid recursive issues
             return;
         }
-        fillBorder();
+        fillBorder(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
         // Display each drop
         int displaySlot = 0; // Index within content area
         final int contentStart = 10;
@@ -140,40 +140,43 @@ public class DropsMenu extends BaseMenu {
                 break;
             }
             List<String> lore = new ArrayList<>();
-            lore.add("&7Material: &f" + drop.getIdentifier());
-            lore.add("&7Amount: &f" + drop.getAmount());
-            lore.add("&7Drop Weight: &f" + drop.getChance());
+            lore.add(tr("gui.drops.material_label", Map.of("%material%", formatMaterialName(drop.getIdentifier()))));
+            lore.add(tr("gui.drops.amount_label", Map.of("%amount%", String.valueOf(drop.getAmount()))));
+            lore.add(tr("gui.drops.weight_label", Map.of("%weight%", String.valueOf(drop.getChance()))));
             lore.add("");
             // Add custom name if present
             if (drop.getCustomName() != null) {
-                lore.add("&7Custom Name: &f" + drop.getCustomName());
+                lore.add("<gray>Custom Name: <white>" + drop.getCustomName());
             }
             // Add biome restrictions
             if (!drop.getBiomes().isEmpty()) {
-                lore.add("&7Biomes: &f" + String.join(", ", drop.getBiomes()));
+                lore.add("<gray>Biomes: <white>" + String.join(", ", drop.getBiomes()));
             }
             // Add permission requirement
             if (drop.getPermission() != null) {
-                lore.add("&7Permission: &f" + drop.getPermission());
+                lore.add("<gray>Permission: <white>" + drop.getPermission());
             }
             // Add enchantments
             if (!drop.getEnchantments().isEmpty()) {
                 lore.add("");
-                lore.add("&7Enchantments:");
+                lore.add("<gray>Enchantments:");
                 drop.getEnchantments().forEach((enchant, level) -> {
-                    lore.add("  &8• &f" + formatEnchantName(enchant) + " " + level);
+                    lore.add("  <dark_gray>• <white>" + formatEnchantName(enchant) + " " + level);
                 });
             }
             // Add lore from drop
             if (drop.getLore() != null && !drop.getLore().isEmpty()) {
                 lore.add("");
-                lore.add("&7Custom Lore:");
-                drop.getLore().forEach(line -> lore.add("  &8• &7" + line));
+                lore.add("<gray>Custom Lore:");
+                drop.getLore().forEach(line -> lore.add("  <dark_gray>• <gray>" + line));
             }
             Material material = Material.matchMaterial(drop.getIdentifier());
             if (material == null) material = Material.PAPER;
+            String displayName = drop.getCustomName() != null 
+                ? drop.getCustomName() 
+                : formatMaterialName(drop.getIdentifier());
             ItemStack dropItem = new ItemBuilder(material)
-                    .name("&e" + (drop.getCustomName() != null ? drop.getCustomName() : drop.getIdentifier()))
+                    .name(tr("gui.drops.drop_name", Map.of("%name%", displayName)))
                     .lore(lore)
                     .glow(drop.isGlowing())
                     .build();
@@ -182,18 +185,18 @@ public class DropsMenu extends BaseMenu {
         }
         // Category info
         ItemStack infoItem = new ItemBuilder(Material.BOOK)
-                .name("&6&l" + formatCategoryName(selectedCategory))
+                .name("<gold><bold>" + formatCategoryName(selectedCategory))
                 .lore(
-                        "&7Total Drops: &f" + drops.size(),
+                        "<gray>Total Drops: <white>" + drops.size(),
                         "",
-                        "&7This category contains fishing",
-                        "&7drops available to players."
+                        "<gray>This category contains fishing",
+                        "<gray>drops available to players."
                 )
                 .build();
         setItem(49, infoItem);
         // Back to categories
         ItemStack backItem = new ItemBuilder(Material.ARROW)
-                .name("&e← Back to Categories")
+                .name("<yellow>← Back to Categories")
                 .build();
         setItem(45, backItem, event -> {
             viewingCategory = false;
@@ -202,27 +205,18 @@ public class DropsMenu extends BaseMenu {
         });
         // Close button
         ItemStack closeItem = new ItemBuilder(Material.BARRIER)
-                .name("&c&lClose")
+                .name("<red><bold>Close")
                 .build();
         setItem(53, closeItem, event -> getPlayer().closeInventory());
     }
 
-    private void fillBorder() {
-        ItemStack borderItem = new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE)
-                .name(" ")
-                .build();
-        for (int i = 0; i < 9; i++) {
-            setItem(i, borderItem);
-            setItem(45 + i, borderItem);
-        }
-        for (int row = 1; row < 5; row++) {
-            setItem(row * 9, borderItem);
-            setItem(row * 9 + 8, borderItem);
-        }
-    }
+    /**
+     * DRY: Removed local fillBorder() - now using BaseMenu.fillBorder(Material).
+     */
 
     private Material getCategoryIcon(String category) {
-        return switch (category.toLowerCase()) {
+        if (category == null) return Material.BUCKET;
+        return switch (category.toLowerCase(java.util.Locale.ROOT)) {
             case "global" -> Material.FISHING_ROD;
             case "rare" -> Material.DIAMOND;
             case "common" -> Material.COD;
@@ -237,22 +231,48 @@ public class DropsMenu extends BaseMenu {
     }
 
     private String formatCategoryName(String category) {
+        if (category == null || category.isEmpty()) return "Unknown";
         if (category.startsWith("biome_")) {
             String biome = category.substring(6);
-            return biome.substring(0, 1).toUpperCase() + biome.substring(1).toLowerCase() + " Biome";
+            return biome.substring(0, 1).toUpperCase(java.util.Locale.ROOT) + biome.substring(1).toLowerCase(java.util.Locale.ROOT) + " Biome";
         }
-        return category.substring(0, 1).toUpperCase() + category.substring(1).toLowerCase();
+        return category.substring(0, 1).toUpperCase(java.util.Locale.ROOT) + category.substring(1).toLowerCase(java.util.Locale.ROOT);
     }
 
     private String formatEnchantName(String key) {
+        if (key == null || key.isEmpty()) return "";
         String[] parts = key.split("_");
         StringBuilder result = new StringBuilder();
         for (String part : parts) {
+            if (part.isEmpty()) continue;
             if (result.length() > 0) {
                 result.append(" ");
             }
-            result.append(part.substring(0, 1).toUpperCase())
-                    .append(part.substring(1).toLowerCase());
+            result.append(part.substring(0, 1).toUpperCase(java.util.Locale.ROOT))
+                    .append(part.substring(1).toLowerCase(java.util.Locale.ROOT));
+        }
+        return result.toString();
+    }
+
+    private String formatMaterialName(String identifier) {
+        if (identifier == null || identifier.isEmpty()) {
+            return "Unknown";
+        }
+        // Handle namespace prefixes like "minecraft:"
+        String cleanId = identifier;
+        if (identifier.contains(":")) {
+            cleanId = identifier.substring(identifier.indexOf(":") + 1);
+        }
+        // Convert SNAKE_CASE to Title Case
+        String[] parts = cleanId.split("[_\\s]");
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            if (part.isEmpty()) continue;
+            if (result.length() > 0) {
+                result.append(" ");
+            }
+            result.append(part.substring(0, 1).toUpperCase(java.util.Locale.ROOT))
+                  .append(part.substring(1).toLowerCase(java.util.Locale.ROOT));
         }
         return result.toString();
     }

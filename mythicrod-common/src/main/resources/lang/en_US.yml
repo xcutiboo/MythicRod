@@ -8,9 +8,10 @@
 # Language Name: English
 # Translators: MythicRod Team
 #
-# Color Codes:
-#   &0-&9, &a-&f = Colors
-#   &l = Bold | &o = Italic | &n = Underline | &m = Strikethrough | &r = Reset
+# Color Codes (MiniMessage format):
+#   <black> <dark_blue> <dark_green> <dark_aqua> <dark_red> <dark_purple> <gold> <gray>
+#   <dark_gray> <blue> <green> <aqua> <red> <light_purple> <yellow> <white>
+#   <bold> <italic> <underlined> <strikethrough> <obfuscated> <reset>
 #
 # Placeholders:
 #   Use curly braces: {player}, {amount}, {item}, {count}, etc.
@@ -28,355 +29,355 @@
 # GENERAL MESSAGES
 #==============================================================================
 prefix:
-  default: '&6&l<MythicRod> &r'
+  default: '<gold><bold>[MythicRod]</bold></gold> '
 
 general:
-  no-permission: "&cYou don't have permission to do that."
-  command-not-found: "&cI don't recognize that command. Try &e/mythicrod help&c."
-  error: '&cSomething went wrong. Check the console for details.'
-  player-only: '&cThis command can only be used in-game.'
-  console-only: '&cThis command cannot be used from the console. Please specify a player.'
-  player-not-found: '&cNo player named &e{player}&c could be found.'
-  invalid-number: '&cThat's not a valid number: &f{input}'
+  no-permission: "<red>You don't have permission to do that."
+  command-not-found: "<red>I don't recognize that command. Try <yellow>/mythicrod help</red>."
+  error: '<red>Something went wrong. Check the console for details.</red>'
+  player-only: '<red>This command can only be used in-game.</red>'
+  console-only: '<red>This command cannot be used from the console. Please specify a player.</red>'
+  player-not-found: '<red>No player named <yellow>{player}</red> could be found.</red>'
+  invalid-number: '<red>That is not a valid number: <white>{input}</red>'
 
 #==============================================================================
 # COMMAND MESSAGES
 #==============================================================================
 commands:
   help:
-    header: '&6━━━ &eMythicRod Commands &6━━━'
-    gui: '&e/mythicrod &7or &e/mythicrod gui &7- Open the menu'
-    reload: '&e/mythicrod reload &7- Reload configuration'
-    stats: '&e/mythicrod stats [player] &7- View fishing statistics'
-    top: '&e/mythicrod top [limit] &7- View top fishers leaderboard'
-    drops: '&e/mythicrod drops [category] &7- View available drops'
-    help: '&e/mythicrod help &7- Show this help message'
+    header: '<gold>━━━ <yellow>MythicRod Commands <gold>━━━</gold></yellow></gold>'
+    gui: '<yellow>/mythicrod <gray>or <yellow>/mythicrod gui <gray>- Open the menu</gray></yellow></gray></yellow>'
+    reload: '<yellow>/mythicrod reload <gray>- Reload configuration</gray></yellow>'
+    stats: '<yellow>/mythicrod stats [player] <gray>- View fishing statistics</gray></yellow>'
+    top: '<yellow>/mythicrod top [limit] <gray>- View top fishers leaderboard</gray></yellow>'
+    drops: '<yellow>/mythicrod drops [category] <gray>- View available drops</gray></yellow>'
+    help: '<yellow>/mythicrod help <gray>- Show this help message</gray></yellow>'
 
   reload:
-    start: '&eReloading configuration...'
-    success: '&aConfiguration reloaded successfully!'
-    failed: '&cFailed to reload configuration: &f{error}'
-    permission-denied: "&cYou need the &fmythicrod.reload&c permission to do that."
+    start: '<yellow>Reloading configuration...'</yellow>
+    success: '<green>Configuration reloaded successfully!'</green>
+    failed: '<red>Failed to reload configuration: <white>{error}</white></red>'
+    permission-denied: "<red>You need the <white>mythicrod.reload</white> permission to do that.</red>"
 
   gui:
-    permission-denied: "&cYou don't have permission to open the menu."
+    permission-denied: "<red>You don't have permission to open the menu.</red>"
 
   stats:
-    permission-denied: "&cYou don't have permission to view statistics."
-    disabled: '&cStatistics tracking is currently disabled.'
-    no-data: "&cThere aren't any fishing statistics recorded yet."
-    limit-invalid: '&cThe limit must be between &e1&c and &e100&c.'
+    permission-denied: "<red>You don't have permission to view statistics.</red>"
+    disabled: '<red>Statistics tracking is currently disabled.</red>'
+    no-data: "<red>There aren't any fishing statistics recorded yet.</red>"
+    limit-invalid: '<red>The limit must be between <yellow>1</yellow> and <yellow>100</yellow>.</red>'
 
   drops:
-    permission-denied: "&cYou don't have permission to view drops."
-    category-not-found: '&cNo drops found in category &e{category}&c.'
-    available-categories: '&6Available categories: &e{categories}'
+    permission-denied: "<red>You don't have permission to view drops.</red>"
+    category-not-found: '<red>No drops found in category <yellow>{category}</yellow>.</red>'
+    available-categories: '<gold>Available categories: <yellow>{categories}</yellow></gold>'
 
 #==============================================================================
 # GUI - MAIN HUB MENU
 #==============================================================================
 gui:
   main:
-    title: '&6&lMythicRod &8⚡ &7Main Menu'
+    title: '<gold><bold>MythicRod <dark_gray>⚡ <gray>Main Menu</gray></dark_gray></bold></gold>'
 
     config:
-      name: '&e&lConfiguration Settings'
+      name: '<yellow><bold>Configuration Settings</bold></yellow>'
       lore:
-        - '&7Customize how MythicRod works'
-        - '&7on your server.'
+        - '<gray>Customize how MythicRod works</gray>'
+        - '<gray>on your server.</gray>'
         - ''
-        - '&7Configure:'
-        - '&8• &fSounds and particle effects'
-        - '&8• &fStatistics tracking'
-        - '&8• &fBiome-specific drops'
-        - '&8• &fPermission requirements'
+        - '<gray>Configure:</gray>'
+        - '<dark_gray>• <white>Sounds and particle effects</white></dark_gray>'
+        - '<dark_gray>• <white>Statistics tracking</white></dark_gray>'
+        - '<dark_gray>• <white>Biome-specific drops</white></dark_gray>'
+        - '<dark_gray>• <white>Permission requirements</white></dark_gray>'
         - ''
-        - '&eClick to configure settings'
+        - '<yellow>Click to configure settings</yellow>'
 
     drops:
-      name: '&b&lDrop Management'
+      name: '<aqua><bold>Drop Management</bold></aqua>'
       lore:
-        - '&7View and explore all fishing'
-        - '&7drops available on the server.'
+        - '<gray>View and explore all fishing</gray>'
+        - '<gray>drops available on the server.</gray>'
         - ''
-        - '&7Browse:'
-        - '&8• &fGlobal drops (everyone)'
-        - '&8• &fRare drops (permission-based)'
-        - '&8• &fLegendary items'
-        - '&8• &fBiome-specific drops'
+        - '<gray>Browse:</gray>'
+        - '<dark_gray>• <white>Global drops (everyone)</white></dark_gray>'
+        - '<dark_gray>• <white>Rare drops (permission-based)</white></dark_gray>'
+        - '<dark_gray>• <white>Legendary items</white></dark_gray>'
+        - '<dark_gray>• <white>Biome-specific drops</white></dark_gray>'
         - ''
-        - '&7Each drop shows its chances,'
-        - '&7requirements, and properties.'
+        - '<gray>Each drop shows its chances,</gray>'
+        - '<gray>requirements, and properties.</gray>'
         - ''
-        - '&bClick to browse drops'
+        - '<aqua>Click to browse drops</aqua>'
 
     stats:
-      name: '&d&lStatistics & Leaderboards'
+      name: '<light_purple><bold>Statistics & Leaderboards</bold></light_purple>'
       lore:
-        - '&7Track your fishing progress'
-        - '&7and compete with others!'
+        - '<gray>Track your fishing progress</gray>'
+        - '<gray>and compete with others!</gray>'
         - ''
-        - '&7View:'
-        - '&8• &fYour total catches'
-        - '&8• &fRare and legendary catches'
-        - '&8• &fTop materials caught'
-        - '&8• &fLeaderboard rankings'
+        - '<gray>View:</gray>'
+        - '<dark_gray>• <white>Your total catches</white></dark_gray>'
+        - '<dark_gray>• <white>Rare and legendary catches</white></dark_gray>'
+        - '<dark_gray>• <white>Top materials caught</white></dark_gray>'
+        - '<dark_gray>• <white>Leaderboard rankings</white></dark_gray>'
         - ''
-        - '&dClick to view statistics'
+        - '<light_purple>Click to view statistics</light_purple>'
 
-      disabled: '&cStatistics tracking is currently disabled!'
+      disabled: '<red>Statistics tracking is currently disabled!'</red>
 
     info:
-      name: '&6&lPlugin Information'
+      name: '<gold><bold>Plugin Information</bold></gold>'
       lore:
-        - '&7Running &fMythicRod v{version}'
-        - '&7by &fxcutiboo'
+        - '<gray>Running <white>MythicRod v{version}</white></gray>'
+        - '<gray>by <white>xcutiboo</white></gray>'
         - ''
-        - '&7This plugin enhances fishing with:'
-        - '&8• &fCustom drops and loot tables'
-        - '&8• &fBiome-specific drops'
-        - '&8• &fStatistics tracking'
-        - '&8• &fLegendary items'
-        - '&8• &fMultiple language support'
+        - '<gray>This plugin enhances fishing with:</gray>'
+        - '<dark_gray>• <white>Custom drops and loot tables</white></dark_gray>'
+        - '<dark_gray>• <white>Biome-specific drops</white></dark_gray>'
+        - '<dark_gray>• <white>Statistics tracking</white></dark_gray>'
+        - '<dark_gray>• <white>Legendary items</white></dark_gray>'
+        - '<dark_gray>• <white>Multiple language support</white></dark_gray>'
         - ''
-        - '&7Server: &f{server_version}'
-        - '&7Platform: &f{platform}'
+        - '<gray>Server: <white>{server_version}</white></gray>'
+        - '<gray>Platform: <white>{platform}</white></gray>'
         - ''
-        - '&6Need help? /mythicrod help'
+        - '<gold>Need help? /mythicrod help</gold>'
 
     reload:
-      name: '&a&lReload Configuration'
+      name: '<green><bold>Reload Configuration</bold></green>'
       lore:
-        - '&7Reload all configurations and'
-        - '&7drop tables without restarting.'
+        - '<gray>Reload all configurations and</gray>'
+        - '<gray>drop tables without restarting.</gray>'
         - ''
-        - '&7This will refresh:'
-        - '&8• &fconfig.yml'
-        - '&8• &fdrops.yml'
-        - '&8• &fLanguage files'
+        - '<gray>This will refresh:</gray>'
+        - '<dark_gray>• <white>config.yml</white></dark_gray>'
+        - '<dark_gray>• <white>drops.yml</white></dark_gray>'
+        - '<dark_gray>• <white>Language files</white></dark_gray>'
         - ''
-        - '&aClick to reload'
+        - '<green>Click to reload</green>'
 
-      success: '&aConfiguration reloaded successfully!'
-      failed: '&cFailed to reload configuration. Check the console for errors.'
+      success: '<green>Configuration reloaded successfully!'</green>
+      failed: '<red>Failed to reload configuration. Check the console for errors.</red>'
 
     close:
-      name: '&c&lClose Menu'
-      lore: '&7Click to close this menu'
+      name: '<red><bold>Close Menu</bold></red>'
+      lore: '<gray>Click to close this menu</gray>'
 
     help:
-      name: '&b&lHelp & Commands'
+      name: '<aqua><bold>Help & Commands</bold></aqua>'
       lore:
-        - '&7Quick command reference:'
+        - '<gray>Quick command reference:</gray>'
         - ''
-        - '&e/mythicrod gui &7- Open this menu'
-        - '&e/mythicrod reload &7- Reload config'
-        - '&e/mythicrod stats &7- View your stats'
-        - '&e/mythicrod top &7- View leaderboard'
-        - '&e/mythicrod drops &7- View drops'
-        - '&e/mythicrod help &7- Full command list'
+        - '<yellow>/mythicrod gui <gray>- Open this menu</gray></yellow>'
+        - '<yellow>/mythicrod reload <gray>- Reload config</gray></yellow>'
+        - '<yellow>/mythicrod stats <gray>- View your stats</gray></yellow>'
+        - '<yellow>/mythicrod top <gray>- View leaderboard</gray></yellow>'
+        - '<yellow>/mythicrod drops <gray>- View drops</gray></yellow>'
+        - '<yellow>/mythicrod help <gray>- Full command list</gray></yellow>'
         - ''
-        - '&7Need more help? Check the docs!'
+        - '<gray>Need more help? Check the docs!</gray>'
 
 #==============================================================================
 # GUI - CONFIGURATION MENU
 #==============================================================================
   config:
-    title: '&6&lMythicRod &8⚙ &7Configuration'
+    title: '<gold><bold>MythicRod</bold></gold> <dark_gray>⚙</dark_gray> <gray>Configuration</gray>'
 
     sounds:
-      name: '&e&lSound Effects {status}'
+      name: '<yellow><bold>Sound Effects {status}</bold></yellow>'
       lore:
-        - '&7Play audio feedback when'
-        - '&7catching fish and using menus.'
+        - '<gray>Play audio feedback when</gray>'
+        - '<gray>catching fish and using menus.</gray>'
         - ''
-        - '&7Current: {current}'
+        - '<gray>Current: {current}</gray>'
         - ''
-        - '&eClick to toggle'
+        - '<yellow>Click to toggle</yellow>'
 
     particles:
-      name: '&e&lParticle Effects {status}'
+      name: '<yellow><bold>Particle Effects {status}</bold></yellow>'
       lore:
-        - '&7Display particle effects for'
-        - '&7rare and legendary catches.'
+        - '<gray>Display particle effects for</gray>'
+        - '<gray>rare and legendary catches.</gray>'
         - ''
-        - '&7Current: {current}'
+        - '<gray>Current: {current}</gray>'
         - ''
-        - '&eClick to toggle'
+        - '<yellow>Click to toggle</yellow>'
 
     statistics:
-      name: '&d&lStatistics Tracking {status}'
+      name: '<light_purple><bold>Statistics Tracking {status}</bold></light_purple>'
       lore:
-        - '&7Record and track player'
-        - '&7fishing statistics.'
+        - '<gray>Record and track player</gray>'
+        - '<gray>fishing statistics.</gray>'
         - ''
-        - '&7When enabled:'
-        - '&8• &fTracks catches per player'
-        - '&8• &fEnables leaderboards'
-        - '&8• &fRecords material counts'
+        - '<gray>When enabled:</gray>'
+        - '<dark_gray>• <white>Tracks catches per player</white></dark_gray>'
+        - '<dark_gray>• <white>Enables leaderboards</white></dark_gray>'
+        - '<dark_gray>• <white>Records material counts</white></dark_gray>'
         - ''
-        - '&7Current: {current}'
+        - '<gray>Current: {current}</gray>'
         - ''
-        - '&dClick to toggle'
+        - '<light_purple>Click to toggle</light_purple>'
 
     biome-drops:
-      name: '&a&lBiome-Specific Drops {status}'
+      name: '<green><bold>Biome-Specific Drops {status}</bold></green>'
       lore:
-        - '&7Use different drop tables'
-        - '&7for each biome type.'
+        - '<gray>Use different drop tables</gray>'
+        - '<gray>for each biome type.</gray>'
         - ''
-        - '&7When enabled:'
-        - '&8• &fOcean = ocean-themed drops'
-        - '&8• &fDesert = desert-themed drops'
-        - '&8• &fAnd more...'
+        - '<gray>When enabled:</gray>'
+        - '<dark_gray>• <white>Ocean = ocean-themed drops</white></dark_gray>'
+        - '<dark_gray>• <white>Desert = desert-themed drops</white></dark_gray>'
+        - '<dark_gray>• <white>And more...</white></dark_gray>'
         - ''
-        - '&7Current: {current}'
+        - '<gray>Current: {current}</gray>'
         - ''
-        - '&aClick to toggle'
+        - '<green>Click to toggle</green>'
 
     permissions:
-      name: '&c&lPermission System {status}'
+      name: '<red><bold>Permission System {status}</bold></red>'
       lore:
-        - '&7Require permissions for'
-        - '&7certain drops.'
+        - '<gray>Require permissions for</gray>'
+        - '<gray>certain drops.</gray>'
         - ''
-        - '&7When enabled:'
-        - '&8• &fRare drops need mythicrod.drops.rare'
-        - '&8• &fLegendary drops may need perms'
-        - '&8• &fPlayers without perms get basic drops'
+        - '<gray>When enabled:</gray>'
+        - '<dark_gray>• <white>Rare drops need mythicrod.drops.rare</white></dark_gray>'
+        - '<dark_gray>• <white>Legendary drops may need perms</white></dark_gray>'
+        - '<dark_gray>• <white>Players without perms get basic drops</white></dark_gray>'
         - ''
-        - '&7When disabled:'
-        - '&8• &fAll players can get all drops'
+        - '<gray>When disabled:</gray>'
+        - '<dark_gray>• <white>All players can get all drops</white></dark_gray>'
         - ''
-        - '&7Current: {current}'
+        - '<gray>Current: {current}</gray>'
         - ''
-        - '&cClick to toggle'
+        - '<red>Click to toggle</red>'
 
     save-interval:
-      name: '&b&lStatistics Save Interval'
+      name: '<aqua><bold>Statistics Save Interval</bold></aqua>'
       lore:
-        - '&7How often statistics are'
-        - '&7automatically saved to disk.'
+        - '<gray>How often statistics are</gray>'
+        - '<gray>automatically saved to disk.</gray>'
         - ''
-        - '&7Current: &f{current} seconds'
+        - '<gray>Current: <white>{current} seconds</white></gray>'
         - ''
-        - '&7Recommendations:'
-        - '&8• &fSmall servers: 300-600s'
-        - '&8• &fMedium servers: 600-1200s'
-        - '&8• &fLarge servers: 1200+ seconds'
+        - '<gray>Recommendations:</gray>'
+        - '<dark_gray>• <white>Small servers: 300-600s</white></dark_gray>'
+        - '<dark_gray>• <white>Medium servers: 600-1200s</white></dark_gray>'
+        - '<dark_gray>• <white>Large servers: 1200+ seconds</white></dark_gray>'
         - ''
-        - '&7Left-click: &f-60s'
-        - '&7Right-click: &f+60s'
-        - '&7Shift + Left: &f-300s'
-        - '&7Shift + Right: &f+300s'
+        - '<gray>Left-click: <white>-60s</white></gray>'
+        - '<gray>Right-click: <white>+60s</white></gray>'
+        - '<gray>Shift + Left: <white>-300s</white></gray>'
+        - '<gray>Shift + Right: <white>+300s</white></gray>'
 
     cleanup-interval:
-      name: '&b&lHook Cleanup Interval'
+      name: '<aqua><bold>Hook Cleanup Interval</bold></aqua>'
       lore:
-        - '&7How often old fishing hooks'
-        - '&7are removed from memory.'
+        - '<gray>How often old fishing hooks</gray>'
+        - '<gray>are removed from memory.</gray>'
         - ''
-        - '&7Current: &f{current} seconds'
+        - '<gray>Current: <white>{current} seconds</white></gray>'
         - ''
-        - '&7Recommendations:'
-        - '&8• &fSmall servers: 180-300s'
-        - '&8• &fMedium servers: 300-600s'
-        - '&8• &fLarge servers: 600+ seconds'
+        - '<gray>Recommendations:</gray>'
+        - '<dark_gray>• <white>Small servers: 180-300s</white></dark_gray>'
+        - '<dark_gray>• <white>Medium servers: 300-600s</white></dark_gray>'
+        - '<dark_gray>• <white>Large servers: 600+ seconds</white></dark_gray>'
         - ''
-        - '&7Left-click: &f-60s'
-        - '&7Right-click: &f+60s'
-        - '&7Shift + Left: &f-300s'
-        - '&7Shift + Right: &f+300s'
+        - '<gray>Left-click: <white>-60s</white></gray>'
+        - '<gray>Right-click: <white>+60s</white></gray>'
+        - '<gray>Shift + Left: <white>-300s</white></gray>'
+        - '<gray>Shift + Right: <white>+300s</white></gray>'
 
     debug:
-      name: '&c&lDebug Mode {status}'
+      name: '<red><bold>Debug Mode {status}'
       lore:
-        - '&7Enable detailed logging for'
-        - '&7troubleshooting issues.'
+        - '<gray>Enable detailed logging for'
+        - '<gray>troubleshooting issues.'
         - ''
-        - '&cWarning: &7Generates lots of'
-        - '&7console output! Only enable'
-        - '&7when actively debugging.'
+        - '<red>Warning: <gray>Generates lots of'
+        - '<gray>console output! Only enable'
+        - '<gray>when actively debugging.'
         - ''
-        - '&7Current: {current}'
+        - '<gray>Current: {current}'
         - ''
-        - '&cClick to toggle'
+        - '<red>Click to toggle'
 
     language:
-      name: '&5&lLanguage Settings 🌐'
+      name: '<dark_purple><bold>Language Settings 🌐'
       lore:
-        - '&7Change the language used for'
-        - '&7all messages and menus.'
+        - '<gray>Change the language used for'
+        - '<gray>all messages and menus.'
         - ''
-        - '&7Current: &f{language}'
+        - '<gray>Current: <white>{language}'
         - ''
-        - '&7Available languages:'
-        - '&8• &fEnglish (en_US)'
-        - '&8• &f日本語 (ja_JP)'
+        - '<gray>Available languages:'
+        - '<dark_gray>• <white>English (en_US)'
+        - '<dark_gray>• <white>日本語 (ja_JP)'
         - ''
-        - '&5Click to change language'
+        - '<dark_purple>Click to change language'
 
     info:
-      name: '&6&lConfiguration Info'
+      name: '<gold><bold>Configuration Info'
       lore:
-        - '&7Changes made here take'
-        - '&7effect immediately, but some'
-        - '&7features may require a reload.'
+        - '<gray>Changes made here take'
+        - '<gray>effect immediately, but some'
+        - '<gray>features may require a reload.'
         - ''
-        - '&7Remember to save your changes'
-        - '&7before closing this menu!'
+        - '<gray>Remember to save your changes'
+        - '<gray>before closing this menu!'
         - ''
-        - '&7Tips:'
-        - '&8• &fTest changes before saving'
-        - '&8• &fUse debug mode for troubleshooting'
-        - '&8• &fReload to apply all changes'
+        - '<gray>Tips:'
+        - '<dark_gray>• <white>Test changes before saving'
+        - '<dark_gray>• <white>Use debug mode for troubleshooting'
+        - '<dark_gray>• <white>Reload to apply all changes'
 
     back:
-      name: '&e← Back to Main Menu'
-      lore: '&7Return to the main hub'
+      name: '<yellow>← Back to Main Menu'
+      lore: '<gray>Return to the main hub'
 
     save:
-      name: '&a&l✓ Save Configuration'
+      name: '<green><bold>✓ Save Configuration'
       lore:
-        - '&7Save all changes made in'
-        - '&7this menu to config.yml.'
+        - '<gray>Save all changes made in'
+        - '<gray>this menu to config.yml.'
         - ''
-        - '&7Changes saved:'
-        - '&8• &fImmediately applied'
-        - '&8• &fPersist after restart'
+        - '<gray>Changes saved:'
+        - '<dark_gray>• <white>Immediately applied'
+        - '<dark_gray>• <white>Persist after restart'
         - ''
-        - '&aClick to save changes'
+        - '<green>Click to save changes'
 
-      success: '&a✓ Configuration saved successfully!'
-      info: '&7Changes are now active. Use &e/mythicrod reload &7for a full reload if needed.'
-      failed: '&c✗ Failed to save configuration! Check the console for errors.'
+      success: '<green>✓ Configuration saved successfully!'
+      info: '<gray>Changes are now active. Use <yellow>/mythicrod reload <gray>for a full reload if needed.'
+      failed: '<red>✗ Failed to save configuration! Check the console for errors.'
 
     close:
-      name: '&c&lClose'
-      lore: '&7Close without saving changes'
+      name: '<red><bold>Close'
+      lore: '<gray>Close without saving changes'
 
     status:
-      enabled: '&a✓'
-      disabled: '&c✗'
+      enabled: '<green>✓'
+      disabled: '<red>✗'
 
     current:
-      enabled: '&aEnabled'
-      disabled: '&cDisabled'
+      enabled: '<green>Enabled'
+      disabled: '<red>Disabled'
 
   language:
     menu:
-      title: '&6&lMythicRod &8🌐 &7Language Selection'
+      title: '<gold><bold>MythicRod <dark_gray>🌐 <gray>Language Selection'
       info:
-        name: '&6&lLanguage Settings'
+        name: '<gold><bold>Language Settings'
         lore:
-          choose: '&7Choose your preferred language'
-          current: '&eCurrent Language: &f{current_language}'
-          click_to_switch: '&7Click on a language to switch.'
-          instant: '&7Changes apply instantly!'
-          used_for: '&8This is the language used for:'
-          used_chat: '&8• Chat messages'
-          used_gui: '&8• GUI menus'
-          used_command: '&8• Command feedback'
+          choose: '<gray>Choose your preferred language'
+          current: '<yellow>Current Language: <white>{current_language}'
+          click_to_switch: '<gray>Click on a language to switch.'
+          instant: '<gray>Changes apply instantly!'
+          used_for: '<dark_gray>This is the language used for:'
+          used_chat: '<dark_gray>• Chat messages'
+          used_gui: '<dark_gray>• GUI menus'
+          used_command: '<dark_gray>• Command feedback'
     english:
       name: 'English'
       description: 'Switch to English'
@@ -398,287 +399,287 @@ gui:
 #==============================================================================
   stats:
     title:
-      personal: '&6&lMythicRod &8⚡ &7Your Statistics'
-      leaderboard: '&6&lMythicRod &8⚡ &7Top Fishers'
+      personal: '<gold><bold>MythicRod <dark_gray>⚡ <gray>Your Statistics'
+      leaderboard: '<gold><bold>MythicRod <dark_gray>⚡ <gray>Top Fishers'
 
     total:
-      name: '&e&lTotal Catches'
+      name: '<yellow><bold>Total Catches'
       lore:
-        - '&7You've caught a total of:'
-        - '&f{count} items'
+        - '<gray>You've caught a total of:'
+        - '<white>{count} items'
         - ''
-        - '&7Keep fishing to increase'
-        - '&7your catch count!'
+        - '<gray>Keep fishing to increase'
+        - '<gray>your catch count!'
 
     rare:
-      name: '&b&lRare Catches'
+      name: '<aqua><bold>Rare Catches'
       lore:
-        - '&7You've found:'
-        - '&b{rare} rare items'
-        - '&d{legendary} legendary items'
+        - '<gray>You've found:'
+        - '<aqua>{rare} rare items'
+        - '<light_purple>{legendary} legendary items'
         - ''
-        - '&7Rare drops are special'
-        - '&7and harder to find!'
+        - '<gray>Rare drops are special'
+        - '<gray>and harder to find!'
 
     rate:
-      name: '&d&lRare Drop Rate'
+      name: '<light_purple><bold>Rare Drop Rate'
       lore:
-        - '&7Out of all your catches:'
-        - '&f{percentage}% &7were rare or legendary'
+        - '<gray>Out of all your catches:'
+        - '<white>{percentage}% <gray>were rare or legendary'
         - ''
-        - '&7The average rare rate is'
-        - '&7around 5-15%. You're doing'
-        - '&7{comparison}!'
+        - '<gray>The average rare rate is'
+        - '<gray>around 5-15%. You're doing'
+        - '<gray>{comparison}!'
 
     rate-comparison:
-      great: '&agreat'
-      good: '&ewell'
-      average: '&7average'
+      great: '<green>great'
+      good: '<yellow>well'
+      average: '<gray>average'
 
     top-materials:
-      name: '&6&lYour Top Materials'
-      lore: '&7Items you've caught most often'
+      name: '<gold><bold>Your Top Materials'
+      lore: '<gray>Items you've caught most often'
 
     material:
-      name: '&e{material}'
-      caught: '&7Caught: &f{count} times'
-      percentage: '&7That's &f{percentage}%&7 of your total catches'
+      name: '<yellow>{material}'
+      caught: '<gray>Caught: <white>{count} times'
+      percentage: '<gray>That's <white>{percentage}%<gray> of your total catches'
 
     no-data:
-      name: '&c&lNo Data Yet'
+      name: '<red><bold>No Data Yet'
       lore:
-        - '&7Start fishing to see'
-        - '&7your statistics here!'
+        - '<gray>Start fishing to see'
+        - '<gray>your statistics here!'
 
     leaderboard:
-      name: '&6&lView Leaderboard'
+      name: '<gold><bold>View Leaderboard'
       lore:
-        - '&7See how you rank against'
-        - '&7other fishers on the server!'
+        - '<gray>See how you rank against'
+        - '<gray>other fishers on the server!'
         - ''
-        - '&6Click to view leaderboard'
+        - '<gold>Click to view leaderboard'
 
       empty:
-        name: '&c&lNo Statistics Yet'
+        name: '<red><bold>No Statistics Yet'
         lore:
-          - '&7No fishing stats have been'
-          - '&7recorded yet. Be the first!'
+          - '<gray>No fishing stats have been'
+          - '<gray>recorded yet. Be the first!'
 
       entry:
-        name: '&e#{rank} &f{player}'
+        name: '<yellow>#{rank} <white>{player}'
         lore:
-          - '&7Player: &f{player}'
-          - '&7Total Catches: &f{catches}'
+          - '<gray>Player: <white>{player}'
+          - '<gray>Total Catches: <white>{catches}'
 
-        you: '&a&lThis is you!'
-        rank-badge: '&e&l{ordinal} Place!'
+        you: '<green><bold>This is you!'
+        rank-badge: '<yellow><bold>{ordinal} Place!'
 
       info:
-        name: '&6&lLeaderboard Info'
+        name: '<gold><bold>Leaderboard Info'
         lore:
-          - '&7This leaderboard shows the'
-          - '&7top fishers based on total'
-          - '&7catch count.'
+          - '<gray>This leaderboard shows the'
+          - '<gray>top fishers based on total'
+          - '<gray>catch count.'
           - ''
-          - '&7Keep fishing to climb higher!'
+          - '<gray>Keep fishing to climb higher!'
 
     back-main:
-      name: '&e← Back to Main Menu'
+      name: '<yellow>← Back to Main Menu'
 
     back-stats:
-      name: '&e← Back to Your Stats'
+      name: '<yellow>← Back to Your Stats'
 
     close:
-      name: '&c&lClose'
+      name: '<red><bold>Close'
 
 #==============================================================================
 # GUI - DROPS MENU
 #==============================================================================
   drops:
     title:
-      list: '&6&lMythicRod &8⚡ &7Drop Categories'
-      category: '&6&lDrops &8⚡ &7{category}'
+      list: '<gold><bold>MythicRod <dark_gray>⚡ <gray>Drop Categories'
+      category: '<gold><bold>Drops <dark_gray>⚡ <gray>{category}'
 
     category:
-      name: '&e&l{name}'
+      name: '<yellow><bold>{name}'
       lore:
-        - '&7This category contains'
-        - '&f{count} different drops'
+        - '<gray>This category contains'
+        - '<white>{count} different drops'
         - ''
-        - '&7Type: &f{type}'
-        - '&7Access: &f{access}'
+        - '<gray>Type: <white>{type}'
+        - '<gray>Access: <white>{access}'
         - ''
-        - '&eClick to view drops'
+        - '<yellow>Click to view drops'
 
     category-types:
-      global: '&aGlobal (Everyone)'
-      rare: '&bRare (Permission)'
-      legendary: '&dLegendary (Special)'
-      biome: '&2Biome-Specific'
+      global: '<green>Global (Everyone)'
+      rare: '<aqua>Rare (Permission)'
+      legendary: '<light_purple>Legendary (Special)'
+      biome: '<dark_green>Biome-Specific'
 
     category-access:
-      everyone: '&aEveryone'
-      permission: '&ePermission Required'
-      special: '&dSpecial Requirements'
+      everyone: '<green>Everyone'
+      permission: '<yellow>Permission Required'
+      special: '<light_purple>Special Requirements'
 
     info:
-      name: '&6&lDrop Information'
+      name: '<gold><bold>Drop Information'
       lore:
-        - '&7Drops are items you can'
-        - '&7catch while fishing.'
+        - '<gray>Drops are items you can'
+        - '<gray>catch while fishing.'
         - ''
-        - '&7Categories:'
-        - '&8• &aGlobal &7- Everyone'
-        - '&8• &bRare &7- Permission-based'
-        - '&8• &dLegendary &7- Special items'
+        - '<gray>Categories:'
+        - '<dark_gray>• <green>Global <gray>- Everyone'
+        - '<dark_gray>• <aqua>Rare <gray>- Permission-based'
+        - '<dark_gray>• <light_purple>Legendary <gray>- Special items'
         - ''
-        - '&7Click a category to explore!'
+        - '<gray>Click a category to explore!'
 
     drop:
-      material: '&7Material: &f{material}'
-      amount: '&7Amount: &f{amount}'
-      weight: '&7Drop Weight: &f{weight}'
-      custom-name: '&7Custom Name: &f{name}'
-      biomes: '&7Biomes: &f{biomes}'
-      permission: '&7Permission: &f{permission}'
+      material: '<gray>Material: <white>{material}'
+      amount: '<gray>Amount: <white>{amount}'
+      weight: '<gray>Drop Weight: <white>{weight}'
+      custom-name: '<gray>Custom Name: <white>{name}'
+      biomes: '<gray>Biomes: <white>{biomes}'
+      permission: '<gray>Permission: <white>{permission}'
 
       enchantments:
-        header: '&7Enchantments:'
-        entry: '  &8• &f{enchant} {level}'
+        header: '<gray>Enchantments:'
+        entry: '  <dark_gray>• <white>{enchant} {level}'
 
       lore:
-        header: '&7Custom Lore:'
-        entry: '  &8• &7{line}'
+        header: '<gray>Custom Lore:'
+        entry: '  <dark_gray>• <gray>{line}'
 
-      name: '&e{name}'
+      name: '<yellow>{name}'
 
     category-info:
-      name: '&6&l{category}'
+      name: '<gold><bold>{category}'
       lore:
-        - '&7Viewing all drops in'
-        - '&7this category.'
+        - '<gray>Viewing all drops in'
+        - '<gray>this category.'
         - ''
-        - '&7Total: &f{count} drops'
+        - '<gray>Total: <white>{count} drops'
 
     back-main:
-      name: '&e← Back to Main Menu'
+      name: '<yellow>← Back to Main Menu'
 
     back-categories:
-      name: '&e← Back to Categories'
+      name: '<yellow>← Back to Categories'
 
     close:
-      name: '&c&lClose'
+      name: '<red><bold>Close'
 
 #==============================================================================
 # GUI - LANGUAGE MENU
 #==============================================================================
   language:
-    title: '&6&lMythicRod &8🌐 &7Language Selection'
+    title: '<gold><bold>MythicRod <dark_gray>🌐 <gray>Language Selection'
 
     info:
-      name: '&6&lLanguage Settings'
+      name: '<gold><bold>Language Settings'
       lore:
-        - '&7Choose your preferred language'
-        - '&7for all messages and menus.'
+        - '<gray>Choose your preferred language'
+        - '<gray>for all messages and menus.'
         - ''
-        - '&7Available Languages:'
-        - '&8• &fEnglish'
-        - '&8• &f日本語 (Japanese)'
+        - '<gray>Available Languages:'
+        - '<dark_gray>• <white>English'
+        - '<dark_gray>• <white>日本語 (Japanese)'
         - ''
-        - '&7The language you select will:'
-        - '&8• &fAffect all in-game messages'
-        - '&8• &fAffect all menu text'
-        - '&8• &fBe saved for the entire server'
+        - '<gray>The language you select will:'
+        - '<dark_gray>• <white>Affect all in-game messages'
+        - '<dark_gray>• <white>Affect all menu text'
+        - '<dark_gray>• <white>Be saved for the entire server'
         - ''
-        - '&6Select a language below!'
-      select: '&6Select a language below!'
+        - '<gold>Select a language below!'
+      select: '<gold>Select a language below!'
 
     languages:
       english:
         name: 'English'
         lore:
-          - '&7The default language.'
-          - '&7All features fully supported.'
+          - '<gray>The default language.'
+          - '<gray>All features fully supported.'
         description: 'Switch to English'
         region: 'United Kingdom'
 
       japanese:
         name: '日本語'
         lore:
-          - '&7Japanese language support.'
-          - '&7日本語で全ての機能が利用可能。'
+          - '<gray>Japanese language support.'
+          - '<gray>日本語で全ての機能が利用可能。'
         description: '日本語に切り替える'
         region: 'Japan · 日本'
 
     back:
-      name: '&e← Back to Configuration'
-      lore: '&7Return to the configuration menu'
+      name: '<yellow>← Back to Configuration'
+      lore: '<gray>Return to the configuration menu'
 
     indicator:
       prefix: '✓ '
       suffix: ' ✓'
 
     status:
-      active: '&a&l✓ Currently Active'
-      inactive: '&7Click to activate'
+      active: '<green><bold>✓ Currently Active'
+      inactive: '<gray>Click to activate'
 
-    separator: '&7━━━━━━━━━━━━━━━'
+    separator: '<gray>━━━━━━━━━━━━━━━'
 
-    changed: '&a✓ Language changed to &f{name}&a!'
-    changed-info: '&7All menus and messages will now display in {name}.'
-    failed: '&c✗ Failed to change language! Check the console for errors.'
+    changed: '<green>✓ Language changed to <white>{name}<green>!'
+    changed-info: '<gray>All menus and messages will now display in {name}.'
+    failed: '<red>✗ Failed to change language! Check the console for errors.'
 
     formats:
-      english: '&fEnglish'
-      japanese: '&f日本語'
-      unknown: '&f{code}'
+      english: '<white>English'
+      japanese: '<white>日本語'
+      unknown: '<white>{code}'
 
 #==============================================================================
 # FISHING MESSAGES
 #==============================================================================
 fishing:
   catch:
-    normal: '&a✓ &aCaught &e{amount}× {item}&a!'
-    rare: '&b&l✦ RARE CATCH! &fYou reeled in &e{amount}× {item}&f!'
-    legendary: '&d&l✦ LEGENDARY! &fYou discovered &e{amount}× {item}&f!'
+    normal: '<green>✓ <green>Caught <yellow>{amount}× {item}<green>!'
+    rare: '<aqua><bold>✦ RARE CATCH! <white>You reeled in <yellow>{amount}× {item}<white>!'
+    legendary: '<light_purple><bold>✦ LEGENDARY! <white>You discovered <yellow>{amount}× {item}<white>!'
 
-  stats-recorded: '&7+1 Fishing Stat Recorded'
+  stats-recorded: '<gray>+1 Fishing Stat Recorded'
 
 #==============================================================================
 # STATISTICS MESSAGES
 #==============================================================================
 stats:
-  header: "&6━━━ &e{player}'s Fishing Stats &6━━━"
-  total-catches: '&eTotal Catches: &f{total}'
-  rare-catches: '&eRare Catches: &f{rare}'
-  legendary-catches: '&eLegendary Catches: &f{legendary}'
-  top-materials: '&6━━━ &eTop Materials Caught &6━━━'
-  material-entry: '&e{material}: &f{count}'
+  header: "<gold>━━━ <yellow>{player}'s Fishing Stats <gold>━━━"
+  total-catches: '<yellow>Total Catches: <white>{total}'
+  rare-catches: '<yellow>Rare Catches: <white>{rare}'
+  legendary-catches: '<yellow>Legendary Catches: <white>{legendary}'
+  top-materials: '<gold>━━━ <yellow>Top Materials Caught <gold>━━━'
+  material-entry: '<yellow>{material}: <white>{count}'
 
   leaderboard:
-    header: '&6━━━ &eTop {limit} Fishers &6━━━'
-    entry: '&e#{rank}: &f{player} &7- &f{catches} catches'
+    header: '<gold>━━━ <yellow>Top {limit} Fishers <gold>━━━'
+    entry: '<yellow>#{rank}: <white>{player} <gray>- <white>{catches} catches'
 
 #==============================================================================
 # DROPS MESSAGES (Command Output)
 #==============================================================================
 drops:
-  header: '&6━━━ &eMythicRod Drop Categories &6━━━'
-  category-entry: '&e{category}: &f{count} items'
-  usage: '&7Use &e/mythicrod drops {category}&7 to see items in that category.'
-  category-header: '&6━━━ &eMythicRod Drops: {category} &6━━━'
-  drop-entry: '&e{name} &7- &f{chance}% chance, {amount}× per catch'
+  header: '<gold>━━━ <yellow>MythicRod Drop Categories <gold>━━━'
+  category-entry: '<yellow>{category}: <white>{count} items'
+  usage: '<gray>Use <yellow>/mythicrod drops {category}<gray> to see items in that category.'
+  category-header: '<gold>━━━ <yellow>MythicRod Drops: {category} <gold>━━━'
+  drop-entry: '<yellow>{name} <gray>- <white>{chance}% chance, {amount}× per catch'
 
 #==============================================================================
 # LANGUAGE DISPLAY NAMES
 #==============================================================================
 language:
   names:
-    en_US: '&fEnglish'
-    en: '&fEnglish'
-    ja_JP: '&f日本語'
-    jp: '&f日本語'
-  current: '&eCurrently speaking: &f{language}'
+    en_US: '<white>English'
+    en: '<white>English'
+    ja_JP: '<white>日本語'
+    jp: '<white>日本語'
+  current: '<yellow>Currently speaking: <white>{language}'
 
 #==============================================================================
 # CONSOLE / ADMIN MESSAGES
@@ -690,11 +691,11 @@ console:
       loading: 'MythicRod-Paper loading (Brigadier command system enabled)...'
       banner:
         - ''
-        - '&6&l╔═══════════════════════════════════════╗'
-        - '&6&l║  &f&lMythicRod &6&l- Paper Edition         ║'
-        - '&6&l║  &7Version {version}                    ║'
-        - '&6&l║  &7Enhanced fishing with custom drops  ║'
-        - '&6&l╚═══════════════════════════════════════╝'
+        - '<gold><bold>╔═══════════════════════════════════════╗'
+        - '<gold><bold>║  <white><bold>MythicRod <gold><bold>- Paper Edition         ║'
+        - '<gold><bold>║  <gray>Version {version}                    ║'
+        - '<gold><bold>║  <gray>Enhanced fishing with custom drops  ║'
+        - '<gold><bold>╚═══════════════════════════════════════╝'
         - ''
       initialized: 'MythicRod-Paper initialized successfully!'
       failed: 'Failed to enable MythicRod-Paper'
@@ -703,11 +704,11 @@ console:
       adventure-ready: '[MythicRod-Spigot] Adventure Platform initialized and ready for rich text formatting'
       banner:
         - ''
-        - '&6&l╔═══════════════════════════════════════╗'
-        - '&6&l║  &f&lMythicRod &6&l- Spigot Edition       ║'
-        - '&6&l║  &7Version {version}                    ║'
-        - '&6&l║  &7Enhanced fishing with custom drops  ║'
-        - '&6&l╚═══════════════════════════════════════╝'
+        - '<gold><bold>╔═══════════════════════════════════════╗'
+        - '<gold><bold>║  <white><bold>MythicRod <gold><bold>- Spigot Edition       ║'
+        - '<gold><bold>║  <gray>Version {version}                    ║'
+        - '<gold><bold>║  <gray>Enhanced fishing with custom drops  ║'
+        - '<gold><bold>╚═══════════════════════════════════════╝'
         - ''
       drops-loaded: '[MythicRod-Spigot] Loaded {count} total drops across all categories'
       running-on: '[MythicRod-Spigot] Running on {server}'

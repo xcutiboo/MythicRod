@@ -1,32 +1,29 @@
 package io.xcutiboo.mythicrod.api.platform;
 
-/**
- * Platform-agnostic scheduler abstraction.
- * Used to avoid BukkitScheduler or FoliaScheduler dependencies in common.
- */
 public interface PlatformScheduler {
     
-    /**
-     * Run a task asynchronously.
-     */
+    
+    void runAtLocation(PlatformLocation location, Runnable task);
+    
+    PlatformTask runAtLocationDelayed(PlatformLocation location, Runnable task, long delayTicks);
+    
+    
+    void runForPlayer(PlatformPlayer player, Runnable task);
+    
+    PlatformTask runForPlayerDelayed(PlatformPlayer player, Runnable task, long delayTicks);
+    
+    
+    void runGlobal(Runnable task);
+    
+    PlatformTask runGlobalDelayed(Runnable task, long delayTicks);
+    
+    
     void runAsync(Runnable task);
     
-    /**
-     * Run a task asynchronously after a delay.
-     * @param delayTicks Delay in ticks (20 ticks = 1 second)
-     */
-    void runAsyncLater(Runnable task, long delayTicks);
+    PlatformTask runAsyncDelayed(Runnable task, long delayTicks);
     
-    /**
-     * Run a repeating task asynchronously.
-     * @param delayTicks Initial delay in ticks
-     * @param periodTicks Period between executions in ticks
-     */
-    void runAsyncTimer(Runnable task, long delayTicks, long periodTicks);
     
-    /**
-     * Schedule a task on the global region (Folia) or main thread (Spigot).
-     * Must be used for any operations that modify global world state.
-     */
-    void runGlobal(Runnable task);
+    PlatformTask runGlobalRepeating(Runnable task, long initialDelayTicks, long periodTicks);
+    
+    PlatformTask runAsyncRepeating(Runnable task, long initialDelayMillis, long periodMillis);
 }

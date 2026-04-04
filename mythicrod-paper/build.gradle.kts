@@ -8,7 +8,10 @@ dependencies {
     
     compileOnly(libs.paper.api)
     
-    implementation(libs.guice)
+    // Code generation
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    
     implementation(libs.configurate.hocon)
     implementation(libs.hikaricp)
     implementation(libs.lettuce.core)
@@ -40,23 +43,17 @@ tasks {
         archiveBaseName.set("MythicRod-Paper")
         archiveClassifier.set("")
         
-        relocate("com.google.inject", "io.xcutiboo.mythicrod.shaded.guice")
+        // DO NOT relocate Adventure - Paper provides it
+        // Only relocate libraries not provided by Paper
         relocate("org.spongepowered.configurate", "io.xcutiboo.mythicrod.shaded.configurate")
         relocate("com.zaxxer.hikari", "io.xcutiboo.mythicrod.shaded.hikari")
         relocate("io.lettuce", "io.xcutiboo.mythicrod.shaded.lettuce")
         relocate("org.bstats", "io.xcutiboo.mythicrod.shaded.bstats")
         
-        dependencies {
-            include(dependency("com.google.inject:guice"))
-            include(dependency("org.spongepowered:configurate-hocon"))
-            include(dependency("com.zaxxer:HikariCP"))
-            include(dependency("io.lettuce:lettuce-core"))
-            include(dependency("org.bstats:bstats-bukkit"))
-        }
+        // Include common module and all dependencies
+        configurations = listOf(project.configurations.runtimeClasspath.get())
         
         exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
-        
-        minimize()
     }
     
     assemble {

@@ -2,27 +2,44 @@ package io.xcutiboo.mythicrod.paper.platform;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import java.io.InputStreamReader;
+
+import org.bukkit.World;
 import org.bukkit.Server;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+
+import net.kyori.adventure.text.Component;
 
 import io.xcutiboo.mythicrod.api.platform.PlatformCommandSender;
 import io.xcutiboo.mythicrod.api.platform.PlatformConfiguration;
 import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 import io.xcutiboo.mythicrod.api.platform.PlatformScheduler;
 import io.xcutiboo.mythicrod.api.platform.PlatformServer;
+import io.xcutiboo.mythicrod.api.platform.PlatformWorld;
+import io.xcutiboo.mythicrod.api.platform.PlatformItemFactory;
+import io.xcutiboo.mythicrod.paper.scheduler.FoliaSchedulerService;
+import io.xcutiboo.mythicrod.item.ItemFactory;
 
-/**
- * Paper implementation of PlatformServer that wraps a native Bukkit Server
- */
 public class PaperServer implements PlatformServer {
     private final Server server;
-    
-    public PaperServer(Server server) {
+    private final PlatformScheduler scheduler;
+    // HIGH-008 FIX: ItemFactory (and its NexoItemProvider Class.forName reflection) was
+    // instantiated on every getItemFactory() call.  Cache it once at construction time.
+    private final PlatformItemFactory itemFactory;
+
+    public PaperServer(Server server, Plugin plugin) {
         this.server = server;
+        this.scheduler = new FoliaSchedulerService(plugin);
+        this.itemFactory = new ItemFactory(server.getLogger());
     }
     
     @Override
@@ -32,8 +49,7 @@ public class PaperServer implements PlatformServer {
     
     @Override
     public PlatformScheduler getScheduler() {
-        // Paper module doesn't use platform scheduler abstraction
-        return null;
+        return scheduler;
     }
     
     @Override
@@ -68,7 +84,7 @@ public class PaperServer implements PlatformServer {
     
     @Override
     public PlatformConfiguration loadConfiguration(InputStream stream) {
-        return new PaperConfiguration(YamlConfiguration.loadConfiguration(new java.io.InputStreamReader(stream)));
+        return new PaperConfiguration(YamlConfiguration.loadConfiguration(new InputStreamReader(stream)));
     }
     
     @Override
@@ -81,22 +97,32 @@ public class PaperServer implements PlatformServer {
         server.dispatchCommand(server.getConsoleSender(), command);
     }
     
+    /**
+     * Broadcasts a message to all players on the server using Adventure Component API.
+     * 
+     * @param message The message to broadcast (will be deserialized from MiniMessage format)
+     */
     @Override
-    @SuppressWarnings("deprecation")
     public void broadcastMessage(String message) {
-        server.broadcastMessage(message);
+        Component component = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(message);
+        server.broadcast(component);
     }
     
-    /**
-     * Get the underlying native Bukkit Server
-     */
+    @Override
+    public PlatformWorld getWorld(String name) {
+        World world = server.getWorld(name);
+        return world != null ? new PaperWorld(world) : null;
+    }
+    
+    @Override
+    public PlatformItemFactory getItemFactory() {
+        return itemFactory;
+    }
+    
     public Server getBukkitServer() {
         return server;
     }
     
-    /**
-     * Paper-specific configuration wrapper
-     */
     private static class PaperConfiguration implements PlatformConfiguration {
         private final YamlConfiguration config;
         
@@ -150,7 +176,7 @@ public class PaperServer implements PlatformServer {
         }
         
         @Override
-        public java.util.List<String> getStringList(String path) {
+        public List<String> getStringList(String path) {
             return config.getStringList(path);
         }
         
@@ -160,14 +186,14 @@ public class PaperServer implements PlatformServer {
         }
         
         @Override
-        public java.util.Set<String> getKeys(String path, boolean deep) {
-            org.bukkit.configuration.ConfigurationSection section = config.getConfigurationSection(path);
-            return section != null ? section.getKeys(deep) : java.util.Collections.emptySet();
+        public Set<String> getKeys(String path, boolean deep) {
+            ConfigurationSection section = config.getConfigurationSection(path);
+            return section != null ? section.getKeys(deep) : Collections.emptySet();
         }
         
         @Override
         public PlatformConfiguration getSection(String path) {
-            org.bukkit.configuration.ConfigurationSection section = config.getConfigurationSection(path);
+            ConfigurationSection section = config.getConfigurationSection(path);
             if (section == null) return null;
             YamlConfiguration newConfig = new YamlConfiguration();
             for (String key : section.getKeys(false)) {

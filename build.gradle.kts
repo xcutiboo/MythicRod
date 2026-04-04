@@ -37,7 +37,7 @@ subprojects {
             listOf(
                 "-Werror",                    // Treat warnings as errors
                 "-Xlint:all",                 // Enable all warnings
-                "-Xlint:deprecation",         // Warn about deprecated APIs
+                "-Xlint:-deprecation",        // Disable deprecation warnings (Paper API has deprecated methods we must use)
                 "-Xlint:unchecked",           // Warn about unchecked operations
                 "-Xlint:rawtypes",            // Warn about raw types
                 "-Xlint:cast",                // Warn about unnecessary casts

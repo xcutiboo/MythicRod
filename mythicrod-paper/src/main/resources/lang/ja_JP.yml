@@ -1,0 +1,97 @@
+# MythicRod 日本語 (JP) 言語ファイル
+# MiniMessage形式を使用: <red>テキスト</red>, <#ff0000>16進数カラー</#ff0000>
+
+plugin:
+  prefix: "<dark_gray>[</dark_gray><gold>MythicRod</gold><dark_gray>]</dark_gray> "
+  enabled: "<green>MythicRodが有効化されました！</green>"
+  disabled: "<red>MythicRodが無効化されました。</red>"
+  reloaded: "<green>設定が正常に再読み込みされました！</green>"
+
+commands:
+  no_permission: "<red>このコマンドを使用する権限がありません。</red>"
+  player_only: "<red>このコマンドはプレイヤーのみ使用できます。</red>"
+  invalid_usage: "<red>無効な使用方法。使用法: <yellow>%usage%</yellow></red>"
+  
+  debug:
+    header: "<gold>=== MythicRod デバッグ情報 ===</gold>"
+    cache_stats: "<gray>キャッシュ: <yellow>%hits%</yellow> ヒット, <yellow>%misses%</yellow> ミス (%.2f%% ヒット率)</gray>"
+    active_fishing: "<gray>アクティブな釣りセッション: <yellow>%count%</yellow></gray>"
+    scheduler_tasks: "<gray>スケジュールされたタスク: <yellow>%count%</yellow></gray>"
+    rod_tier_usage: "<gray>竿の使用 - 基本: <yellow>%basic%</yellow>, 上級: <yellow>%advanced%</yellow>, 伝説: <yellow>%legendary%</yellow></gray>"
+  
+  stats:
+    self_header: "<gold>=== あなたの釣り統計 ===</gold>"
+    other_header: "<gold>=== %player%の釣り統計 ===</gold>"
+    total_caught: "<gray>合計捕獲: <yellow>%count%</yellow></gray>"
+    rare_caught: "<gray>レア捕獲: <yellow>%count%</yellow></gray>"
+    legendary_caught: "<gold>伝説の捕獲: <yellow>%count%</yellow></gold>"
+    preferred_rod: "<gray>お気に入りの竿: <yellow>%rod%</yellow></gray>"
+    no_stats: "<red>このプレイヤーの釣り統計が見つかりません。</red>"
+  
+  gui:
+    opened: "<green>釣り管理GUIを開きました。</green>"
+
+fishing:
+  # 竿のメッセージ
+  rod_basic_name: "<gray>基本の釣り竿</gray>"
+  rod_advanced_name: "<aqua>上級釣り竿</aqua>"
+  rod_legendary_name: "<gold><bold>伝説の釣り竿</bold></gold>"
+  
+  rod_lore_header: "<dark_gray>=== 竿の統計 ===</dark_gray>"
+  rod_tier: "<gray> tier: <yellow>%tier%</yellow></gray>"
+  rod_durability: "<gray>耐久度: <yellow>%current%</yellow>/<yellow>%max%</yellow></gray>"
+  rod_enchantments: "<gray>エンチャント: <yellow>%enchants%</yellow></gray>"
+  
+  # 捕獲メッセージ
+  catch_common: "<gray><white>%item%</white>を捕まえた！</gray>"
+  catch_uncommon: "<gray><green>%item%</green>を捕まえた！</gray>"
+  catch_rare: "<gold>✦ レアな<aqua>%item%</aqua>を捕まえた！ ✦</gold>"
+  catch_legendary: "<gold><bold>✦ 伝説の捕獲！ %item%を捕まえた！ ✦</bold></gold>"
+  
+  # ミニゲームメッセージ
+  minigame_start: "<yellow>⚡ 魚がかかった！緑のゾーンで<key>を押せ！ ⚡</yellow>"
+  minigame_success: "<green>✓ 完璧なキャッチ！魚にチャンスはなかった！</green>"
+  minigame_fail: "<red>✗ 魚が逃げた！次回はもっとうまくやろう。</red>"
+  minigame_tension_high: "<red>⚠ テンション危機的！慎重に巻け！</red>"
+  minigame_tension_low: "<green>テンション正常。巻き続けよう！</green>"
+
+errors:
+  database_connection: "<red>データベースへの接続に失敗しました。設定を確認してください。</red>"
+  invalid_biome: "<red>無効なバイオーム設定: %biome%</red>"
+  invalid_drop: "<red>無効なドロップ設定: %drop%</red>"
+  rod_broken: "<red>釣り竿が壊れた！新しい竿を作って釣りを続けよう。</red>"
+
+# GUIタイトル (MiniMessage形式)
+gui:
+  main_title: "<black>MythicRod 釣りマネージャー</black>"
+  stats_title: "<black>釣り統計</black>"
+  drops_title: "<black>ドロップテーブル</black>"
+  config_title: "<black>設定</black>"
+
+# GUI内のアイテム名
+gui_items:
+  close: "<red>閉じる</red>"
+  back: "<yellow>戻る</yellow>"
+  next_page: "<aqua>次のページ →</aqua>"
+  prev_page: "<aqua>← 前のページ</aqua>"
+  
+  # メインメニューアイテム
+  view_stats: "<gold>📊 統計を見る</gold>"
+  view_stats_lore:
+    - "<gray>あなたの釣り統計と</gray>"
+    - "<gray>実績を見る</gray>"
+  
+  view_drops: "<aqua>🎣 ドロップテーブルを見る</aqua>"
+  view_drops_lore:
+    - "<gray>異なるバイオームで</gray>"
+    - "<gray>何が捕まるか見る</gray>"
+  
+  manage_rods: "<green>🔧 竿を管理</green>"
+  manage_rods_lore:
+    - "<gray>あなたの釣り竿を</gray>"
+    - "<gray>見てアップグレードする</gray>"
+  
+  settings: "<yellow>⚙ 設定</yellow>"
+  settings_lore:
+    - "<gray>釣りの設定を</gray>"
+    - "<gray>変更する</gray>"

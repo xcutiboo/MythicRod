@@ -1,8 +1,5 @@
 package io.xcutiboo.mythicrod.api.platform;
 
-/**
- * Platform-agnostic representation of a physical location.
- */
 public class PlatformLocation {
     private final String worldName;
     private final double x, y, z;

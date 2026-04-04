@@ -1,32 +1,50 @@
 package io.xcutiboo.mythicrod.gui.menus;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
 import io.xcutiboo.mythicrod.MythicRod;
-import io.xcutiboo.mythicrod.gui.utils.ItemBuilder;
-import io.xcutiboo.mythicrod.metrics.StatisticsManager.PlayerStats;
+import io.xcutiboo.mythicrod.item.ItemBuilder;
+import io.xcutiboo.mythicrod.stats.PlayerStats;
+
+/**
+ * Statistics GUI menu showing personal stats and global leaderboard.
+ *
+ * <p>Uses {@link io.xcutiboo.mythicrod.metrics.StatisticsManager#getOrCreate(UUID)}
+ * for personal stats (creates an empty entry for new players) and
+ * {@link io.xcutiboo.mythicrod.metrics.StatisticsManager#getTopFishers(int)}
+ * for the leaderboard (returns {@code List<PlayerStats>} sorted by totalCaught).
+ */
 public class StatsMenu extends BaseMenu {
+
     private boolean viewingLeaderboard = false;
+
     public StatsMenu(MythicRod plugin, Player player) {
         super(plugin, player);
     }
+
     @Override
     protected int getSize() {
         return 54;
     }
+
     @Override
     protected String getTitle() {
         if (viewingLeaderboard) {
-            return "&6&lMythicRod &8⚡ &7Top Fishers";
+            return tr("gui.stats.leaderboard_title");
         }
-        return "&6&lMythicRod &8⚡ &7Your Statistics";
+        return tr("gui.stats.title");
     }
+
     @Override
     protected void build() {
         if (viewingLeaderboard) {
@@ -35,174 +53,214 @@ public class StatsMenu extends BaseMenu {
             buildPersonalStats();
         }
     }
+
+    // =========================================================================
+    // Personal stats panel
+    // =========================================================================
+
     private void buildPersonalStats() {
-        fillBorder();
-        PlayerStats stats = plugin.getStatisticsManager().getPlayerStats(new io.xcutiboo.mythicrod.paper.platform.PaperPlayer(getPlayer()));
-        // Total catches display
+        fillBorder(Material.PURPLE_STAINED_GLASS_PANE);
+
+        // getOrCreate — never null, creates empty stats for first-time viewers
+        PlayerStats stats = plugin.getStatisticsManager().getOrCreate(getPlayer().getUniqueId());
+
+        // ── Total catches ──────────────────────────────────────────────────────
         ItemStack totalItem = new ItemBuilder(Material.FISHING_ROD)
-                .name("&e&lTotal Catches")
+                .name(tr("gui.stats.total_catches"))
                 .lore(
-                        "&7You've caught a total of",
+                        tr("gui.stats.total_catches_lore1"),
                         "",
-                        "&6" + stats.getTotalCatches() + " items",
+                        tr("gui.stats.total_catches_lore2",
+                                Map.of("%count%", String.valueOf(stats.getTotalCaught()))),
                         "",
-                        "&7Keep fishing to increase this!"
+                        tr("gui.stats.total_catches_lore3")
                 )
                 .glow(true)
                 .build();
         setItem(11, totalItem);
-        // Rare catches display
+
+        // ── Rare catches ───────────────────────────────────────────────────────
         ItemStack rareItem = new ItemBuilder(Material.DIAMOND)
-                .name("&b&lRare Catches")
+                .name(tr("gui.stats.rare_catches"))
                 .lore(
-                        "&7Special items you've caught",
-                        "&7with low drop rates",
+                        tr("gui.stats.rare_catches_lore1"),
+                        tr("gui.stats.rare_catches_lore2"),
                         "",
-                        "&b" + stats.getRareCatches() + " rare items",
+                        tr("gui.stats.rare_catches_lore3",
+                                Map.of("%count%", String.valueOf(stats.getRareCaught()))),
                         "",
-                        "&7Rare catches have ≤5% weight"
+                        tr("gui.stats.rare_catches_lore4")
                 )
                 .glow(true)
                 .build();
         setItem(13, rareItem);
-        // Success rate calculation
-        double rareRate = stats.getTotalCatches() > 0
-                ? (stats.getRareCatches() * 100.0 / stats.getTotalCatches())
+
+        // ── Drop rate ──────────────────────────────────────────────────────────
+        int total = stats.getTotalCaught();
+        double rareRate = total > 0
+                ? (stats.getRareCaught() * 100.0 / total)
                 : 0.0;
         ItemStack rateItem = new ItemBuilder(Material.CLOCK)
-                .name("&d&lRare Drop Rate")
+                .name(tr("gui.stats.drop_rate"))
                 .lore(
-                        "&7Percentage of your catches",
-                        "&7that were rare items",
+                        tr("gui.stats.drop_rate_lore1"),
+                        tr("gui.stats.drop_rate_lore2"),
                         "",
-                        "&d" + String.format("%.2f", rareRate) + "%",
+                        tr("gui.stats.drop_rate_lore3",
+                                Map.of("%rate%", String.format("%.2f%%", rareRate))),
                         "",
-                        "&7Higher is luckier!"
+                        tr("gui.stats.drop_rate_lore4")
                 )
                 .build();
         setItem(15, rateItem);
-        // Top materials section
+
+        // ── Top materials ──────────────────────────────────────────────────────
         Map<String, Integer> materialCounts = stats.getMaterialCounts();
         if (!materialCounts.isEmpty()) {
             List<Map.Entry<String, Integer>> topMaterials = materialCounts.entrySet().stream()
                     .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                     .limit(5)
-                    .toList();
-            // Display title
+                    .collect(Collectors.toList());
+
             ItemStack topMaterialsTitle = new ItemBuilder(Material.CHEST)
-                    .name("&6&lYour Top Materials")
-                    .lore("&7Items you've caught most often")
+                    .name(tr("gui.stats.top_materials"))
+                    .lore(tr("gui.stats.top_materials_lore"))
                     .build();
             setItem(29, topMaterialsTitle);
-            // Display top materials
+
             int slot = 30;
             for (Map.Entry<String, Integer> entry : topMaterials) {
                 try {
                     Material material = Material.valueOf(entry.getKey());
+                    double pct = entry.getValue() * 100.0 / Math.max(1, total);
                     ItemStack materialItem = new ItemBuilder(material)
-                            .name("&e" + formatMaterialName(entry.getKey()))
+                            .name(tr("gui.stats.material_name",
+                                    Map.of("%material%", formatMaterialName(entry.getKey()))))
                             .lore(
-                                    "&7Caught: &f" + entry.getValue() + " times",
+                                    tr("gui.stats.material_caught",
+                                            Map.of("%count%", String.valueOf(entry.getValue()))),
                                     "",
-                                    "&7Percentage: &f" + String.format("%.1f",
-                                            (entry.getValue() * 100.0 / stats.getTotalCatches())) + "%"
+                                    tr("gui.stats.material_percentage",
+                                            Map.of("%percent%", String.format("%.1f%%", pct)))
                             )
                             .build();
                     setItem(slot, materialItem);
                     slot++;
                     if (slot >= 35) break;
-                } catch (IllegalArgumentException e) {
-                    // Invalid material, skip it
+                } catch (IllegalArgumentException ignored) {
                 }
             }
         } else {
             ItemStack noDataItem = new ItemBuilder(Material.BARRIER)
-                    .name("&c&lNo Data Yet")
+                    .name(tr("gui.stats.no_data"))
                     .lore(
-                            "&7Go fishing to start tracking",
-                            "&7your catch statistics!"
+                            tr("gui.stats.no_data_lore1"),
+                            tr("gui.stats.no_data_lore2")
                     )
                     .build();
             setItem(31, noDataItem);
         }
-        // Leaderboard button
+
+        // ── Navigation ─────────────────────────────────────────────────────────
         ItemStack leaderboardItem = new ItemBuilder(Material.GOLDEN_APPLE)
-                .name("&6&lView Leaderboard")
+                .name(tr("gui.stats.view_leaderboard"))
                 .lore(
-                        "&7See the top fishers on the server",
+                        tr("gui.stats.view_leaderboard_lore1"),
                         "",
-                        "&eClick to view"
+                        tr("gui.stats.view_leaderboard_lore2")
                 )
                 .glow(true)
                 .build();
         setItem(49, leaderboardItem, event -> {
+            playClickSound();
             viewingLeaderboard = true;
             refresh();
         });
-        // Back button
+
         ItemStack backItem = new ItemBuilder(Material.ARROW)
-                .name("&e← Back to Main Menu")
+                .name(tr("gui.stats.back_main"))
                 .build();
         setItem(45, backItem, event -> {
+            playClickSound();
             plugin.getGUIManager().openMainHub(getPlayer());
         });
-        // Close button
+
         ItemStack closeItem = new ItemBuilder(Material.BARRIER)
-                .name("&c&lClose")
+                .name(tr("gui.stats.close"))
                 .build();
-        setItem(53, closeItem, event -> getPlayer().closeInventory());
+        setItem(53, closeItem, event -> {
+            playClickSound();
+            getPlayer().closeInventory();
+        });
     }
+
+    // =========================================================================
+    // Global leaderboard panel
+    // =========================================================================
+
     private void buildLeaderboard() {
-        fillBorder();
-        Map<UUID, Integer> topFishers = plugin.getStatisticsManager().getTopFishers(10);
-        if (topFishers == null || topFishers.isEmpty()) {
+        fillBorder(Material.PURPLE_STAINED_GLASS_PANE);
+
+        // getTopFishers returns List<PlayerStats> sorted desc by totalCaught
+        List<PlayerStats> topFishers = plugin.getStatisticsManager().getTopFishers(10);
+
+        if (topFishers.isEmpty()) {
             ItemStack noDataItem = new ItemBuilder(Material.BARRIER)
-                    .name("&c&lNo Statistics Yet")
+                    .name(tr("gui.stats.no_statistics"))
                     .lore(
-                            "&7No one has caught anything yet!",
-                            "&7Be the first to start fishing."
+                            tr("gui.stats.no_statistics_lore1"),
+                            tr("gui.stats.no_statistics_lore2")
                     )
                     .build();
             setItem(22, noDataItem);
         } else {
-            // Display top fishers with proper slot calculation
-            List<Map.Entry<UUID, Integer>> entries = new ArrayList<>(topFishers.entrySet());
-            int displaySlot = 0; // Index within content area
-            final int contentStart = 10;
-            final int contentPerRow = 7; // Slots 10-16, 19-25, 28-34, 37-43
-            for (Map.Entry<UUID, Integer> entry : entries) {
-                // Calculate actual slot position
-                int row = displaySlot / contentPerRow;
-                int col = displaySlot % contentPerRow;
+            int displaySlot = 0;
+            final int contentStart   = 10;
+            final int contentPerRow  = 7; // slots 10-16, 19-25, 28-34, 37-43
+
+            for (PlayerStats topStats : topFishers) {
+                int row  = displaySlot / contentPerRow;
+                int col  = displaySlot % contentPerRow;
                 int slot = contentStart + (row * 9) + col;
-                // Don't go past row 4
-                if (row >= 4) {
-                    break;
+                if (row >= 4) break;
+
+                UUID topUuid = topStats.getPlayerUuid();
+
+                // Prefer cached player name; fall back to OfflinePlayer lookup
+                String playerName = topStats.getPlayerName();
+                if (playerName == null || playerName.isEmpty()) {
+                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(topUuid);
+                    playerName = offlinePlayer.getName() != null
+                            ? offlinePlayer.getName()
+                            : "Unknown";
                 }
-                OfflinePlayer topPlayer = Bukkit.getOfflinePlayer(entry.getKey());
-                String playerName = topPlayer.getName() != null ? topPlayer.getName() : "Unknown";
-                int catches = Math.max(0, entry.getValue());
-                int rank = displaySlot + 1;
-                // Choose medal/icon based on rank
+
+                int catches          = Math.max(0, topStats.getTotalCaught());
+                int rank             = displaySlot + 1;
+                boolean isCurrentPlayer = topUuid.equals(getPlayer().getUniqueId());
+
                 Material icon = switch (rank) {
-                    case 1 -> Material.GOLD_BLOCK;
-                    case 2 -> Material.IRON_BLOCK;
-                    case 3 -> Material.COPPER_BLOCK;
+                    case 1  -> Material.GOLD_BLOCK;
+                    case 2  -> Material.IRON_BLOCK;
+                    case 3  -> Material.COPPER_BLOCK;
                     default -> Material.PLAYER_HEAD;
                 };
-                boolean isCurrentPlayer = entry.getKey().equals(getPlayer().getUniqueId());
+
                 List<String> lore = new ArrayList<>();
-                lore.add("&7Player: &f" + playerName);
-                lore.add("&7Total Catches: &f" + catches);
+                lore.add(tr("gui.stats.player_label",   Map.of("%name%",  playerName)));
+                lore.add(tr("gui.stats.player_catches",  Map.of("%count%", String.valueOf(catches))));
                 lore.add("");
                 if (isCurrentPlayer) {
-                    lore.add("&a&lThis is you!");
+                    lore.add(tr("gui.stats.you_indicator"));
                 }
                 if (rank <= 3) {
-                    lore.add("&e&l" + getOrdinal(rank) + " Place!");
+                    lore.add(tr("gui.stats.place_indicator",
+                            Map.of("%ordinal%", getOrdinal(rank))));
                 }
+
                 ItemStack playerItem = new ItemBuilder(icon)
-                        .name("&6#" + rank + " &e" + playerName)
+                        .name(tr("gui.stats.player_entry",
+                                Map.of("%rank%", String.valueOf(rank), "%name%", playerName)))
                         .lore(lore)
                         .glow(isCurrentPlayer)
                         .build();
@@ -210,64 +268,60 @@ public class StatsMenu extends BaseMenu {
                 displaySlot++;
             }
         }
-        // Info panel
+
+        // ── Navigation ─────────────────────────────────────────────────────────
         ItemStack infoItem = new ItemBuilder(Material.BOOK)
-                .name("&6&lLeaderboard Info")
+                .name(tr("gui.stats.leaderboard_info"))
                 .lore(
-                        "&7This leaderboard shows the",
-                        "&7top 10 fishers by total catches",
+                        tr("gui.stats.leaderboard_info_lore1"),
+                        tr("gui.stats.leaderboard_info_lore2"),
                         "",
-                        "&7Keep fishing to climb higher!"
+                        tr("gui.stats.leaderboard_info_lore3")
                 )
                 .build();
         setItem(49, infoItem);
-        // Back to stats button
+
         ItemStack backItem = new ItemBuilder(Material.ARROW)
-                .name("&e← Back to Your Stats")
+                .name(tr("gui.stats.back_stats"))
                 .build();
         setItem(45, backItem, event -> {
+            playClickSound();
             viewingLeaderboard = false;
             refresh();
         });
-        // Close button
+
         ItemStack closeItem = new ItemBuilder(Material.BARRIER)
-                .name("&c&lClose")
+                .name(tr("gui.stats.close"))
                 .build();
-        setItem(53, closeItem, event -> getPlayer().closeInventory());
+        setItem(53, closeItem, event -> {
+            playClickSound();
+            getPlayer().closeInventory();
+        });
     }
-    private void fillBorder() {
-        ItemStack borderItem = new ItemBuilder(Material.PURPLE_STAINED_GLASS_PANE)
-                .name(" ")
-                .build();
-        for (int i = 0; i < 9; i++) {
-            setItem(i, borderItem);
-            setItem(45 + i, borderItem);
-        }
-        for (int row = 1; row < 5; row++) {
-            setItem(row * 9, borderItem);
-            setItem(row * 9 + 8, borderItem);
-        }
-    }
+
+    // =========================================================================
+    // Helpers
+    // =========================================================================
+
     private String formatMaterialName(String materialName) {
+        if (materialName == null || materialName.isEmpty()) return "Unknown";
         String[] parts = materialName.split("_");
         StringBuilder result = new StringBuilder();
         for (String part : parts) {
-            if (result.length() > 0) {
-                result.append(" ");
-            }
-            result.append(part.substring(0, 1).toUpperCase())
-                    .append(part.substring(1).toLowerCase());
+            if (part.isEmpty()) continue;
+            if (result.length() > 0) result.append(" ");
+            result.append(part.substring(0, 1).toUpperCase(java.util.Locale.ROOT))
+                  .append(part.substring(1).toLowerCase(java.util.Locale.ROOT));
         }
         return result.toString();
     }
+
     private String getOrdinal(int number) {
-        if (number >= 11 && number <= 13) {
-            return number + "th";
-        }
+        if (number >= 11 && number <= 13) return number + "th";
         return switch (number % 10) {
-            case 1 -> number + "st";
-            case 2 -> number + "nd";
-            case 3 -> number + "rd";
+            case 1  -> number + "st";
+            case 2  -> number + "nd";
+            case 3  -> number + "rd";
             default -> number + "th";
         };
     }

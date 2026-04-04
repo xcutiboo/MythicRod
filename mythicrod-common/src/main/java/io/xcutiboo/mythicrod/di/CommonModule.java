@@ -1,71 +1,68 @@
 package io.xcutiboo.mythicrod.di;
 
+import java.io.File;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+
 import io.xcutiboo.mythicrod.MythicRodPlugin;
 import io.xcutiboo.mythicrod.config.ConfigManager;
-import io.xcutiboo.mythicrod.config.LanguageManager;
 import io.xcutiboo.mythicrod.drops.DropManager;
 import io.xcutiboo.mythicrod.fishing.FishingService;
 import io.xcutiboo.mythicrod.fishing.RewardService;
 import io.xcutiboo.mythicrod.metrics.StatisticsManager;
+import io.xcutiboo.mythicrod.config.LanguageManager;
 
-/**
- * Common DI module containing cross-platform providers.
- * Platform-specific modules should install this.
- */
 public class CommonModule extends AbstractModule {
     private final MythicRodPlugin plugin;
+    private final ConfigManager configManager;
 
-    public CommonModule(MythicRodPlugin plugin) {
+    public CommonModule(MythicRodPlugin plugin, ConfigManager configManager) {
         this.plugin = plugin;
+        this.configManager = configManager;
     }
 
     @Override
     protected void configure() {
         bind(MythicRodPlugin.class).toInstance(plugin);
+        bind(ConfigManager.class).toInstance(configManager);
     }
 
     @Provides
     @Singleton
-    public ConfigManager provideConfigManager(MythicRodPlugin plugin) {
-        ConfigManager manager = new ConfigManager(plugin);
-        
-        return manager;
-    }
-
-    @Provides
-    @Singleton
-    public LanguageManager provideLanguageManager(MythicRodPlugin plugin, ConfigManager configManager) {
+    LanguageManager provideLanguageManager() {
         return new LanguageManager(plugin, configManager);
     }
 
     @Provides
     @Singleton
-    public DropManager provideDropManager(MythicRodPlugin plugin, ConfigManager configManager) {
-        DropManager manager = new DropManager(plugin);
-        manager.loadDrops(configManager.getConfig()); // Need a separate getter for drops, using platform config
+    DropManager provideDropManager() {
+        DropManager manager = new DropManager(plugin.getLogger());
+        manager.loadDrops(plugin.getPlatform().loadConfiguration(
+            new File(plugin.getDataFolder(), "config.yml")));
         return manager;
     }
 
     @Provides
     @Singleton
-    public StatisticsManager provideStatisticsManager(MythicRodPlugin plugin) {
-        StatisticsManager manager = new StatisticsManager(plugin);
-        
-        return manager;
+    FishingService provideFishingService(DropManager dropManager) {
+        return new FishingService(dropManager, plugin.getLogger());
     }
 
     @Provides
     @Singleton
-    public FishingService provideFishingService(MythicRodPlugin plugin) {
-        return new FishingService(plugin);
+    RewardService provideRewardService() {
+        return new RewardService(
+            plugin.getPlatform(),
+            new LanguageManager(plugin, configManager),
+            plugin.getLogger()
+        );
     }
 
     @Provides
     @Singleton
-    public RewardService provideRewardService(MythicRodPlugin plugin) {
-        return new RewardService(plugin);
+    StatisticsManager provideStatisticsManager() {
+        return new StatisticsManager(plugin);
     }
 }

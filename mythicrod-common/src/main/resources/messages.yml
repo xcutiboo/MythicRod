@@ -6,220 +6,189 @@
 #  - messages_en.yml for English                                             #
 #  - messages_jp.yml for Japanese                                            #
 #                                                                              #
-#  Color Codes: &0-&9, &a-&f (colors), &l (bold), &o (italic), &r (reset)   #
+#  MiniMessage Format: <color>, <bold>, <italic>, <reset>                     #
 ################################################################################
 
 ################################################################################
 # GENERAL MESSAGES
 ################################################################################
 prefix:
-  default: '&6&l<MythicRod> &r'
+  default: '<gold><bold><</bold>MythicRod<bold>></bold></gold> <reset>'
 
 general:
-  no-permission: "&cYou don't have permission to use this command."
-  reload-success: '&aConfiguration reloaded successfully!'
-  command-not-found: '&cUnknown command. Use &6/mythicrod help &cfor help.'
-  error: '&cAn error occurred while executing this command.'
+  no-permission: "<red>You don't have permission to use this command.</red>"
+  reload-success: '<green>Configuration reloaded successfully!</green>'
+  command-not-found: '<red>Unknown command. Use <yellow>/mythicrod help</yellow></red>'
+  error: '<red>An error occurred while executing this command.</red>'
 
 gui:
-  players-only: '&cOnly players can use the GUI!'
-  language-changed: '&aLanguage changed to &f{language}&a!'
+  players-only: '<red>Only players can use the GUI!</red>'
+  language-changed: '<green>Language changed to <white>{language}</white>!</green>'
 
 ################################################################################
 # FISHING MESSAGES
 ################################################################################
 fishing:
-  catch-rare: '&b&lRARE CATCH! &fYou caught &e{amount}× {item}&f!'
-  catch-legendary: '&d&lLEGENDARY CATCH! &fYou caught &e{amount}× {item}&f!'
-  catch-normal: '&a✓ &aYou caught &e{amount}× {item}&a!'
-  stats-recorded: '&7+1 Fishing Stat Recorded'
+  catch-rare: '<aqua><bold>✦ RARE CATCH!</bold></aqua> <white>You caught <yellow>{amount}× {item}</yellow>!</white>'
+  catch-legendary: '<light_purple><bold>✦ LEGENDARY!</bold></light_purple> <white>You caught <yellow>{amount}× {item}</yellow>!</white>'
+  catch-normal: '<green>✓ <green>You caught <yellow>{amount}× {item}</yellow>!</green>'
+  stats-recorded: '<gray>+1 Fishing Stat Recorded</gray>'
 
 ################################################################################
 # STATISTICS MESSAGES
 ################################################################################
 stats:
-  header: "&6----- &e{player}'s Fishing Stats &6-----"
-  total-catches: '&eTotal Catches: &f{total}'
-  rare-catches: '&eRare Catches: &f{rare}'
-  legendary-catches: '&eLegendary Catches: &f{legendary}'
-  top-materials: '&6----- &eTop Materials Caught &6-----'
-  material-count: '&e{material}: &f{count}'
-  player-not-found: '&cPlayer &e{player}&c not found or has never fished yet.'
-  console-usage: '&cYou must specify a player name when using this command from console.'
-  disabled: '&cStatistics tracking is disabled in the configuration.'
-  no-stats: '&cNo fishing statistics are available yet.'
-  top-header: '&6----- &eTop {limit} Fishers &6-----'
-  top-entry: '&e#{rank}: &f{player} &7- &f{catches} catches'
-  invalid-number: '&cInvalid number: &f{number}'
+  header: "<gold>----- <yellow>{player}'s Fishing Stats</yellow> <gold>-----"
+  total-catches: '<yellow>Total Catches: <white>{total}</white></yellow>'
+  rare-catches: '<yellow>Rare Catches: <white>{rare}</white></yellow>'
+  legendary-catches: '<yellow>Legendary Catches: <white>{legendary}</white></yellow>'
+  top-materials: '<gold>----- <yellow>Top Materials Caught</yellow> <gold>-----'
+  material-count: '<yellow>{material}: <white>{count}</white></yellow>'
+  player-not-found: '<red>Player <yellow>{player}</yellow> not found or has never fished yet.</red>'
+  console-usage: '<red>You must specify a player name when using this command from console.</red>'
+  disabled: '<red>Statistics tracking is disabled in the configuration.</red>'
+  no-stats: '<red>No fishing statistics are available yet.</red>'
+  top-header: '<gold>----- <yellow>Top {limit} Fishers</yellow> <gold>-----'
+  top-entry: '<yellow>#{rank}: <white>{player}</white> <dark_gray>- <white>{catches} catches</white></yellow>'
+  invalid-number: '<red>Invalid number: <white>{number}</white></red>'
 
 ################################################################################
 # DROPS MESSAGES
 ################################################################################
 drops:
-  header: '&6----- &eMythicRod Drop Categories &6-----'
-  category-entry: '&e{category}: &f{count} items'
-  usage: '&7Use &f/mythicrod drops <category>&7 to view items in a category.'
-  category-header: '&6----- &eMythicRod Drops: {category} &6-----'
-  category-not-found: '&cDrop category &e{category}&c not found.'
-  available-categories: '&6Available categories: &e{categories}'
-  drop-entry: '&e{name} &7- &fChance: {chance}%, Amount: {amount}'
+  header: '<gold>----- <yellow>MythicRod Drop Categories</yellow> <gold>-----'
+  category-entry: '<yellow>{category}: <white>{count} items</white></yellow>'
+  usage: '<gray>Use <white>/mythicrod drops {category}</white> to view items in a category.</gray>'
+  category-header: '<gold>----- <yellow>MythicRod Drops: {category}</yellow> <gold>-----'
+  category-not-found: '<red>Drop category <yellow>{category}</yellow> not found.</red>'
+  available-categories: '<gold>Available categories: <yellow>{categories}</yellow></gold>'
+  drop-entry: '<yellow>{name}</yellow> <dark_gray>- <white>Chance: {chance}%, Amount: {amount}</white>'
 
 ################################################################################
 # COMMAND MESSAGES
 ################################################################################
 commands:
   reload:
-    success: '&aConfiguration reloaded successfully!'
-    error: '&cAn error occurred while reloading the configuration.'
-  no-permission: "&cYou don't have permission to use this command."
-  player-not-found: '&cPlayer &e{player}&c not found or has never fished yet.'
-  help-header: '&6----- &eMythicRod Commands &6-----'
-  help-gui: '&e/mythicrod &7or &e/mythicrod gui &7- Open GUI menu'
-  help-reload: '&e/mythicrod reload &7- Reload the plugin configuration'
-  help-stats: '&e/mythicrod stats [player] &7- View fishing stats'
-  help-top: '&e/mythicrod top [limit] &7- View top fishers'
+    success: '<green>Configuration reloaded successfully!</green>'
+    error: '<red>An error occurred while reloading the configuration.</red>'
+  no-permission: "<red>You don't have permission to use this command.</red>"
+  player-not-found: '<red>Player <yellow>{player}</yellow> not found or has never fished yet.</red>'
+  help-header: '<gold>----- <yellow>MythicRod Commands</yellow> <gold>-----'
+  help-gui: '<yellow>/mythicrod</yellow> <dark_gray>or</dark_gray> <yellow>/mythicrod gui</yellow> <dark_gray>- Open GUI menu</dark_gray>'
+  help-reload: '<yellow>/mythicrod reload</yellow> <dark_gray>- Reload the plugin configuration</dark_gray>'
+  help-stats: '<yellow>/mythicrod stats [player]</yellow> <dark_gray>- View fishing stats</dark_gray>'
+  help-top: '<yellow>/mythicrod top [limit]</yellow> <dark_gray>- View top fishers</dark_gray>'
 ################################################################################
-#                 MythicRod Messages Configuration (Legacy)                    #
-#           This file is kept for backwards compatibility only.               #
+#                 MythicRod Messages Configuration                            #
+#           Modern MiniMessage Format - Paper 1.21.11+                       #
 #                                                                              #
-#  DEPRECATED: New installations should use language-specific files:          #
-#  - messages_en.yml for English                                             #
-#  - messages_jp.yml for Japanese                                            #
+#  MiniMessage Color Codes:                                                  #
+#    <black>, <dark_blue>, <dark_green>, <dark_aqua>, <dark_red>,            #
+#    <dark_purple>, <gold>, <gray>, <dark_gray>, <blue>, <green>,            #
+#    <aqua>, <red>, <light_purple>, <yellow>, <white>                        #
 #                                                                              #
-#  Color Codes: &0-&9, &a-&f (colors), &l (bold), &o (italic), &r (reset)   #
+#  Formatting Tags:                                                           #
+#    <bold>, <italic>, <underlined>, <strikethrough>, <obfuscated>           #
+#    <reset>                                                                  #
+#                                                                              #
+#  Examples:                                                                  #
+#    "<gold><bold>GOLDEN TEXT" = Bold Gold                                   #
+#    "<red><bold>ERROR:" = Bold Red                                          #
+#    "<green>✓ <white>SUCCESS" = Green checkmark, white text                #
+#    "<gray>[Info] <dark_gray>Details" = Gray brackets, dark gray text        #
+#                                                                              #
+#  NOTE: This file is LEGACY and kept for backwards compatibility.          #
+#        New installations should use messages_en.yml or messages_jp.yml     #
 ################################################################################
 
 ################################################################################
 # GENERAL MESSAGES
 ################################################################################
 prefix:
-  default: '&6&l<MythicRod> &r'
+  default: '<gold><bold><</bold>MythicRod<bold>></bold></gold> <reset>'
 
 general:
-  no-permission: "&cYou don't have permission to use this command."
-  reload-success: '&aConfiguration reloaded successfully!'
-  command-not-found: '&cUnknown command. Use &6/mythicrod help &cfor help.'
-  error: '&cAn error occurred while executing this command.'
+  no-permission: "<red>You don't have permission to use this command.</red>"
+  reload-success: '<green>Configuration reloaded successfully!</green>'
+  command-not-found: '<red>Unknown command. Use <gold>/mythicrod help <red>for help.</red>'
+  error: '<red>An error occurred while executing this command.</red>'
 
 gui:
-  players-only: '&cOnly players can use the GUI!'
-  language-changed: '&aLanguage changed to &f{language}&a!'
+  players-only: '<red>Only players can use the GUI!</red>'
+  language-changed: '<green>Language changed to <white>{language}</white>!</green>'
 
 ################################################################################
 # FISHING MESSAGES
 ################################################################################
 fishing:
-  catch-rare: '&b&lRARE CATCH! &fYou caught &e{amount}× {item}&f!'
-  catch-legendary: '&d&lLEGENDARY CATCH! &fYou caught &e{amount}× {item}&f!'
-  catch-normal: '&a✓ &aYou caught &e{amount}× {item}&a!'
-  stats-recorded: '&7+1 Fishing Stat Recorded'
+  catch-rare: '<aqua><bold>✦ RARE CATCH!</bold></aqua> <white>You reeled in <yellow>{amount}× {item}</yellow>!</white>'
+  catch-legendary: '<light_purple><bold>✦ LEGENDARY!</bold></light_purple> <white>You discovered <yellow>{amount}× {item}</yellow>!</white>'
+  catch-normal: '<green>✓</green> <green>Caught <yellow>{amount}× {item}</yellow>!</green>'
+  stats-recorded: '<gray>+1 Fishing Stat Recorded</gray>'
 
 ################################################################################
 # STATISTICS MESSAGES
 ################################################################################
 stats:
-  header: "&6----- &e{player}'s Fishing Stats &6-----"
-  total-catches: '&eTotal Catches: &f{total}'
-  rare-catches: '&eRare Catches: &f{rare}'
-  legendary-catches: '&eLegendary Catches: &f{legendary}'
-  top-materials: '&6----- &eTop Materials Caught &6-----'
-  material-count: '&e{material}: &f{count}'
-  player-not-found: '&cPlayer &e{player}&c not found or has never fished yet.'
-  console-usage: '&cYou must specify a player name when using this command from console.'
-  disabled: '&cStatistics tracking is disabled in the configuration.'
-  no-stats: '&cNo fishing statistics are available yet.'
-  top-header: '&6----- &eTop {limit} Fishers &6-----'
-  top-entry: '&e#{rank}: &f{player} &7- &f{catches} catches'
-  invalid-number: '&cInvalid number: &f{number}'
+  header: "<gold>----- <yellow>{player}'s Fishing Stats</yellow> <gold>-----"
+  total-catches: '<yellow>Total Catches: <white>{total}</white></yellow>'
+  rare-catches: '<yellow>Rare Catches: <white>{rare}</white></yellow>'
+  legendary-catches: '<yellow>Legendary Catches: <white>{legendary}</white></yellow>'
+  top-materials: '<gold>----- <yellow>Top Materials Caught</yellow> <gold>-----'
+  material-count: '<yellow>{material}: <white>{count}</white></yellow>'
+  player-not-found: '<red>Player <yellow>{player}</yellow> not found or has never fished yet.</red>'
+  console-usage: '<red>You must specify a player name when using this command from console.</red>'
+  disabled: '<red>Statistics tracking is disabled in the configuration.</red>'
+  no-stats: '<red>No fishing statistics are available yet.</red>'
+  top-header: '<gold>----- <yellow>Top {limit} Fishers</yellow> <gold>-----'
+  top-entry: '<yellow>#{rank}: <white>{player}</white> <dark_gray>- <white>{catches} catches</white></yellow>'
+  invalid-number: '<red>Invalid number: <white>{number}</white></red>'
 
 ################################################################################
 # DROPS MESSAGES
 ################################################################################
 drops:
-  header: '&6----- &eMythicRod Drop Categories &6-----'
-  category-entry: '&e{category}: &f{count} items'
-  usage: '&7Use &f/mythicrod drops <category>&7 to view items in a category.'
-  category-header: '&6----- &eMythicRod Drops: {category} &6-----'
-  category-not-found: '&cDrop category &e{category}&c not found.'
-  available-categories: '&6Available categories: &e{categories}'
-  drop-entry: '&e{name} &7- &fChance: {chance}%, Amount: {amount}'
+  header: '<gold>----- <yellow>MythicRod Drop Categories</yellow> <gold>-----'
+  category-entry: '<yellow>{category}: <white>{count} items</white></yellow>'
+  usage: '<gray>Use <white>/mythicrod drops <category></white> to view items in a category.</gray>'
+  category-header: '<gold>----- <yellow>MythicRod Drops: {category}</yellow> <gold>-----'
+  category-not-found: '<red>Drop category <yellow>{category}</yellow> not found.</red>'
+  available-categories: '<gold>Available categories: <yellow>{categories}</yellow></gold>'
+  drop-entry: '<yellow>{name}</yellow> <dark_gray>- <white>Chance: {chance}%, Amount: {amount}</white>'
 
 ################################################################################
 # COMMAND MESSAGES
 ################################################################################
 commands:
   reload:
-    success: '&aConfiguration reloaded successfully!'
-    error: '&cAn error occurred while reloading the configuration.'
-  no-permission: "&cYou don't have permission to use this command."
-  player-not-found: '&cPlayer &e{player}&c not found or has never fished yet.'
-  help-header: '&6----- &eMythicRod Commands &6-----'
-  help-gui: '&e/mythicrod &7or &e/mythicrod gui &7- Open GUI menu'
-  help-reload: '&e/mythicrod reload &7- Reload the plugin configuration'
-  help-stats: '&e/mythicrod stats [player] &7- View fishing stats'
-  help-top: '&e/mythicrod top [limit] &7- View top fishers'
-  help-drops: '&e/mythicrod drops [category] &7- View available drops'
-  help-help: '&e/mythicrod help &7- Show this help message'
+    success: '<green>Configuration reloaded successfully!</green>'
+    error: '<red>An error occurred while reloading the configuration.</red>'
+  no-permission: "<red>You don't have permission to use this command.</red>"
+  player-not-found: '<red>Player <yellow>{player}</yellow> not found or has never fished yet.</red>'
+  help-header: '<gold>----- <yellow>MythicRod Commands</yellow> <gold>-----'
+  help-gui: '<yellow>/mythicrod</yellow> <dark_gray>or</dark_gray> <yellow>/mythicrod gui</yellow> <dark_gray>- Open GUI menu</dark_gray>'
+  help-reload: '<yellow>/mythicrod reload</yellow> <dark_gray>- Reload the plugin configuration</dark_gray>'
+  help-stats: '<yellow>/mythicrod stats [player]</yellow> <dark_gray>- View fishing stats</dark_gray>'
+  help-top: '<yellow>/mythicrod top [limit]</yellow> <dark_gray>- View top fishers</dark_gray>'
+  help-drops: '<yellow>/mythicrod drops [category]</yellow> <dark_gray>- View available drops</dark_gray>'
+  help-help: '<yellow>/mythicrod help</yellow> <dark_gray>- Show this help message</dark_gray>'
 
 language:
-  en: '&fEnglish'
-  jp: '&f日本語 (Japanese)'
-  current: '&eCurrent Language: {language}'
+  en: '<white>English</white>'
+  jp: '<white>日本語 (Japanese)</white>'
+  current: '<yellow>Current Language: {language}</yellow>'
+
 ################################################################################
-# TIPS FOR CUSTOMIZATION
+# MIGRATION FROM LEGACY SETUP
 ################################################################################
 #
-# MIGRATION FROM LEGACY SETUP:
+# This file now uses MiniMessage format (modern Paper API).
+# Old <red>olor codes have been converted to MiniMessage tags.
 #
-# If you are upgrading from an old version using messages.yml, follow these steps:
-#
-# 1. Copy your custom messages from this file
-# 2. Paste them into the appropriate language file:
-#    - English messages → messages_en.yml
-#    - Japanese messages → messages_jp.yml
-# 3. Delete or archive this (messages.yml) file
-# 4. Update the language setting in config.yml if needed
-#
-# ADDING NEW LANGUAGES:
-#
-# 1. Create a new file: messages_XX.yml (where XX is your language code)
-# 2. Copy all keys from messages_en.yml
-# 3. Translate the values to your language
-# 4. Missing keys will automatically fall back to English
-#
-# CUSTOMIZATION TIPS:
-#
-# Colors work with: &[0-9a-f][l/o/n/m/r]
-#   Examples:
-#   - "&6&lGOLDEN TEXT" = Bold Gold
-#   - "&c&lERROR:" = Bold Red
-#   - "&a✓ &fSUCCESS" = Green checkmark, white text
-#   - "&8[Info] &7Details" = Gray brackets, light gray text
-#
-# Make messages stand out:
-#   - Use bold (&l) for important words
-#   - Use color changes for emphasis
-#   - Keep messages brief and readable
-#   - Use consistent formatting across similar messages
-#
-# Common patterns:
-#   Errors/Warnings: &c (red)
-#   Success/Good: &a (green)
-#   Info/Neutral: &7 (light gray)
-#   Important: &6 (gold) or &e (yellow)
-#   Special/Rare: &b (cyan) or &d (pink)
-#
-################################################################################
-#   - Use bold (&l) for important words
-#   - Use color changes for emphasis
-#   - Keep messages brief and readable
-#   - Use consistent formatting across similar messages
-#
-# Common patterns:
-#   Errors/Warnings: &c (red)
-#   Success/Good: &a (green)
-#   Info/Neutral: &7 (light gray)
-#   Important: &6 (gold) or &e (yellow)
-#   Special/Rare: &b (cyan) or &d (pink)
+# To customize:
+# 1. Edit the values above using MiniMessage syntax
+# 2. Use <color> tags for colors
+# 3. Use <bold>, <italic> for formatting
+# 4. Reload the plugin to see changes
 #
 ################################################################################

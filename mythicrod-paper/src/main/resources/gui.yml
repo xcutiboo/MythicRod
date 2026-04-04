@@ -1,0 +1,173 @@
+# MythicRod GUI Configuration
+# Customize the appearance and layout of the fishing management GUI
+# Use MiniMessage format for colors: <red>, <green>, <#ff0000>, etc.
+
+gui:
+  # Main menu settings
+  main_menu:
+    title: "<black>MythicRod Fishing Manager</black>"
+    size: 54
+    
+    # Border item
+    border:
+      material: CYAN_STAINED_GLASS_PANE
+      name: " "
+    
+    # Close button
+    close_button:
+      material: BARRIER
+      name: "<red>Close</red>"
+      lore:
+        - "<gray>Click to close the menu</gray>"
+      slot: 45
+  
+  # Rod management menu
+  rod_menu:
+    title: "<black>Rod Preferences</black>"
+    size: 45
+    
+    # Auto-retrieve toggle
+    auto_retrieve:
+      enabled:
+        material: LIME_DYE
+        name: "<green>Auto-Retrieve: ON</green>"
+        lore:
+          - "<gray>Automatically retrieve fishing loot</gray>"
+          - "<gray>Click to disable</gray>"
+      disabled:
+        material: GRAY_DYE
+        name: "<red>Auto-Retrieve: OFF</red>"
+        lore:
+          - "<gray>Manually retrieve fishing loot</gray>"
+          - "<gray>Click to enable</gray>"
+    
+    # Rod tier preference
+    rod_tier:
+      basic:
+        material: FISHING_ROD
+        name: "<gray>Basic Rod</gray>"
+        lore:
+          - "<gray>Standard fishing rod</gray>"
+          - "<gray>Click to select as preferred</gray>"
+      advanced:
+        material: BLAZE_ROD
+        name: "<aqua>Advanced Rod</aqua>"
+        lore:
+          - "<gray>Enhanced fishing rod</gray>"
+          - "<gray>Better catch rates</gray>"
+          - "<gray>Click to select as preferred</gray>"
+      legendary:
+        material: NETHER_STAR
+        name: "<gold><bold>Legendary Rod</bold></gold>"
+        lore:
+          - "<gray>Ultimate fishing rod</gray>"
+          - "<gray>Best catch rates and rare drops</gray>"
+          - "<gray>Click to select as preferred</gray>"
+  
+  # Stats menu
+  stats_menu:
+    title: "<black>Fishing Statistics</black>"
+    size: 54
+    
+    # Player stats display
+    player_stats:
+      material: PLAYER_HEAD
+      name: "<gold>%player%'s Stats</gold>"
+      lore:
+        - "<gray>Total Caught: <yellow>%total%</yellow></gray>"
+        - "<gray>Rare Catches: <aqua>%rare%</aqua></gray>"
+        - "<gray>Legendary: <gold>%legendary%</gold></gray>"
+        - ""
+        - "<gray>Preferred Rod: <yellow>%rod%</yellow></gray>"
+    
+    # Leaderboard button
+    leaderboard:
+      material: GOLD_BLOCK
+      name: "<gold>🏆 Top Fishers</gold>"
+      lore:
+        - "<gray>View server-wide rankings</gray>"
+        - "<gray>Click to view leaderboard</gray>"
+  
+  # Drops menu
+  drops_menu:
+    title: "<black>Drop Categories</black>"
+    size: 54
+    
+    # Category item template
+    category:
+      material: BOOK
+      name: "<aqua>%category%</aqua>"
+      lore:
+        - "<gray>Items: <yellow>%count%</yellow></gray>"
+        - "<gray>Rarity: %rarity%</gray>"
+        - ""
+        - "<gray>Click to view drops</gray>"
+    
+    # Drop item display
+    drop_item:
+      lore:
+        - "<gray>Chance: <yellow>%chance%%</yellow></gray>"
+        - "<gray>Biomes: %biomes%</gray>"
+        - "<gray>Rod Tier: %tier%</gray>
+  
+  # Language selector
+  language_menu:
+    title: "<black>Select Language</black>"
+    size: 27
+    
+    languages:
+      en_US:
+        material: PLAYER_HEAD
+        name: "<yellow>English (US)</yellow>"
+        lore:
+          - "<gray>Click to select English</gray>"
+      ja_JP:
+        material: PLAYER_HEAD
+        name: "<red>日本語</red>"
+        lore:
+          - "<gray>Click to select Japanese</gray>
+  
+  # Navigation buttons
+  navigation:
+    back:
+      material: ARROW
+      name: "<yellow>Back</yellow>"
+      lore:
+        - "<gray>Return to previous menu</gray>"
+    
+    next_page:
+      material: ARROW
+      name: "<aqua>Next Page →</aqua>"
+      lore:
+        - "<gray>Go to next page</gray>"
+    
+    prev_page:
+      material: ARROW
+      name: "<aqua>← Previous Page</aqua>"
+      lore:
+        - "<gray>Go to previous page</gray>
+
+# Minigame visual settings
+minigame:
+  # Tension meter display
+  tension_meter:
+    title: "<bold>REEL THE FISH!</bold>"
+    
+    # Bar characters
+    bar_filled: "█"
+    bar_empty: "░"
+    
+    # Zone colors (MiniMessage)
+    colors:
+      safe: "<green>"
+      warning: "<yellow>"
+      danger: "<red>"
+      background: "<gray>"
+    
+    # Messages
+    messages:
+      perfect_catch: "<green><bold>✓ PERFECT CATCH!</bold></green>"
+      fish_escaped: "<red><bold>✗ The fish escaped!</bold></red>"
+      reel_now: "<green>⚡ PRESS NOW! ⚡</green>"
+      wait: "<yellow>Wait... Tension building...</yellow>"
+      careful: "<red>Too high! Reel carefully!</red>"

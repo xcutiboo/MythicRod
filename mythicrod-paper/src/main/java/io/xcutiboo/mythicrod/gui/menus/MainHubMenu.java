@@ -4,7 +4,9 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import io.xcutiboo.mythicrod.MythicRod;
-import io.xcutiboo.mythicrod.gui.utils.ItemBuilder;
+import io.xcutiboo.mythicrod.item.ItemBuilder;
+
+import java.util.Map;
 
 public class MainHubMenu extends BaseMenu {
 
@@ -19,152 +21,172 @@ public class MainHubMenu extends BaseMenu {
 
     @Override
     protected String getTitle() {
-        return "&6&lMythicRod &8⚡ &7Main Menu";
+        return tr("gui.main.title");
     }
 
     @Override
     protected void build() {
-        fillBorder();
+        fillBorder(Material.CYAN_STAINED_GLASS_PANE);
         
-        ItemStack configItem = new ItemBuilder(Material.COMPARATOR)
-                .name("&e&lConfiguration Settings")
-                .lore(
-                        "&7Manage plugin settings and features",
-                        "",
-                        "&8• Visual effects",
-                        "&8• Performance settings",
-                        "&8• Feature toggles",
-                        "&8• Debug options",
-                        "",
-                        "&eClick to configure"
-                )
-                .glow(true)
+        Player p = getPlayer();
+        boolean hasAdminPerm = p != null && p.hasPermission("mythicrod.admin.config");
+        
+        // Header decoration
+        ItemStack decoration = new ItemBuilder(Material.PRISMARINE_SHARD)
+                .name(tr("gui.main.decoration"))
                 .build();
-        setItem(20, configItem, event -> {
-            plugin.getGUIManager().openMenu(getPlayer(), "config");
-        });
+        for (int i = 1; i < 8; i++) {
+            setItem(i, decoration, null);
+        }
+        
+        // Row 3: Config (slot 20) - Only show if has admin permission
+        if (hasAdminPerm) {
+            ItemStack configItem = new ItemBuilder(Material.COMPARATOR)
+                    .name(tr("gui.main.config.name"))
+                    .lore(
+                            tr("gui.main.config.lore1"),
+                            "",
+                            tr("gui.main.config.lore2"),
+                            "",
+                            tr("gui.main.config.lore3"),
+                            tr("gui.main.config.lore4"),
+                            tr("gui.main.config.lore5"),
+                            tr("gui.main.config.lore6"),
+                            "",
+                            tr("gui.main.config.lore7"),
+                            tr("gui.main.config.lore8")
+                    )
+                    .glow(true)
+                    .build();
+            setNavigationItem(20, configItem, "config");
+        }
 
+        // Row 3, Center: Drops (slot 22)
         ItemStack dropsItem = new ItemBuilder(Material.FISHING_ROD)
-                .name("&b&lDrop Management")
+                .name(tr("gui.main.drops.name"))
                 .lore(
-                        "&7View and manage fishing drops",
+                        tr("gui.main.drops.lore1"),
                         "",
-                        "&8• Browse drop categories",
-                        "&8• View drop rates",
-                        "&8• Check biome restrictions",
+                        tr("gui.main.drops.lore2"),
                         "",
-                        "&7Total Drops: &f" + plugin.getDropManager().getTotalDropCount(),
-                        "&7Categories: &f" + plugin.getDropManager().getDropCategories().size(),
+                        tr("gui.main.drops.lore3"),
+                        tr("gui.main.drops.lore4"),
+                        tr("gui.main.drops.lore5"),
                         "",
-                        "&eClick to manage drops"
+                        tr("gui.main.drops.lore6", Map.of("%count%", String.valueOf(plugin.getDropManager().getTotalDropCount()))),
+                        tr("gui.main.drops.lore7", Map.of("%categories%", String.valueOf(plugin.getDropManager().getDropCategories().size()))),
+                        "",
+                        tr("gui.main.drops.lore8"),
+                        tr("gui.main.drops.lore9")
                 )
                 .build();
-        setItem(22, dropsItem, event -> {
-            plugin.getGUIManager().openMenu(getPlayer(), "drops");
-        });
+        setNavigationItem(22, dropsItem, "drops");
 
-        ItemStack statsItem = new ItemBuilder(Material.WRITABLE_BOOK)
-                .name("&d&lStatistics & Leaderboards")
+        // Row 3, Right: Stats (slot 24)
+        boolean statsEnabled = plugin.getConfigManager().trackStatistics();
+        ItemStack statsItem = new ItemBuilder(statsEnabled ? Material.ENCHANTED_BOOK : Material.WRITABLE_BOOK)
+                .name(tr("gui.main.stats.name"))
                 .lore(
-                        "&7View player fishing statistics",
+                        tr("gui.main.stats.lore1"),
                         "",
-                        "&8• Your fishing stats",
-                        "&8• Top fishers leaderboard",
-                        "&8• Material breakdowns",
+                        tr("gui.main.stats.lore2"),
                         "",
-                        "&7Tracking: &f" + (plugin.getConfigManager().trackStatistics() ? "&aEnabled" : "&cDisabled"),
+                        tr("gui.main.stats.lore3"),
+                        tr("gui.main.stats.lore4"),
+                        tr("gui.main.stats.lore5"),
                         "",
-                        "&eClick to view stats"
+                        statsEnabled ? tr("gui.main.stats.enabled") : tr("gui.main.stats.disabled"),
+                        "",
+                        statsEnabled ? tr("gui.main.stats.click_view") : tr("gui.main.stats.enable_first"),
+                        tr("gui.main.stats.lore9")
                 )
+                .glow(statsEnabled)
                 .build();
         setItem(24, statsItem, event -> {
-            if (!plugin.getConfigManager().trackStatistics()) {
-                sendMessage("&cStatistics tracking is currently disabled!");
+            playClickSound();
+            if (!statsEnabled) {
+                playErrorSound();
+                sendMessage(tr("gui.main.stats_disabled"));
                 return;
             }
             plugin.getGUIManager().openMenu(getPlayer(), "stats");
         });
 
+        // Row 5: Info (slot 40)
         ItemStack infoItem = new ItemBuilder(Material.KNOWLEDGE_BOOK)
-                .name("&6&lPlugin Information")
+                .name(tr("gui.main.info.name"))
                 .lore(
-                        "&7About MythicRod",
+                        tr("gui.main.info.lore1"),
                         "",
-                        "&7Version: &f" + plugin.getPluginMeta().getVersion(),
-                        "&7Author: &fxcutiboo",
+                        tr("gui.main.info.lore2", Map.of("%version%", plugin.getPluginMeta().getVersion())),
+                        tr("gui.main.info.lore3"),
                         "",
-                        "&7A feature-rich fishing plugin",
-                        "&7for Paper servers with custom",
-                        "&7drops, biome restrictions, and",
-                        "&7comprehensive statistics.",
+                        tr("gui.main.info.lore4"),
+                        tr("gui.main.info.lore5"),
+                        tr("gui.main.info.lore6"),
+                        tr("gui.main.info.lore7"),
                         "",
-                        "&8Running on Paper API"
+                        tr("gui.main.info.lore8")
                 )
                 .build();
         setItem(40, infoItem);
 
-        Player p = getPlayer();
+        // Admin Reload (slot 49)
         if (p != null && p.hasPermission("mythicrod.admin.reload")) {
             ItemStack reloadItem = new ItemBuilder(Material.RECOVERY_COMPASS)
-                    .name("&a&lReload Configuration")
+                    .name(tr("gui.main.reload.name"))
                     .lore(
-                            "&7Reload all plugin configurations",
+                            tr("gui.main.reload.lore1"),
                             "",
-                            "&cWarning: &7This will reload:",
-                            "&8• config.yml",
-                            "&8• drops.yml",
-                            "&8• messages.yml",
+                            tr("gui.main.reload.lore2"),
+                            tr("gui.main.reload.lore3"),
+                            tr("gui.main.reload.lore4"),
+                            tr("gui.main.reload.lore5"),
                             "",
-                            "&eClick to reload"
+                            tr("gui.main.reload.lore6")
                     )
                     .build();
             setItem(49, reloadItem, event -> {
+                playClickSound();
                 if (getPlayer() != null) getPlayer().closeInventory();
                 try {
                     plugin.reload();
-                    sendMessage("&aConfiguration reloaded successfully!");
+                    playSuccessSound();
+                    sendMessage(tr("gui.main.reload_success"));
                 } catch (Exception e) {
-                    sendMessage("&cFailed to reload configuration! Check console for errors.");
+                    playErrorSound();
+                    sendMessage(tr("gui.main.reload_failed"));
                     plugin.getLogger().severe("Error reloading from GUI: " + e.getMessage());
                 }
             });
         }
 
+        // Close Button (slot 45)
         ItemStack closeItem = new ItemBuilder(Material.BARRIER)
-                .name("&c&lClose Menu")
-                .lore("&7Click to close")
+                .name(tr("gui.main.close.name"))
+                .lore(tr("gui.main.close.lore"))
                 .build();
-        setItem(45, closeItem, event -> { if (getPlayer() != null) getPlayer().closeInventory(); });
+        setCloseButton(45, closeItem);
 
+        // Help (slot 53)
         ItemStack helpItem = new ItemBuilder(Material.ENCHANTED_BOOK)
-                .name("&b&lHelp & Commands")
+                .name(tr("gui.main.help.name"))
                 .lore(
-                        "&7Available commands:",
+                        tr("gui.main.help.lore1"),
                         "",
-                        "&e/mythicrod &7- Open this menu",
-                        "&e/mythicrod reload &7- Reload config",
-                        "&e/mythicrod stats [player] &7- View stats",
-                        "&e/mythicrod top [limit] &7- Leaderboard",
-                        "&e/mythicrod drops &7- List drops",
+                        tr("gui.main.help.lore2"),
+                        tr("gui.main.help.lore3"),
+                        tr("gui.main.help.lore4"),
+                        tr("gui.main.help.lore5"),
+                        tr("gui.main.help.lore6"),
                         "",
-                        "&7Use the GUI for easier access!"
+                        tr("gui.main.help.lore7")
                 )
                 .build();
         setItem(53, helpItem);
     }
 
-    private void fillBorder() {
-        ItemStack borderItem = new ItemBuilder(Material.CYAN_STAINED_GLASS_PANE)
-                .name(" ")
-                .build();
-        for (int i = 0; i < 9; i++) {
-            setItem(i, borderItem);
-            setItem(45 + i, borderItem);
-        }
-        for (int row = 1; row < 5; row++) {
-            setItem(row * 9, borderItem);
-            setItem(row * 9 + 8, borderItem);
-        }
-    }
-
+    /**
+     * DRY: Removed local fillBorder() - now using BaseMenu.fillBorder(Material).
+     */
 }

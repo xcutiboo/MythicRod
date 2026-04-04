@@ -142,10 +142,10 @@ drops:
   #     material: MATERIAL_NAME     # Required: Bukkit material name
   #     chance: 1                   # Required: Weight/probability
   #     amount: 1                   # Optional: Items to give (default 1)
-  #     name: '&b&lCustom Name'     # Optional: Display name with colors
+  #     name: '<aqua><bold>Custom Name'     # Optional: Display name with colors
   #     lore:                       # Optional: Description lines
-  #       - '&7Line 1'
-  #       - '&7Line 2'
+  #       - '<gray>Line 1'
+  #       - '<gray>Line 2'
   #     enchantments:               # Optional: Enchantment:level pairs
   #       sharpness: 5
   #       unbreaking: 3
@@ -160,12 +160,10 @@ drops:
   # - Use _ for spaces, keep lowercase
   # - Make names memorable and thematic
   #
-  # COLOR CODES:
-  # &0=Black  &1=Blue      &2=Green        &3=Cyan
-  # &4=Red    &5=Purple    &6=Gold         &7=Gray
-  # &8=DGray  &9=LBlue     &a=LGreen       &b=Aqua
-  # &c=Red    &d=LPurple   &e=Yellow       &f=White
-  # &l=Bold   &o=Italic    &n=Underline    &m=Strikethrough &r=Reset
+  # COLOR CODES (MiniMessage format):
+  # <black> <dark_blue> <dark_green> <dark_aqua> <dark_red> <dark_purple> <gold> <gray>
+  # <dark_gray> <blue> <green> <aqua> <red> <light_purple> <yellow> <white>
+  # <bold> <italic> <underlined> <strikethrough> <obfuscated> <reset>
   #
   # ENCHANTMENT LEVELS:
   # - Normal items: 1-5
@@ -197,12 +195,12 @@ drops:
       material: NETHERITE_SWORD
       chance: 1
       amount: 1
-      name: '&b&lExcalibur'
+      name: '<aqua><bold>Excalibur</bold></aqua>'
       lore:
-        - '&7A legendary sword pulled from the depths'
-        - '&7of the ancient lake.'
+        - '<gray>A legendary sword pulled from the depths</gray>'
+        - '<gray>of the ancient lake.</gray>'
         - ''
-        - '&bLegendary Fishing Artifact'
+        - '<aqua>Legendary Fishing Artifact</aqua>'
       enchantments:
         sharpness: 10
         sweeping_edge: 3
@@ -219,12 +217,12 @@ drops:
       material: GOLDEN_HELMET
       chance: 2
       amount: 1
-      name: "&b&lNeptune's Crown"
+      name: "<aqua><bold>Neptune's Crown</bold></aqua>"
       lore:
-        - '&7The crown of the sea god himself.'
-        - '&7Grants the wearer water breathing.'
+        - '<gray>The crown of the sea god himself.</gray>'
+        - '<gray>Grants the wearer water breathing.</gray>'
         - ''
-        - '&bLegendary Fishing Artifact'
+        - '<aqua>Legendary Fishing Artifact</aqua>'
       enchantments:
         respiration: 10
         protection: 4
@@ -241,12 +239,12 @@ drops:
       material: AMETHYST_BLOCK
       chance: 1
       amount: 1
-      name: '&5&lAncient Artifact'
+      name: '<dark_purple><bold>Ancient Artifact</bold></dark_purple>'
       lore:
-        - '&7An ancient artifact from a lost civilization.'
-        - '&7Its purpose is unknown, but it radiates magic.'
+        - '<gray>An ancient artifact from a lost civilization.</gray>'
+        - '<gray>Its purpose is unknown, but it radiates magic.</gray>'
         - ''
-        - '&5Mystical Fishing Artifact'
+        - '<dark_purple>Mystical Fishing Artifact</dark_purple>'
       enchantments:
         unbreaking: 5
       glowing: true
@@ -256,12 +254,12 @@ drops:
       material: ENCHANTED_BOOK
       chance: 1
       amount: 1
-      name: '&b&lBook of Mending'
+      name: '<aqua><bold>Book of Mending</bold></aqua>'
       lore:
-        - '&7A legendary tome containing'
-        - '&7the Mending enchantment.'
+        - '<gray>A legendary tome containing</gray>'
+        - '<gray>the Mending enchantment.</gray>'
         - ''
-        - '&bLegendary Enchanted Book'
+        - '<aqua>Legendary Enchanted Book</aqua>'
       enchantments:
         mending: 1
       glowing: true
@@ -272,11 +270,11 @@ drops:
       material: ENCHANTED_BOOK
       chance: 2
       amount: 1
-      name: '&c&lBook of Sharpness'
+      name: '<red><bold>Book of Sharpness</bold></red>'
       lore:
-        - '&7A powerful book of combat.'
+        - '<gray>A powerful book of combat.</gray>'
         - ''
-        - '&cRare Enchanted Book'
+        - '<red>Rare Enchanted Book</red>'
       enchantments:
         sharpness: 5
       glowing: true
@@ -542,10 +540,10 @@ drops:
   #     material: MATERIAL_NAME     # Required: Bukkit material name
   #     chance: 1                   # Required: Weight/probability
   #     amount: 1                   # Optional: Items to give (default 1)
-  #     name: '&b&lCustom Name'     # Optional: Display name with colors
+  #     name: '<aqua><bold>Custom Name'     # Optional: Display name with colors
   #     lore:                       # Optional: Description lines
-  #       - '&7Line 1'
-  #       - '&7Line 2'
+  #       - '<gray>Line 1'
+  #       - '<gray>Line 2'
   #     enchantments:               # Optional: Enchantment:level pairs
   #       sharpness: 5
   #       unbreaking: 3
@@ -560,12 +558,10 @@ drops:
   # - Use _ for spaces, keep lowercase
   # - Make names memorable and thematic
   #
-  # COLOR CODES:
-  # &0=Black  &1=Blue      &2=Green        &3=Cyan
-  # &4=Red    &5=Purple    &6=Gold         &7=Gray
-  # &8=DGray  &9=LBlue     &a=LGreen       &b=Aqua
-  # &c=Red    &d=LPurple   &e=Yellow       &f=White
-  # &l=Bold   &o=Italic    &n=Underline    &m=Strikethrough &r=Reset
+  # COLOR CODES (MiniMessage format):
+  # <black> <dark_blue> <dark_green> <dark_aqua> <dark_red> <dark_purple> <gold> <gray>
+  # <dark_gray> <blue> <green> <aqua> <red> <light_purple> <yellow> <white>
+  # <bold> <italic> <underlined> <strikethrough> <obfuscated> <reset>
   #
   # ENCHANTMENT LEVELS:
   # - Normal items: 1-5
@@ -597,12 +593,12 @@ drops:
       material: NETHERITE_SWORD
       chance: 1
       amount: 1
-      name: '&b&lExcalibur'
+      name: '<aqua><bold>Excalibur</bold></aqua>'
       lore:
-        - '&7A legendary sword pulled from the depths'
-        - '&7of the ancient lake.'
+        - '<gray>A legendary sword pulled from the depths</gray>'
+        - '<gray>of the ancient lake.</gray>'
         - ''
-        - '&bLegendary Fishing Artifact'
+        - '<aqua>Legendary Fishing Artifact</aqua>'
       enchantments:
         sharpness: 10
         sweeping_edge: 3
@@ -619,12 +615,12 @@ drops:
       material: GOLDEN_HELMET
       chance: 2
       amount: 1
-      name: "&b&lNeptune's Crown"
+      name: "<aqua><bold>Neptune's Crown</bold></aqua>"
       lore:
-        - '&7The crown of the sea god himself.'
-        - '&7Grants the wearer water breathing.'
+        - '<gray>The crown of the sea god himself.</gray>'
+        - '<gray>Grants the wearer water breathing.</gray>'
         - ''
-        - '&bLegendary Fishing Artifact'
+        - '<aqua>Legendary Fishing Artifact</aqua>'
       enchantments:
         respiration: 10
         protection: 4
@@ -641,12 +637,12 @@ drops:
       material: AMETHYST_BLOCK
       chance: 1
       amount: 1
-      name: '&5&lAncient Artifact'
+      name: '<dark_purple><bold>Ancient Artifact</bold></dark_purple>'
       lore:
-        - '&7An ancient artifact from a lost civilization.'
-        - '&7Its purpose is unknown, but it radiates magic.'
+        - '<gray>An ancient artifact from a lost civilization.</gray>'
+        - '<gray>Its purpose is unknown, but it radiates magic.</gray>'
         - ''
-        - '&5Mystical Fishing Artifact'
+        - '<dark_purple>Mystical Fishing Artifact</dark_purple>'
       enchantments:
         unbreaking: 5
       glowing: true
@@ -656,12 +652,12 @@ drops:
       material: ENCHANTED_BOOK
       chance: 1
       amount: 1
-      name: '&b&lBook of Mending'
+      name: '<aqua><bold>Book of Mending</bold></aqua>'
       lore:
-        - '&7A legendary tome containing'
-        - '&7the Mending enchantment.'
+        - '<gray>A legendary tome containing</gray>'
+        - '<gray>the Mending enchantment.</gray>'
         - ''
-        - '&bLegendary Enchanted Book'
+        - '<aqua>Legendary Enchanted Book</aqua>'
       enchantments:
         mending: 1
       glowing: true
@@ -672,11 +668,11 @@ drops:
       material: ENCHANTED_BOOK
       chance: 2
       amount: 1
-      name: '&c&lBook of Sharpness'
+      name: '<red><bold>Book of Sharpness</bold></red>'
       lore:
-        - '&7A powerful book of combat.'
+        - '<gray>A powerful book of combat.</gray>'
         - ''
-        - '&cRare Enchanted Book'
+        - '<red>Rare Enchanted Book</red>'
       enchantments:
         sharpness: 5
       glowing: true
@@ -824,10 +820,10 @@ biome-drops:
 #       material: DIAMOND_SWORD
 #       chance: 2
 #       amount: 1
-#       name: '&c&lMy Custom Sword'
+#       name: '<red><bold>My Custom Sword</bold></red>'
 #       lore:
-#         - '&7This is my custom item'
-#         - '&7It was made with love'
+#         - '<gray>This is my custom item</gray>'
+#         - '<gray>It was made with love</gray>'
 #       enchantments:
 #         sharpness: 5
 #         unbreaking: 3
@@ -874,7 +870,7 @@ biome-drops:
 #     material: ENCHANTED_BOOK
 #     chance: 3
 #     amount: 1
-#     name: '&e&lBook of Fortune III'
+#     name: '<yellow><bold>Book of Fortune III</bold></yellow>'
 #     enchantments:
 #       fortune: 3
 #     glowing: true
@@ -884,9 +880,9 @@ biome-drops:
 #     material: ENCHANTED_BOOK
 #     chance: 2
 #     amount: 1
-#     name: '&9&lBook of Ultimate Protection'
+#     name: '<blue><bold>Book of Ultimate Protection</bold></blue>'
 #     lore:
-#       - '&7A tome of defensive magic'
+#       - '<gray>A tome of defensive magic</gray>'
 #     enchantments:
 #       protection: 4
 #       unbreaking: 3

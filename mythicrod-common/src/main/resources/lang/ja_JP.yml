@@ -9,8 +9,8 @@
 # 翻訳者: MythicRod Team
 #
 # カラーコード:
-#   &0-&9, &a-&f = 色
-#   &l = 太字 | &o = 斜体 | &n = 下線 | &m = 取り消し線 | &r = リセット
+#   <black>-<blue>, <green>-<white> = 色
+#   <bold> = 太字 | <italic> = 斜体 | <underlined> = 下線 | <strikethrough> = 取り消し線 | <reset> = リセット
 #
 # プレースホルダー:
 #   波括弧を使用: {player}, {amount}, {item}, {count}など
@@ -28,622 +28,622 @@
 # 一般的なメッセージ
 #==============================================================================
 prefix:
-  default: '&6&l<MythicRod> &r'
+  default: '<gold><bold><MythicRod> <reset>'
 
 general:
-  no-permission: '&cその操作を行う権限がありません。'
-  command-not-found: '&cそのコマンドは認識できません。&e/mythicrod help&cを試してください。'
-  error: '&cエラーが発生しました。詳細はコンソールを確認してください。'
-  player-only: '&cこのコマンドはゲーム内でのみ使用できます。'
-  console-only: '&cこのコマンドはコンソールから使用できません。プレイヤーを指定してください。'
-  player-not-found: '&c&e{player}&cという名前のプレイヤーが見つかりませんでした。'
-  invalid-number: '&c無効な数値です: &f{input}'
+  no-permission: '<red>その操作を行う権限がありません。'
+  command-not-found: '<red>そのコマンドは認識できません。<yellow>/mythicrod help<red>を試してください。'
+  error: '<red>エラーが発生しました。詳細はコンソールを確認してください。'
+  player-only: '<red>このコマンドはゲーム内でのみ使用できます。'
+  console-only: '<red>このコマンドはコンソールから使用できません。プレイヤーを指定してください。'
+  player-not-found: '<red><yellow>{player}<red>という名前のプレイヤーが見つかりませんでした。'
+  invalid-number: '<red>無効な数値です: <white>{input}'
 
 #==============================================================================
 # コマンドメッセージ
 #==============================================================================
 commands:
   help:
-    header: '&6━━━ &eMythicRod コマンド一覧 &6━━━'
-    gui: '&e/mythicrod &7または &e/mythicrod gui &7- メニューを開く'
-    reload: '&e/mythicrod reload &7- 設定を再読み込み'
-    stats: '&e/mythicrod stats [プレイヤー] &7- 釣り統計を表示'
-    top: '&e/mythicrod top [件数] &7- ランキングを表示'
-    drops: '&e/mythicrod drops [カテゴリ] &7- ドロップ一覧を表示'
-    help: '&e/mythicrod help &7- このヘルプを表示'
+    header: '<gold>━━━ <yellow>MythicRod コマンド一覧 <gold>━━━'
+    gui: '<yellow>/mythicrod <gray>または <yellow>/mythicrod gui <gray>- メニューを開く'
+    reload: '<yellow>/mythicrod reload <gray>- 設定を再読み込み'
+    stats: '<yellow>/mythicrod stats [プレイヤー] <gray>- 釣り統計を表示'
+    top: '<yellow>/mythicrod top [件数] <gray>- ランキングを表示'
+    drops: '<yellow>/mythicrod drops [カテゴリ] <gray>- ドロップ一覧を表示'
+    help: '<yellow>/mythicrod help <gray>- このヘルプを表示'
 
   reload:
-    start: '&e設定を再読み込み中...'
-    success: '&a設定の再読み込みが完了しました！'
-    failed: '&c設定の再読み込みに失敗しました: &f{error}'
-    permission-denied: '&cこの操作には &fmythicrod.reload&c 権限が必要です。'
+    start: '<yellow>設定を再読み込み中...'
+    success: '<green>設定の再読み込みが完了しました！'
+    failed: '<red>設定の再読み込みに失敗しました: <white>{error}'
+    permission-denied: '<red>この操作には <white>mythicrod.reload<red> 権限が必要です。'
 
   gui:
-    permission-denied: '&cメニューを開く権限がありません。'
+    permission-denied: '<red>メニューを開く権限がありません。'
 
   stats:
-    permission-denied: '&c統計を表示する権限がありません。'
-    disabled: '&c統計トラッキングは現在無効です。'
-    no-data: '&cまだ釣りの統計が記録されていません。'
-    limit-invalid: '&c件数は &e1&c から &e100&c の間で指定してください。'
+    permission-denied: '<red>統計を表示する権限がありません。'
+    disabled: '<red>統計トラッキングは現在無効です。'
+    no-data: '<red>まだ釣りの統計が記録されていません。'
+    limit-invalid: '<red>件数は <yellow>1<red> から <yellow>100<red> の間で指定してください。'
 
   drops:
-    permission-denied: '&cドロップを表示する権限がありません。'
-    category-not-found: '&cカテゴリ &e{category}&c にドロップが見つかりませんでした。'
-    available-categories: '&6利用可能なカテゴリ: &e{categories}'
+    permission-denied: '<red>ドロップを表示する権限がありません。'
+    category-not-found: '<red>カテゴリ <yellow>{category}<red> にドロップが見つかりませんでした。'
+    available-categories: '<gold>利用可能なカテゴリ: <yellow>{categories}'
 
 #==============================================================================
 # GUI - メインハブメニュー
 #==============================================================================
 gui:
   main:
-    title: '&6&lMythicRod &8⚡ &7メインメニュー'
+    title: '<gold><bold>MythicRod <dark_gray>⚡ <gray>メインメニュー'
 
     config:
-      name: '&e&l設定'
+      name: '<yellow><bold>設定'
       lore:
-        - '&7サーバーでのMythicRodの'
-        - '&7動作をカスタマイズします。'
+        - '<gray>サーバーでのMythicRodの'
+        - '<gray>動作をカスタマイズします。'
         - ''
-        - '&7設定項目:'
-        - '&8• &f音とパーティクル効果'
-        - '&8• &f統計トラッキング'
-        - '&8• &fバイオーム別ドロップ'
-        - '&8• &f権限要件'
+        - '<gray>設定項目:'
+        - '<dark_gray>• <white>音とパーティクル効果'
+        - '<dark_gray>• <white>統計トラッキング'
+        - '<dark_gray>• <white>バイオーム別ドロップ'
+        - '<dark_gray>• <white>権限要件'
         - ''
-        - '&eクリックして設定'
+        - '<yellow>クリックして設定'
 
     drops:
-      name: '&b&lドロップ管理'
+      name: '<aqua><bold>ドロップ管理'
       lore:
-        - '&7サーバーで利用可能な'
-        - '&7釣りドロップを確認します。'
+        - '<gray>サーバーで利用可能な'
+        - '<gray>釣りドロップを確認します。'
         - ''
-        - '&7閲覧可能な項目:'
-        - '&8• &fグローバルドロップ（全員）'
-        - '&8• &fレアドロップ（権限制）'
-        - '&8• &f伝説アイテム'
-        - '&8• &fバイオーム別ドロップ'
+        - '<gray>閲覧可能な項目:'
+        - '<dark_gray>• <white>グローバルドロップ（全員）'
+        - '<dark_gray>• <white>レアドロップ（権限制）'
+        - '<dark_gray>• <white>伝説アイテム'
+        - '<dark_gray>• <white>バイオーム別ドロップ'
         - ''
-        - '&7各ドロップの確率、要件、'
-        - '&7プロパティを確認できます。'
+        - '<gray>各ドロップの確率、要件、'
+        - '<gray>プロパティを確認できます。'
         - ''
-        - '&bクリックしてドロップを閲覧'
+        - '<aqua>クリックしてドロップを閲覧'
 
     stats:
-      name: '&d&l統計とランキング'
+      name: '<light_purple><bold>統計とランキング'
       lore:
-        - '&7あなたの釣りの進捗を記録し、'
-        - '&7他のプレイヤーと競います！'
+        - '<gray>あなたの釣りの進捗を記録し、'
+        - '<gray>他のプレイヤーと競います！'
         - ''
-        - '&7表示項目:'
-        - '&8• &f合計釣獲数'
-        - '&8• &fレアと伝説の釣獲数'
-        - '&8• &fよく釣れたアイテム'
-        - '&8• &fランキング順位'
+        - '<gray>表示項目:'
+        - '<dark_gray>• <white>合計釣獲数'
+        - '<dark_gray>• <white>レアと伝説の釣獲数'
+        - '<dark_gray>• <white>よく釣れたアイテム'
+        - '<dark_gray>• <white>ランキング順位'
         - ''
-        - '&dクリックして統計を表示'
+        - '<light_purple>クリックして統計を表示'
 
-      disabled: '&c統計トラッキングは現在無効です！'
+      disabled: '<red>統計トラッキングは現在無効です！'
 
     info:
-      name: '&6&lプラグイン情報'
+      name: '<gold><bold>プラグイン情報'
       lore:
-        - '&7実行中: &fMythicRod v{version}'
-        - '&7作者: &fxcutiboo'
+        - '<gray>実行中: <white>MythicRod v{version}'
+        - '<gray>作者: <white>xcutiboo'
         - ''
-        - '&7このプラグインの機能:'
-        - '&8• &fカスタムドロップとルートテーブル'
-        - '&8• &fバイオーム別ドロップ'
-        - '&8• &f統計トラッキング'
-        - '&8• &f伝説アイテム'
-        - '&8• &f多言語対応'
+        - '<gray>このプラグインの機能:'
+        - '<dark_gray>• <white>カスタムドロップとルートテーブル'
+        - '<dark_gray>• <white>バイオーム別ドロップ'
+        - '<dark_gray>• <white>統計トラッキング'
+        - '<dark_gray>• <white>伝説アイテム'
+        - '<dark_gray>• <white>多言語対応'
         - ''
-        - '&7サーバー: &f{server_version}'
-        - '&7プラットフォーム: &f{platform}'
+        - '<gray>サーバー: <white>{server_version}'
+        - '<gray>プラットフォーム: <white>{platform}'
         - ''
-        - '&6ヘルプが必要？ /mythicrod help'
+        - '<gold>ヘルプが必要？ /mythicrod help'
 
     reload:
-      name: '&a&l設定を再読み込み'
+      name: '<green><bold>設定を再読み込み'
       lore:
-        - '&7再起動せずに全ての設定と'
-        - '&7ドロップテーブルを再読み込み。'
+        - '<gray>再起動せずに全ての設定と'
+        - '<gray>ドロップテーブルを再読み込み。'
         - ''
-        - '&7再読み込み対象:'
-        - '&8• &fconfig.yml'
-        - '&8• &fdrops.yml'
-        - '&8• &f言語ファイル'
+        - '<gray>再読み込み対象:'
+        - '<dark_gray>• <white>config.yml'
+        - '<dark_gray>• <white>drops.yml'
+        - '<dark_gray>• <white>言語ファイル'
         - ''
-        - '&aクリックして再読み込み'
+        - '<green>クリックして再読み込み'
 
-      success: '&a設定の再読み込みが完了しました！'
-      failed: '&c設定の再読み込みに失敗しました。コンソールでエラーを確認してください。'
+      success: '<green>設定の再読み込みが完了しました！'
+      failed: '<red>設定の再読み込みに失敗しました。コンソールでエラーを確認してください。'
 
     close:
-      name: '&c&lメニューを閉じる'
-      lore: '&7クリックしてメニューを閉じる'
+      name: '<red><bold>メニューを閉じる'
+      lore: '<gray>クリックしてメニューを閉じる'
 
     help:
-      name: '&b&lヘルプとコマンド'
+      name: '<aqua><bold>ヘルプとコマンド'
       lore:
-        - '&7コマンドクイックリファレンス:'
+        - '<gray>コマンドクイックリファレンス:'
         - ''
-        - '&e/mythicrod gui &7- このメニューを開く'
-        - '&e/mythicrod reload &7- 設定を再読み込み'
-        - '&e/mythicrod stats &7- 統計を表示'
-        - '&e/mythicrod top &7- ランキングを表示'
-        - '&e/mythicrod drops &7- ドロップを表示'
-        - '&e/mythicrod help &7- 完全なコマンド一覧'
+        - '<yellow>/mythicrod gui <gray>- このメニューを開く'
+        - '<yellow>/mythicrod reload <gray>- 設定を再読み込み'
+        - '<yellow>/mythicrod stats <gray>- 統計を表示'
+        - '<yellow>/mythicrod top <gray>- ランキングを表示'
+        - '<yellow>/mythicrod drops <gray>- ドロップを表示'
+        - '<yellow>/mythicrod help <gray>- 完全なコマンド一覧'
         - ''
-        - '&7詳しいヘルプはドキュメントを確認！'
+        - '<gray>詳しいヘルプはドキュメントを確認！'
 
 #==============================================================================
 # GUI - 設定メニュー
 #==============================================================================
   config:
-    title: '&6&lMythicRod &8⚙ &7設定'
+    title: '<gold><bold>MythicRod <dark_gray>⚙ <gray>設定'
 
     sounds:
-      name: '&e&l音響効果 {status}'
+      name: '<yellow><bold>音響効果 {status}'
       lore:
-        - '&7魚を釣った時やメニューを'
-        - '&7使用した時に音を再生します。'
+        - '<gray>魚を釣った時やメニューを'
+        - '<gray>使用した時に音を再生します。'
         - ''
-        - '&7現在: {current}'
+        - '<gray>現在: {current}'
         - ''
-        - '&eクリックして切り替え'
+        - '<yellow>クリックして切り替え'
 
     particles:
-      name: '&e&lパーティクル効果 {status}'
+      name: '<yellow><bold>パーティクル効果 {status}'
       lore:
-        - '&7レアや伝説のアイテムを'
-        - '&7釣った時にパーティクルを表示。'
+        - '<gray>レアや伝説のアイテムを'
+        - '<gray>釣った時にパーティクルを表示。'
         - ''
-        - '&7現在: {current}'
+        - '<gray>現在: {current}'
         - ''
-        - '&eクリックして切り替え'
+        - '<yellow>クリックして切り替え'
 
     statistics:
-      name: '&d&l統計トラッキング {status}'
+      name: '<light_purple><bold>統計トラッキング {status}'
       lore:
-        - '&7プレイヤーの釣り統計を'
-        - '&7記録・追跡します。'
+        - '<gray>プレイヤーの釣り統計を'
+        - '<gray>記録・追跡します。'
         - ''
-        - '&7有効にすると:'
-        - '&8• &fプレイヤー別の釣獲数を記録'
-        - '&8• &fランキングが有効になる'
-        - '&8• &fアイテム別の数をカウント'
+        - '<gray>有効にすると:'
+        - '<dark_gray>• <white>プレイヤー別の釣獲数を記録'
+        - '<dark_gray>• <white>ランキングが有効になる'
+        - '<dark_gray>• <white>アイテム別の数をカウント'
         - ''
-        - '&7現在: {current}'
+        - '<gray>現在: {current}'
         - ''
-        - '&dクリックして切り替え'
+        - '<light_purple>クリックして切り替え'
 
     biome-drops:
-      name: '&a&lバイオーム別ドロップ {status}'
+      name: '<green><bold>バイオーム別ドロップ {status}'
       lore:
-        - '&7各バイオームタイプに'
-        - '&7異なるドロップテーブルを使用。'
+        - '<gray>各バイオームタイプに'
+        - '<gray>異なるドロップテーブルを使用。'
         - ''
-        - '&7有効にすると:'
-        - '&8• &f海洋 = 海のアイテム'
-        - '&8• &f砂漠 = 砂漠のアイテム'
-        - '&8• &fその他多数...'
+        - '<gray>有効にすると:'
+        - '<dark_gray>• <white>海洋 = 海のアイテム'
+        - '<dark_gray>• <white>砂漠 = 砂漠のアイテム'
+        - '<dark_gray>• <white>その他多数...'
         - ''
-        - '&7現在: {current}'
+        - '<gray>現在: {current}'
         - ''
-        - '&aクリックして切り替え'
+        - '<green>クリックして切り替え'
 
     permissions:
-      name: '&c&l権限システム {status}'
+      name: '<red><bold>権限システム {status}'
       lore:
-        - '&7特定のドロップに'
-        - '&7権限を要求します。'
+        - '<gray>特定のドロップに'
+        - '<gray>権限を要求します。'
         - ''
-        - '&7有効にすると:'
-        - '&8• &fレアドロップには mythicrod.drops.rare が必要'
-        - '&8• &f伝説ドロップには権限が必要な場合あり'
-        - '&8• &f権限のないプレイヤーは基本ドロップのみ'
+        - '<gray>有効にすると:'
+        - '<dark_gray>• <white>レアドロップには mythicrod.drops.rare が必要'
+        - '<dark_gray>• <white>伝説ドロップには権限が必要な場合あり'
+        - '<dark_gray>• <white>権限のないプレイヤーは基本ドロップのみ'
         - ''
-        - '&7無効にすると:'
-        - '&8• &f全てのプレイヤーが全ドロップ取得可能'
+        - '<gray>無効にすると:'
+        - '<dark_gray>• <white>全てのプレイヤーが全ドロップ取得可能'
         - ''
-        - '&7現在: {current}'
+        - '<gray>現在: {current}'
         - ''
-        - '&cクリックして切り替え'
+        - '<red>クリックして切り替え'
 
     save-interval:
-      name: '&b&l統計保存間隔'
+      name: '<aqua><bold>統計保存間隔'
       lore:
-        - '&7統計データをディスクに'
-        - '&7自動保存する頻度。'
+        - '<gray>統計データをディスクに'
+        - '<gray>自動保存する頻度。'
         - ''
-        - '&7現在: &f{current}秒'
+        - '<gray>現在: <white>{current}秒'
         - ''
-        - '&7推奨値:'
-        - '&8• &f小規模サーバー: 300-600秒'
-        - '&8• &f中規模サーバー: 600-1200秒'
-        - '&8• &f大規模サーバー: 1200秒以上'
+        - '<gray>推奨値:'
+        - '<dark_gray>• <white>小規模サーバー: 300-600秒'
+        - '<dark_gray>• <white>中規模サーバー: 600-1200秒'
+        - '<dark_gray>• <white>大規模サーバー: 1200秒以上'
         - ''
-        - '&7左クリック: &f-60秒'
-        - '&7右クリック: &f+60秒'
-        - '&7Shift+左: &f-300秒'
-        - '&7Shift+右: &f+300秒'
+        - '<gray>左クリック: <white>-60秒'
+        - '<gray>右クリック: <white>+60秒'
+        - '<gray>Shift+左: <white>-300秒'
+        - '<gray>Shift+右: <white>+300秒'
 
     cleanup-interval:
-      name: '&b&lフッククリーンアップ間隔'
+      name: '<aqua><bold>フッククリーンアップ間隔'
       lore:
-        - '&7古い釣り針をメモリから'
-        - '&7削除する頻度。'
+        - '<gray>古い釣り針をメモリから'
+        - '<gray>削除する頻度。'
         - ''
-        - '&7現在: &f{current}秒'
+        - '<gray>現在: <white>{current}秒'
         - ''
-        - '&7推奨値:'
-        - '&8• &f小規模サーバー: 180-300秒'
-        - '&8• &f中規模サーバー: 300-600秒'
-        - '&8• &f大規模サーバー: 600秒以上'
+        - '<gray>推奨値:'
+        - '<dark_gray>• <white>小規模サーバー: 180-300秒'
+        - '<dark_gray>• <white>中規模サーバー: 300-600秒'
+        - '<dark_gray>• <white>大規模サーバー: 600秒以上'
         - ''
-        - '&7左クリック: &f-60秒'
-        - '&7右クリック: &f+60秒'
-        - '&7Shift+左: &f-300秒'
-        - '&7Shift+右: &f+300秒'
+        - '<gray>左クリック: <white>-60秒'
+        - '<gray>右クリック: <white>+60秒'
+        - '<gray>Shift+左: <white>-300秒'
+        - '<gray>Shift+右: <white>+300秒'
 
     debug:
-      name: '&c&lデバッグモード {status}'
+      name: '<red><bold>デバッグモード {status}'
       lore:
-        - '&7問題のトラブルシューティング用に'
-        - '&7詳細なログを有効化。'
+        - '<gray>問題のトラブルシューティング用に'
+        - '<gray>詳細なログを有効化。'
         - ''
-        - '&c警告: &7大量のコンソール出力が'
-        - '&7生成されます！デバッグ中のみ'
-        - '&7有効にしてください。'
+        - '<red>警告: <gray>大量のコンソール出力が'
+        - '<gray>生成されます！デバッグ中のみ'
+        - '<gray>有効にしてください。'
         - ''
-        - '&7現在: {current}'
+        - '<gray>現在: {current}'
         - ''
-        - '&cクリックして切り替え'
+        - '<red>クリックして切り替え'
 
     language:
-      name: '&5&l言語設定 🌐'
+      name: '<dark_purple><bold>言語設定 🌐'
       lore:
-        - '&7全てのメッセージとメニューで'
-        - '&7使用する言語を変更します。'
+        - '<gray>全てのメッセージとメニューで'
+        - '<gray>使用する言語を変更します。'
         - ''
-        - '&7現在: &f{language}'
+        - '<gray>現在: <white>{language}'
         - ''
-        - '&7利用可能な言語:'
-        - '&8• &fEnglish (en_US)'
-        - '&8• &f日本語 (ja_JP)'
+        - '<gray>利用可能な言語:'
+        - '<dark_gray>• <white>English (en_US)'
+        - '<dark_gray>• <white>日本語 (ja_JP)'
         - ''
-        - '&5クリックして言語を変更'
+        - '<dark_purple>クリックして言語を変更'
 
     info:
-      name: '&6&l設定情報'
+      name: '<gold><bold>設定情報'
       lore:
-        - '&7ここでの変更は即座に'
-        - '&7反映されますが、一部の機能は'
-        - '&7再読み込みが必要な場合があります。'
+        - '<gray>ここでの変更は即座に'
+        - '<gray>反映されますが、一部の機能は'
+        - '<gray>再読み込みが必要な場合があります。'
         - ''
-        - '&7メニューを閉じる前に'
-        - '&7変更を保存することを忘れずに！'
+        - '<gray>メニューを閉じる前に'
+        - '<gray>変更を保存することを忘れずに！'
         - ''
-        - '&7ヒント:'
-        - '&8• &f保存前に変更をテスト'
-        - '&8• &fトラブルシューティングにデバッグモードを使用'
-        - '&8• &f全ての変更を適用するには再読み込み'
+        - '<gray>ヒント:'
+        - '<dark_gray>• <white>保存前に変更をテスト'
+        - '<dark_gray>• <white>トラブルシューティングにデバッグモードを使用'
+        - '<dark_gray>• <white>全ての変更を適用するには再読み込み'
 
     back:
-      name: '&e← メインメニューに戻る'
-      lore: '&7メインハブに戻る'
+      name: '<yellow>← メインメニューに戻る'
+      lore: '<gray>メインハブに戻る'
 
     save:
-      name: '&a&l✓ 設定を保存'
+      name: '<green><bold>✓ 設定を保存'
       lore:
-        - '&7このメニューで行った全ての'
-        - '&7変更を config.yml に保存。'
+        - '<gray>このメニューで行った全ての'
+        - '<gray>変更を config.yml に保存。'
         - ''
-        - '&7保存された変更:'
-        - '&8• &f即座に適用'
-        - '&8• &f再起動後も保持'
+        - '<gray>保存された変更:'
+        - '<dark_gray>• <white>即座に適用'
+        - '<dark_gray>• <white>再起動後も保持'
         - ''
-        - '&aクリックして変更を保存'
+        - '<green>クリックして変更を保存'
 
-      success: '&a✓ 設定が正常に保存されました！'
-      info: '&7変更が有効になりました。必要に応じて &e/mythicrod reload &7で完全な再読み込みを実行してください。'
-      failed: '&c✗ 設定の保存に失敗しました！コンソールでエラーを確認してください。'
+      success: '<green>✓ 設定が正常に保存されました！'
+      info: '<gray>変更が有効になりました。必要に応じて <yellow>/mythicrod reload <gray>で完全な再読み込みを実行してください。'
+      failed: '<red>✗ 設定の保存に失敗しました！コンソールでエラーを確認してください。'
 
     close:
-      name: '&c&l閉じる'
-      lore: '&7変更を保存せずに閉じる'
+      name: '<red><bold>閉じる'
+      lore: '<gray>変更を保存せずに閉じる'
 
     status:
-      enabled: '&a✓'
-      disabled: '&c✗'
+      enabled: '<green>✓'
+      disabled: '<red>✗'
 
     current:
-      enabled: '&a有効'
-      disabled: '&c無効'
+      enabled: '<green>有効'
+      disabled: '<red>無効'
 
 #==============================================================================
 # GUI - 統計メニュー
 #==============================================================================
   stats:
     title:
-      personal: '&6&lMythicRod &8⚡ &7あなたの統計'
-      leaderboard: '&6&lMythicRod &8⚡ &7トップ漁師'
+      personal: '<gold><bold>MythicRod <dark_gray>⚡ <gray>あなたの統計'
+      leaderboard: '<gold><bold>MythicRod <dark_gray>⚡ <gray>トップ漁師'
 
     total:
-      name: '&e&l合計釣獲数'
+      name: '<yellow><bold>合計釣獲数'
       lore:
-        - '&7あなたは合計で:'
-        - '&f{count}個のアイテムを釣りました'
+        - '<gray>あなたは合計で:'
+        - '<white>{count}個のアイテムを釣りました'
         - ''
-        - '&7釣りを続けて釣獲数を'
-        - '&7増やしましょう！'
+        - '<gray>釣りを続けて釣獲数を'
+        - '<gray>増やしましょう！'
 
     rare:
-      name: '&b&lレアアイテム釣獲数'
+      name: '<aqua><bold>レアアイテム釣獲数'
       lore:
-        - '&7発見したアイテム:'
-        - '&b{rare}個のレアアイテム'
-        - '&d{legendary}個の伝説アイテム'
+        - '<gray>発見したアイテム:'
+        - '<aqua>{rare}個のレアアイテム'
+        - '<light_purple>{legendary}個の伝説アイテム'
         - ''
-        - '&7レアドロップは特別で'
-        - '&7見つけるのが難しいです！'
+        - '<gray>レアドロップは特別で'
+        - '<gray>見つけるのが難しいです！'
 
     rate:
-      name: '&d&lレアドロップ率'
+      name: '<light_purple><bold>レアドロップ率'
       lore:
-        - '&7全釣獲数のうち:'
-        - '&f{percentage}% &7がレアまたは伝説でした'
+        - '<gray>全釣獲数のうち:'
+        - '<white>{percentage}% <gray>がレアまたは伝説でした'
         - ''
-        - '&7平均的なレア率は'
-        - '&75-15%程度です。あなたは'
-        - '&7{comparison}！'
+        - '<gray>平均的なレア率は'
+        - '<gray>5-15%程度です。あなたは'
+        - '<gray>{comparison}！'
 
     rate-comparison:
-      great: '&aすばらしい'
-      good: '&e良好'
-      average: '&7平均的'
+      great: '<green>すばらしい'
+      good: '<yellow>良好'
+      average: '<gray>平均的'
 
     top-materials:
-      name: '&6&lよく釣れたアイテム'
-      lore: '&7最も多く釣ったアイテム'
+      name: '<gold><bold>よく釣れたアイテム'
+      lore: '<gray>最も多く釣ったアイテム'
 
     material:
-      name: '&e{material}'
-      caught: '&7釣獲数: &f{count}回'
-      percentage: '&7全体の &f{percentage}%&7 を占めています'
+      name: '<yellow>{material}'
+      caught: '<gray>釣獲数: <white>{count}回'
+      percentage: '<gray>全体の <white>{percentage}%<gray> を占めています'
 
     no-data:
-      name: '&c&lデータなし'
+      name: '<red><bold>データなし'
       lore:
-        - '&7釣りを始めると'
-        - '&7ここに統計が表示されます！'
+        - '<gray>釣りを始めると'
+        - '<gray>ここに統計が表示されます！'
 
     leaderboard:
-      name: '&6&lランキングを表示'
+      name: '<gold><bold>ランキングを表示'
       lore:
-        - '&7サーバーの他の漁師と'
-        - '&7順位を比較しましょう！'
+        - '<gray>サーバーの他の漁師と'
+        - '<gray>順位を比較しましょう！'
         - ''
-        - '&6クリックしてランキングを表示'
+        - '<gold>クリックしてランキングを表示'
 
       empty:
-        name: '&c&l統計データなし'
+        name: '<red><bold>統計データなし'
         lore:
-          - '&7まだ釣りの統計が記録されていません。'
-          - '&7最初の一人になりましょう！'
+          - '<gray>まだ釣りの統計が記録されていません。'
+          - '<gray>最初の一人になりましょう！'
 
       entry:
-        name: '&e#{rank}位 &f{player}'
+        name: '<yellow>#{rank}位 <white>{player}'
         lore:
-          - '&7プレイヤー: &f{player}'
-          - '&7合計釣獲数: &f{catches}回'
+          - '<gray>プレイヤー: <white>{player}'
+          - '<gray>合計釣獲数: <white>{catches}回'
 
-        you: '&a&lこれはあなたです！'
-        rank-badge: '&e&l{ordinal}位！'
+        you: '<green><bold>これはあなたです！'
+        rank-badge: '<yellow><bold>{ordinal}位！'
 
       info:
-        name: '&6&lランキング情報'
+        name: '<gold><bold>ランキング情報'
         lore:
-          - '&7このランキングは合計釣獲数を'
-          - '&7基準にしたトップ漁師の'
-          - '&7一覧です。'
+          - '<gray>このランキングは合計釣獲数を'
+          - '<gray>基準にしたトップ漁師の'
+          - '<gray>一覧です。'
           - ''
-          - '&7釣りを続けて順位を上げましょう！'
+          - '<gray>釣りを続けて順位を上げましょう！'
 
     back-main:
-      name: '&e← メインメニューに戻る'
+      name: '<yellow>← メインメニューに戻る'
 
     back-stats:
-      name: '&e← 統計に戻る'
+      name: '<yellow>← 統計に戻る'
 
     close:
-      name: '&c&l閉じる'
+      name: '<red><bold>閉じる'
 
 #==============================================================================
 # GUI - ドロップメニュー
 #==============================================================================
   drops:
     title:
-      list: '&6&lMythicRod &8⚡ &7ドロップカテゴリ'
-      category: '&6&lドロップ &8⚡ &7{category}'
+      list: '<gold><bold>MythicRod <dark_gray>⚡ <gray>ドロップカテゴリ'
+      category: '<gold><bold>ドロップ <dark_gray>⚡ <gray>{category}'
 
     category:
-      name: '&e&l{name}'
+      name: '<yellow><bold>{name}'
       lore:
-        - '&7このカテゴリには'
-        - '&f{count}種類のドロップがあります'
+        - '<gray>このカテゴリには'
+        - '<white>{count}種類のドロップがあります'
         - ''
-        - '&7タイプ: &f{type}'
-        - '&7アクセス: &f{access}'
+        - '<gray>タイプ: <white>{type}'
+        - '<gray>アクセス: <white>{access}'
         - ''
-        - '&eクリックしてドロップを表示'
+        - '<yellow>クリックしてドロップを表示'
 
     category-types:
-      global: '&aグローバル（全員）'
-      rare: '&bレア（権限制）'
-      legendary: '&d伝説（特殊）'
-      biome: '&2バイオーム別'
+      global: '<green>グローバル（全員）'
+      rare: '<aqua>レア（権限制）'
+      legendary: '<light_purple>伝説（特殊）'
+      biome: '<dark_green>バイオーム別'
 
     category-access:
-      everyone: '&a全員'
-      permission: '&e権限が必要'
-      special: '&d特殊要件'
+      everyone: '<green>全員'
+      permission: '<yellow>権限が必要'
+      special: '<light_purple>特殊要件'
 
     info:
-      name: '&6&lドロップ情報'
+      name: '<gold><bold>ドロップ情報'
       lore:
-        - '&7ドロップは釣りで'
-        - '&7入手できるアイテムです。'
+        - '<gray>ドロップは釣りで'
+        - '<gray>入手できるアイテムです。'
         - ''
-        - '&7カテゴリ:'
-        - '&8• &aグローバル &7- 全員'
-        - '&8• &bレア &7- 権限制'
-        - '&8• &d伝説 &7- 特殊アイテム'
+        - '<gray>カテゴリ:'
+        - '<dark_gray>• <green>グローバル <gray>- 全員'
+        - '<dark_gray>• <aqua>レア <gray>- 権限制'
+        - '<dark_gray>• <light_purple>伝説 <gray>- 特殊アイテム'
         - ''
-        - '&7カテゴリをクリックして探索！'
+        - '<gray>カテゴリをクリックして探索！'
 
     drop:
-      material: '&7素材: &f{material}'
-      amount: '&7数量: &f{amount}'
-      weight: '&7ドロップ重み: &f{weight}'
-      custom-name: '&7カスタム名: &f{name}'
-      biomes: '&7バイオーム: &f{biomes}'
-      permission: '&7権限: &f{permission}'
+      material: '<gray>素材: <white>{material}'
+      amount: '<gray>数量: <white>{amount}'
+      weight: '<gray>ドロップ重み: <white>{weight}'
+      custom-name: '<gray>カスタム名: <white>{name}'
+      biomes: '<gray>バイオーム: <white>{biomes}'
+      permission: '<gray>権限: <white>{permission}'
 
       enchantments:
-        header: '&7エンチャント:'
-        entry: '  &8• &f{enchant} {level}'
+        header: '<gray>エンチャント:'
+        entry: '  <dark_gray>• <white>{enchant} {level}'
 
       lore:
-        header: '&7カスタム説明:'
-        entry: '  &8• &7{line}'
+        header: '<gray>カスタム説明:'
+        entry: '  <dark_gray>• <gray>{line}'
 
-      name: '&e{name}'
+      name: '<yellow>{name}'
 
     category-info:
-      name: '&6&l{category}'
+      name: '<gold><bold>{category}'
       lore:
-        - '&7このカテゴリの'
-        - '&7全ドロップを表示中。'
+        - '<gray>このカテゴリの'
+        - '<gray>全ドロップを表示中。'
         - ''
-        - '&7合計: &f{count}個'
+        - '<gray>合計: <white>{count}個'
 
     back-main:
-      name: '&e← メインメニューに戻る'
+      name: '<yellow>← メインメニューに戻る'
 
     back-categories:
-      name: '&e← カテゴリに戻る'
+      name: '<yellow>← カテゴリに戻る'
 
     close:
-      name: '&c&l閉じる'
+      name: '<red><bold>閉じる'
 
 #==============================================================================
 # GUI - 言語メニュー
 #==============================================================================
   language:
-    title: '&6&lMythicRod &8🌐 &7言語選択'
+    title: '<gold><bold>MythicRod <dark_gray>🌐 <gray>言語選択'
 
     info:
-      name: '&6&l言語設定'
+      name: '<gold><bold>言語設定'
       lore:
-        - '&7全メッセージとメニューで'
-        - '&7使用する言語を選択します。'
+        - '<gray>全メッセージとメニューで'
+        - '<gray>使用する言語を選択します。'
         - ''
-        - '&7利用可能な言語:'
-        - '&8• &fEnglish'
-        - '&8• &f日本語'
+        - '<gray>利用可能な言語:'
+        - '<dark_gray>• <white>English'
+        - '<dark_gray>• <white>日本語'
         - ''
-        - '&7選択した言語は:'
-        - '&8• &fゲーム内の全メッセージに反映'
-        - '&8• &f全メニューテキストに反映'
-        - '&8• &fサーバー全体に保存'
+        - '<gray>選択した言語は:'
+        - '<dark_gray>• <white>ゲーム内の全メッセージに反映'
+        - '<dark_gray>• <white>全メニューテキストに反映'
+        - '<dark_gray>• <white>サーバー全体に保存'
         - ''
-        - '&6下から言語を選択！'
+        - '<gold>下から言語を選択！'
 
     languages:
       english:
         name: 'English'
         lore:
-          - '&7デフォルト言語。'
-          - '&7全機能が完全にサポートされています。'
+          - '<gray>デフォルト言語。'
+          - '<gray>全機能が完全にサポートされています。'
 
       japanese:
         name: '日本語'
         lore:
-          - '&7日本語サポート。'
-          - '&7日本語で全ての機能が利用可能。'
+          - '<gray>日本語サポート。'
+          - '<gray>日本語で全ての機能が利用可能。'
 
     back:
-      name: '&e← 設定に戻る'
-      lore: '&7設定メニューに戻る'
+      name: '<yellow>← 設定に戻る'
+      lore: '<gray>設定メニューに戻る'
 
     indicator:
       prefix: '✓ '
       suffix: ' ✓'
 
     status:
-      active: '&a&l✓ 現在アクティブ'
-      inactive: '&7クリックして有効化'
+      active: '<green><bold>✓ 現在アクティブ'
+      inactive: '<gray>クリックして有効化'
 
-    separator: '&7━━━━━━━━━━━━━━━'
+    separator: '<gray>━━━━━━━━━━━━━━━'
 
-    changed: '&a✓ 言語が &f{name}&a に変更されました！'
-    changed-info: '&7全てのメニューとメッセージが{name}で表示されます。'
-    failed: '&c✗ 言語の変更に失敗しました！コンソールでエラーを確認してください。'
+    changed: '<green>✓ 言語が <white>{name}<green> に変更されました！'
+    changed-info: '<gray>全てのメニューとメッセージが{name}で表示されます。'
+    failed: '<red>✗ 言語の変更に失敗しました！コンソールでエラーを確認してください。'
 
     formats:
-      english: '&fEnglish'
-      japanese: '&f日本語'
-      unknown: '&f{code}'
+      english: '<white>English'
+      japanese: '<white>日本語'
+      unknown: '<white>{code}'
 
 #==============================================================================
 # 釣りメッセージ
 #==============================================================================
 fishing:
   catch:
-    normal: '&a✓ &a&e{amount}× {item}&a を釣り上げました！'
-    rare: '&b&l✦ レアアイテム！ &f&e{amount}× {item}&f を釣り上げました！'
-    legendary: '&d&l✦ 伝説級！ &f&e{amount}× {item}&f を発見しました！'
+    normal: '<green>✓ <green><yellow>{amount}× {item}<green> を釣り上げました！'
+    rare: '<aqua><bold>✦ レアアイテム！ <white><yellow>{amount}× {item}<white> を釣り上げました！'
+    legendary: '<light_purple><bold>✦ 伝説級！ <white><yellow>{amount}× {item}<white> を発見しました！'
 
-  stats-recorded: '&7釣り統計に+1記録'
+  stats-recorded: '<gray>釣り統計に+1記録'
 
 #==============================================================================
 # 統計メッセージ
 #==============================================================================
 stats:
-  header: '&6━━━ &e{player}さんの釣果 &6━━━'
-  total-catches: '&e合計釣獲数: &f{total}回'
-  rare-catches: '&eレアアイテム: &f{rare}回'
-  legendary-catches: '&e伝説アイテム: &f{legendary}回'
-  top-materials: '&6━━━ &eよく釣れたアイテム &6━━━'
-  material-entry: '&e{material}: &f{count}個'
+  header: '<gold>━━━ <yellow>{player}さんの釣果 <gold>━━━'
+  total-catches: '<yellow>合計釣獲数: <white>{total}回'
+  rare-catches: '<yellow>レアアイテム: <white>{rare}回'
+  legendary-catches: '<yellow>伝説アイテム: <white>{legendary}回'
+  top-materials: '<gold>━━━ <yellow>よく釣れたアイテム <gold>━━━'
+  material-entry: '<yellow>{material}: <white>{count}個'
 
   leaderboard:
-    header: '&6━━━ &eトップ{limit}漁師 &6━━━'
-    entry: '&e#{rank}位: &f{player} &7- &f{catches}回'
+    header: '<gold>━━━ <yellow>トップ{limit}漁師 <gold>━━━'
+    entry: '<yellow>#{rank}位: <white>{player} <gray>- <white>{catches}回'
 
 #==============================================================================
 # ドロップメッセージ（コマンド出力）
 #==============================================================================
 drops:
-  header: '&6━━━ &eMythicRod ドロップカテゴリ &6━━━'
-  category-entry: '&e{category}: &f{count}種類'
-  usage: '&7&e/mythicrod drops {category}&7 で詳細を表示'
-  category-header: '&6━━━ &eMythicRod ドロップ: {category} &6━━━'
-  drop-entry: '&e{name} &7- &f確率{chance}%、数量{amount}個'
+  header: '<gold>━━━ <yellow>MythicRod ドロップカテゴリ <gold>━━━'
+  category-entry: '<yellow>{category}: <white>{count}種類'
+  usage: '<gray><yellow>/mythicrod drops {category}<gray> で詳細を表示'
+  category-header: '<gold>━━━ <yellow>MythicRod ドロップ: {category} <gold>━━━'
+  drop-entry: '<yellow>{name} <gray>- <white>確率{chance}%、数量{amount}個'
 
 #==============================================================================
 # 言語表示名
 #==============================================================================
 language:
   names:
-    en_US: '&fEnglish'
-    en: '&fEnglish'
-    ja_JP: '&f日本語'
-    jp: '&f日本語'
-  current: '&e現在の言語: &f{language}'
+    en_US: '<white>English'
+    en: '<white>English'
+    ja_JP: '<white>日本語'
+    jp: '<white>日本語'
+  current: '<yellow>現在の言語: <white>{language}'
 
 #==============================================================================
 # コンソール / 管理者メッセージ
@@ -655,11 +655,11 @@ console:
       loading: 'MythicRod-Paper を読み込み中（Brigadier コマンドシステム有効）...'
       banner:
         - ''
-        - '&6&l╔═══════════════════════════════════════╗'
-        - '&6&l║  &f&lMythicRod &6&l- Paper エディション    ║'
-        - '&6&l║  &7バージョン {version}                ║'
-        - '&6&l║  &7カスタムドロップで釣りを強化        ║'
-        - '&6&l╚═══════════════════════════════════════╝'
+        - '<gold><bold>╔═══════════════════════════════════════╗'
+        - '<gold><bold>║  <white><bold>MythicRod <gold><bold>- Paper エディション    ║'
+        - '<gold><bold>║  <gray>バージョン {version}                ║'
+        - '<gold><bold>║  <gray>カスタムドロップで釣りを強化        ║'
+        - '<gold><bold>╚═══════════════════════════════════════╝'
         - ''
       initialized: 'MythicRod-Paper の初期化が完了しました！'
       failed: 'MythicRod-Paper の有効化に失敗しました'
@@ -668,11 +668,11 @@ console:
       adventure-ready: '[MythicRod-Spigot] Adventure Platform が初期化され、リッチテキストフォーマットの準備が整いました'
       banner:
         - ''
-        - '&6&l╔═══════════════════════════════════════╗'
-        - '&6&l║  &f&lMythicRod &6&l- Spigot エディション  ║'
-        - '&6&l║  &7バージョン {version}                ║'
-        - '&6&l║  &7カスタムドロップで釣りを強化        ║'
-        - '&6&l╚═══════════════════════════════════════╝'
+        - '<gold><bold>╔═══════════════════════════════════════╗'
+        - '<gold><bold>║  <white><bold>MythicRod <gold><bold>- Spigot エディション  ║'
+        - '<gold><bold>║  <gray>バージョン {version}                ║'
+        - '<gold><bold>║  <gray>カスタムドロップで釣りを強化        ║'
+        - '<gold><bold>╚═══════════════════════════════════════╝'
         - ''
       drops-loaded: '[MythicRod-Spigot] 全カテゴリで合計{count}個のドロップを読み込みました'
       running-on: '[MythicRod-Spigot] {server} で実行中'

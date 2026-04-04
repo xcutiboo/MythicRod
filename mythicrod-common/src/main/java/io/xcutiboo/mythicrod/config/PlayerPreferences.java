@@ -7,9 +7,6 @@ import java.util.UUID;
 import io.xcutiboo.mythicrod.MythicRodPlugin;
 import io.xcutiboo.mythicrod.api.platform.PlatformConfiguration;
 
-/**
- * Stores per-player preferences like language overrides.
- */
 public class PlayerPreferences {
     private final MythicRodPlugin plugin;
     private final File file;

@@ -4,9 +4,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Platform-agnostic configuration interface to replace FileConfiguration.
- */
 public interface PlatformConfiguration {
     
     boolean contains(String path);
