@@ -17,6 +17,8 @@ branches the sender can't run.
 | `/mythicrod rod select <tier>` | Switch your own rod tier (`basic`, `advanced`, `legendary`) | `mythicrod.gui` (+ `.rod.advanced` / `.legendary`) |
 | `/mythicrod rod inspect` | Dump PDC for the held rod | `mythicrod.admin.debug` |
 | `/mythicrod drops [category]` | Drop browser, category view | `mythicrod.drops.view` |
+| `/mythicrod drops preview <biome>` | Eligible drops + weight share for a biome | `mythicrod.admin.debug` |
+| `/mythicrod effects [mode]` | Toggle or set visual effects (`normal`/`reduced`) for yourself | `mythicrod.gui` |
 | `/mythicrod drop add <category> <identifier> <weight> <amount>` | Add drop and persist to `drops.yml` | `mythicrod.admin.config` |
 | `/mythicrod drop remove <category> <identifier>` | Delete drop and persist | `mythicrod.admin.config` |
 | `/mythicrod drop set <category> <identifier> <field> <value>` | Update one of `weight`, `amount`, `name`, `permission`, `glow` | `mythicrod.admin.config` |

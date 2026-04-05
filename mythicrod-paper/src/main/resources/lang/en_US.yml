@@ -41,6 +41,10 @@ command:
   gui:
     opened: '<green>✓ <gray>Main GUI opened.'
     opened-hint: '<dark_gray>tip: <yellow>/mythicrod help<dark_gray> lists every command available to you.'
+  effects:
+    set-normal: '<green>✓ <gray>Visual effects set to <white>normal<gray>.'
+    set-reduced: '<green>✓ <gray>Visual effects set to <white>reduced<gray>.'
+    invalid: '<red>✗ <dark_red>Unknown mode <yellow>%mode%<dark_red>. Use <yellow>normal<dark_red> or <yellow>reduced<dark_red>.'
   rod:
     opened: '<green>✓ <gray>Rod settings opened.'
     selected: '<green>✓ <gray>Rod tier set to <white>%tier%<gray>.'
@@ -72,6 +76,13 @@ command:
     bubble-set: '<green>✓ <gray>Bubble particle set to <white>%type%</white><gray>.'
     success-set: '<green>✓ <gray>Success particle set to <white>%type%</white><gray>.'
     xp-set: '<green>✓ <gray>XP particle set to <white>%type%</white><gray>.'
+  drops-preview:
+    header: '<gold><bold>=== Drops eligible in <yellow>%biome%</yellow> ===</bold></gold>'
+    row: '<dark_gray>  • <gray>%category%<dark_gray>/<white>%identifier%</white> <dark_gray>(weight <yellow>%weight%</yellow>, ~<yellow>%share%%</yellow>)'
+    footer: '<gray>  Total: <white>%count%</white> drops, summed weight <white>%weight%</white>.'
+    truncated: '<dark_gray>  ... and <yellow>%count%</yellow> more (truncated).'
+    empty: '<yellow>⚠ <gray>No drops are eligible for this biome.'
+    invalid-biome: '<red>✗ <dark_red>Unknown biome <yellow>%biome%<dark_red>.'
   status:
     header: '<gold><bold>=== MythicRod Status ===</bold></gold>'
     version: '<gray>Plugin: <white>%version%'

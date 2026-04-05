@@ -41,6 +41,10 @@ command:
   gui:
     opened: '<green>✓ <gray>メインGUIを開きました。'
     opened-hint: '<dark_gray>ヒント: <yellow>/mythicrod help<dark_gray> で使用可能なコマンド一覧を表示できます。'
+  effects:
+    set-normal: '<green>✓ <gray>視覚エフェクトを <white>通常<gray> に設定しました。'
+    set-reduced: '<green>✓ <gray>視覚エフェクトを <white>控えめ<gray> に設定しました。'
+    invalid: '<red>✗ <dark_red>不明なモード <yellow>%mode%<dark_red>。<yellow>normal<dark_red> または <yellow>reduced<dark_red> を使用してください。'
   rod:
     opened: '<green>✓ <gray>ロッド設定を開きました。'
     selected: '<green>✓ <gray>ロッド階級を <white>%tier%<gray> に設定しました。'
@@ -72,6 +76,13 @@ command:
     bubble-set: '<green>✓ <gray>バブルパーティクルを <white>%type%</white><gray> に設定しました。'
     success-set: '<green>✓ <gray>成功パーティクルを <white>%type%</white><gray> に設定しました。'
     xp-set: '<green>✓ <gray>XP パーティクルを <white>%type%</white><gray> に設定しました。'
+  drops-preview:
+    header: '<gold><bold>=== <yellow>%biome%</yellow> で出現可能なドロップ ===</bold></gold>'
+    row: '<dark_gray>  • <gray>%category%<dark_gray>/<white>%identifier%</white> <dark_gray>(重み <yellow>%weight%</yellow>、約 <yellow>%share%%</yellow>)'
+    footer: '<gray>  合計: <white>%count%</white> 件 / 重み合計 <white>%weight%</white>。'
+    truncated: '<dark_gray>  ... さらに <yellow>%count%</yellow> 件（省略）。'
+    empty: '<yellow>⚠ <gray>このバイオームで該当するドロップはありません。'
+    invalid-biome: '<red>✗ <dark_red>未知のバイオーム <yellow>%biome%<dark_red>。'
   status:
     header: '<gold><bold>=== MythicRod ステータス ===</bold></gold>'
     version: '<gray>プラグイン: <white>%version%'

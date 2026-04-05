@@ -1,6 +1,7 @@
 package io.xcutiboo.mythicrod.paper.commands;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -133,6 +134,12 @@ public class BrigadierCommandManager {
                 .then(Commands.literal("inspect")
                     .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
                     .executes(this::executeRodInspect)))
+            .then(Commands.literal("effects")
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.GUI))
+                .executes(this::executeEffectsToggle)
+                .then(Commands.argument("mode", StringArgumentType.word())
+                    .suggests(this::suggestEffectModes)
+                    .executes(this::executeEffectsSet)))
             .then(Commands.literal("reload")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_RELOAD))
                 .executes(this::executeReload))
@@ -166,6 +173,11 @@ public class BrigadierCommandManager {
             .then(Commands.literal(KEY_DROPS)
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.DROPS_VIEW))
                 .executes(this::executeDrops)
+                .then(Commands.literal("preview")
+                    .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
+                    .then(Commands.argument("biome", StringArgumentType.string())
+                        .suggests(this::suggestBiomes)
+                        .executes(this::executeDropsPreview)))
                 .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
                     .suggests(this::suggestDropCategories)
                     .executes(this::executeDropsCategory)))
@@ -1832,6 +1844,127 @@ public class BrigadierCommandManager {
         }
         return builder.buildFuture();
     }
+
+    private CompletableFuture<Suggestions> suggestEffectModes(
+        @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
+        SuggestionsBuilder builder
+    ) {
+        for (String m : List.of("normal", "reduced")) {
+            builder.suggest(m);
+        }
+        return builder.buildFuture();
+    }
+
+    private int executeEffectsToggle(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        if (!(sender instanceof Player player)) {
+            sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
+            playErrorSound(sender);
+            return 0;
+        }
+        plugin.getPlayerDataService().toggleReducedEffects(player);
+        boolean reduced = plugin.getPlayerDataService().hasReducedEffects(player);
+        sendMessage(sender, tr(sender, reduced
+            ? "command.effects.set-reduced"
+            : "command.effects.set-normal"));
+        playSuccessSound(sender);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int executeEffectsSet(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        if (!(sender instanceof Player player)) {
+            sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
+            playErrorSound(sender);
+            return 0;
+        }
+        String mode = StringArgumentType.getString(context, "mode").toLowerCase(Locale.ROOT);
+        boolean reduced;
+        switch (mode) {
+            case "reduced" -> reduced = true;
+            case "normal", "full" -> reduced = false;
+            default -> {
+                sendMessage(sender, tr(sender, "command.effects.invalid",
+                    Map.of("mode", mode)));
+                playErrorSound(sender);
+                return 0;
+            }
+        }
+        plugin.getPlayerDataService().setReducedEffects(player, reduced);
+        sendMessage(sender, tr(sender, reduced
+            ? "command.effects.set-reduced"
+            : "command.effects.set-normal"));
+        playSuccessSound(sender);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int executeDropsPreview(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        try {
+            String biome = StringArgumentType.getString(context, "biome").trim();
+            NamespacedKey biomeKey = parseRegistryKey(biome);
+            if (biomeKey == null
+                    || RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME).get(biomeKey) == null) {
+                sendMessage(sender, tr(sender, "command.drops-preview.invalid-biome",
+                    Map.of("biome", biome)));
+                playErrorSound(sender);
+                return 0;
+            }
+            String biomeId = biomeKey.asString();
+
+            sendMessage(sender, tr(sender, "command.drops-preview.header",
+                Map.of("biome", biomeId)));
+
+            int rows = 0;
+            long totalWeight = 0L;
+            List<EligibleDrop> eligible = new ArrayList<>();
+            Map<String, List<CustomDrop>> categories = plugin.getDropManager().getDropCategories();
+            for (Map.Entry<String, List<CustomDrop>> entry : categories.entrySet()) {
+                for (CustomDrop drop : entry.getValue()) {
+                    List<String> biomes = drop.getBiomes();
+                    if (biomes != null && !biomes.isEmpty() && !biomes.contains(biomeId)) {
+                        continue;
+                    }
+                    eligible.add(new EligibleDrop(entry.getKey(), drop));
+                    totalWeight += Math.max(0, drop.getWeight());
+                }
+            }
+            eligible.sort(Comparator.comparingInt((EligibleDrop e) -> e.drop().getWeight()).reversed());
+
+            for (EligibleDrop entry : eligible) {
+                if (rows++ >= 12) {
+                    sendMessage(sender, tr(sender, "command.drops-preview.truncated",
+                        Map.of("count", String.valueOf(eligible.size() - 12))));
+                    break;
+                }
+                double share = totalWeight == 0 ? 0.0 : (entry.drop().getWeight() * 100.0 / totalWeight);
+                sendMessage(sender, tr(sender, "command.drops-preview.row",
+                    Map.of(
+                        "category", entry.category(),
+                        "identifier", entry.drop().getIdentifier(),
+                        "weight", String.valueOf(entry.drop().getWeight()),
+                        "share", String.format(Locale.ROOT, "%.1f", share)
+                    )));
+            }
+            if (eligible.isEmpty()) {
+                sendMessage(sender, tr(sender, "command.drops-preview.empty"));
+            } else {
+                sendMessage(sender, tr(sender, "command.drops-preview.footer",
+                    Map.of(
+                        "count", String.valueOf(eligible.size()),
+                        "weight", String.valueOf(totalWeight))));
+            }
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing drops preview", e);
+            return 0;
+        }
+    }
+
+    private record EligibleDrop(String category, CustomDrop drop) {}
 
     private int executeStatus(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
