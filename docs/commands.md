@@ -31,6 +31,7 @@ branches the sender can't run.
 | `/mythicrod testroll [biome] [count]` | Roll simulator + tier histogram | `mythicrod.admin.debug` |
 | `/mythicrod reload` | Reload data atomically | `mythicrod.admin.reload` |
 | `/mythicrod debug` | Console debug dump | `mythicrod.admin.debug` |
+| `/mythicrod status` | Runtime snapshot (version, runtime mode, drops, locales, Nexo, stats) | `mythicrod.admin.debug` |
 | `/mythicrod help` | Reference | `mythicrod.command` |
 
 ## Behaviour worth knowing
