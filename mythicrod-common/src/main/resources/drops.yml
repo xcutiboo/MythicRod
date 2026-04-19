@@ -152,7 +152,7 @@ drops:
     - 'TROPICAL_FISH,25,1'
     - 'FEATHER,20,2'
     - 'MELON,20,1'
-    - 'VINES,35,2'
+    - 'VINE,35,2'
 
   # Mushroom fields rewards.
   biome_mushroom_fields:
