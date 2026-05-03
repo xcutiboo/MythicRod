@@ -175,7 +175,7 @@ public class BrigadierCommandManager {
                 .executes(this::executeDrops)
                 .then(Commands.literal("preview")
                     .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
-                    .then(Commands.argument("biome", StringArgumentType.string())
+                    .then(Commands.argument("biome", StringArgumentType.greedyString())
                         .suggests(this::suggestBiomes)
                         .executes(this::executeDropsPreview)))
                 .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
