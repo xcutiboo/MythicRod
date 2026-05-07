@@ -1,6 +1,7 @@
 ---
 title: Release guide
 nav_order: 11
+has_children: true
 ---
 
 # Release guide
@@ -11,6 +12,13 @@ Step-by-step for cutting a public release of MythicRod. Every secret named
 here is configured at **Settings → Secrets and variables → Actions** on the
 GitHub repository. Nothing in this file expects you to paste a token into a
 file on disk.
+
+## Children
+
+- [Hangar publishing]({{ site.baseurl }}/release/hangar.html)
+- [Modrinth publishing]({{ site.baseurl }}/release/modrinth.html)
+- [GitHub Actions reference]({{ site.baseurl }}/release/github-actions.html)
+- [Release checklist]({{ site.baseurl }}/release/checklist.html)
 
 ## 1. Required repo secrets
 

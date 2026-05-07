@@ -1,11 +1,18 @@
 ---
 title: Localization
 nav_order: 12
+has_children: true
 ---
 
 # Localization
 
 ![divider]({{ site.baseurl }}/assets/divider.svg)
+
+## Children
+
+- [Crowdin]({{ site.baseurl }}/localization/crowdin.html)
+- [Translation style guide]({{ site.baseurl }}/localization/style-guide.html)
+- [Sync runbook]({{ site.baseurl }}/localization/sync-runbook.html)
 
 MythicRod ships English (`en_US`), British English (`en_GB`), and Japanese
 (`ja_JP`) out of the box. Every other language is community-driven through
