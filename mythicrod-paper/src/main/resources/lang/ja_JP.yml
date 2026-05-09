@@ -47,8 +47,8 @@ command:
     invalid: '<red>✗ <dark_red>不明なモード <yellow>%mode%<dark_red>。<yellow>normal<dark_red> または <yellow>reduced<dark_red> を使用してください。'
   rod:
     opened: '<green>✓ <gray>ロッド設定を開きました。'
-    selected: '<green>✓ <gray>ロッド階級を <white>%tier%<gray> に設定しました。'
-    locked: '<red>✗ <dark_red>階級 <yellow>%tier%<dark_red> を使用する権限がありません。'
+    selected: '<green>✓ <gray>ロッドティアを <white>%tier%<gray> に切り替えました。'
+    locked: '<red>✗ <dark_red>ティア <yellow>%tier%<dark_red> を使用する権限がありません。'
   give:
     tier-missing: '<red>✗ <dark_red>ティアを空にはできません。'
     invalid-tier: '<red>✗ <dark_red>無効なティア <yellow>%tier%<dark_red> です。<yellow>basic<dark_red>、<yellow>advanced<dark_red>、<yellow>legendary<dark_red> を使用してください。'
@@ -734,7 +734,7 @@ gui:
       lore3: '<dark_gray>通常の釣りに最適です'
       equipped: '<green>✓ 装備中'
       click: '<yellow>▶ クリックして装備'
-      selected: '<green>✓ ロッド tier を Basic に変更しました。'
+      selected: '<green>✓ <gray>ベーシックロッドに切り替えました。'
     advanced:
       label: 'Advanced'
       name: '<aqua><bold>アドバンスドロッド'
@@ -744,8 +744,8 @@ gui:
       lore4: '<yellow>さらなる成長向けに設計されています'
       equipped: '<green>✓ 装備中'
       click: '<yellow>▶ クリックして装備'
-      selected: '<green>✓ ロッド tier を Advanced に変更しました。'
-      locked: '<red>✗ Advanced ロッドを使う権限が必要です。'
+      selected: '<green>✓ <gray>アドバンスドロッドに切り替えました。'
+      locked: '<red>✗ <dark_red>アドバンスドロッドを使う権限がありません。'
     legendary:
       label: 'Legendary'
       name: '<gold><bold>レジェンダリーロッド'
@@ -756,8 +756,8 @@ gui:
       lore5: '<gold>見せ場になる釣果のための一本です'
       equipped: '<green>✓ 装備中'
       click: '<yellow>▶ クリックして装備'
-      selected: '<green>✓ ロッド tier を Legendary に変更しました。'
-      locked: '<red>✗ Legendary ロッドを使う権限が必要です。'
+      selected: '<green>✓ <gray>レジェンダリーロッドに切り替えました。'
+      locked: '<red>✗ <dark_red>レジェンダリーロッドを使う権限がありません。'
     effects:
       name: '<light_purple><bold>表示演出'
       lore1: '<gray>メニューと釣果演出の'
