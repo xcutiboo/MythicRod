@@ -3,9 +3,13 @@ package io.xcutiboo.mythicrod.drops;
 import java.util.List;
 import java.util.Map;
 
+/// Immutable reward configuration after defaults and config aliases are applied.
+///
+/// `weight` is relative to the other eligible drops in the same roll. It is not
+/// a normalized percentage.
 public record DropConfigurationRecord(
     String identifier,
-    int chance,
+    int weight,
     int amount,
     String customName,
     List<String> lore,
@@ -21,8 +25,8 @@ public record DropConfigurationRecord(
         if (identifier == null || identifier.isEmpty()) {
             throw new IllegalArgumentException("Identifier cannot be null or empty");
         }
-        if (chance <= 0) {
-            throw new IllegalArgumentException("Chance must be greater than 0");
+        if (weight <= 0) {
+            throw new IllegalArgumentException("Drop weight must be greater than 0");
         }
         if (amount <= 0) {
             throw new IllegalArgumentException("Amount must be greater than 0");

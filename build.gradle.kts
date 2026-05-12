@@ -4,34 +4,35 @@ plugins {
 }
 
 group = "io.xcutiboo"
-version = "1.0.0"
+version = providers.gradleProperty("version").get()
 
 subprojects {
     apply(plugin = "java-library")
-    
+
     repositories {
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/") {
             name = "papermc"
         }
-        maven("https://repo.nexomc.com/snapshots/") {
-            name = "nexo"
-        }
-        maven("https://jitpack.io") {
-            name = "jitpack"
-        }
     }
-    
+
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
+            languageVersion.set(JavaLanguageVersion.of(25))
         }
     }
-    
+
+    dependencies {
+        val libsCatalog = rootProject.extensions
+            .getByType<org.gradle.api.artifacts.VersionCatalogsExtension>()
+            .named("libs")
+        "testRuntimeOnly"(libsCatalog.findLibrary("junit-platform-launcher").get())
+    }
+
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.release.set(21)
-        
+        options.release.set(25)
+
         // Strict compilation: treat all warnings as errors
         options.compilerArgs.addAll(
             listOf(
@@ -55,5 +56,9 @@ subprojects {
                 "-parameters"                  // Generate parameter metadata for reflection
             )
         )
+    }
+
+    tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+        useJUnitPlatform()
     }
 }

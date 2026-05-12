@@ -1,66 +1,94 @@
 package io.xcutiboo.mythicrod.paper.api;
 
-import io.xcutiboo.mythicrod.api.ExternalDropProvider;
-import io.xcutiboo.mythicrod.api.MythicRodAPI;
-import io.xcutiboo.mythicrod.api.PlayerStatSnapshot;
-import io.xcutiboo.mythicrod.api.PlayerStatSnapshot.StatType;
-import io.xcutiboo.mythicrod.drops.DropManager;
-import io.xcutiboo.mythicrod.drops.DropRegistry;
-import io.xcutiboo.mythicrod.metrics.StatisticsManager;
-import io.xcutiboo.mythicrod.stats.PlayerStats;
-import org.jetbrains.annotations.NotNull;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/**
- * Paper implementation of {@link MythicRodAPI}.
- *
- * <p>Registered in Bukkit's services manager at plugin enable:
- * <pre>{@code
- * getServer().getServicesManager().register(MythicRodAPI.class, this, plugin, ServicePriority.Normal);
- * }</pre>
- *
- * <p><strong>Thread safety:</strong> All mutable state in this class uses
- * {@link ConcurrentHashMap} or {@code volatile} references. Methods that
- * do not return {@link CompletableFuture} must be called from the entity's
- * owning region thread (Folia-safe).
- */
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import io.xcutiboo.mythicrod.api.ExternalDropProvider;
+import io.xcutiboo.mythicrod.api.MythicRodAPI;
+import io.xcutiboo.mythicrod.api.PlayerStatSnapshot;
+import io.xcutiboo.mythicrod.api.drop.DropCatalog;
+import io.xcutiboo.mythicrod.api.platform.PlatformItem;
+import io.xcutiboo.mythicrod.api.platform.PlatformItemFactory;
+import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
+import io.xcutiboo.mythicrod.api.platform.PlatformScheduler;
+import io.xcutiboo.mythicrod.drops.CustomDrop;
+import io.xcutiboo.mythicrod.drops.DropConfigurationRecord;
+import io.xcutiboo.mythicrod.drops.DropManager;
+import io.xcutiboo.mythicrod.metrics.StatisticsManager;
+import io.xcutiboo.mythicrod.stats.PlayerStats;
+
+/// Paper runtime implementation of `MythicRodAPI`.
+///
+/// External plugins should retrieve and program against the stable
+/// `MythicRodAPI` service. This type is public only because Bukkit's services
+/// manager needs a concrete provider instance.
+///
+/// Registered in Bukkit's services manager during plugin enable:
+///
+/// ```java
+/// PaperMythicRodAPI api = plugin.getApiFacade();
+/// getServer().getServicesManager().register(MythicRodAPI.class, api, plugin, ServicePriority.Normal);
+/// ```
+///
+/// ## Thread Safety
+///
+/// Provider registration is backed by `ConcurrentHashMap`. Methods that do not
+/// return `CompletableFuture` must be called from the entity's owning region
+/// thread. Future-backed methods complete on MythicRod's async scheduler, so
+/// callers must schedule platform mutations back to the correct Paper/Folia
+/// owner.
 public class PaperMythicRodAPI implements MythicRodAPI {
 
     private final String version;
+    private final Logger logger;
     private final DropManager dropManager;
-    private final DropRegistry dropRegistry;
     private final StatisticsManager statisticsManager;
+    private final PlatformScheduler scheduler;
+    private final PlatformItemFactory itemFactory;
 
-    /**
-     * Thread-safe external drop provider registry.
-     * Key = {@link ExternalDropProvider#getKey()}.
-     */
     private final ConcurrentHashMap<String, ExternalDropProvider> externalProviders =
             new ConcurrentHashMap<>();
 
     public PaperMythicRodAPI(
             @NotNull String version,
+            @NotNull Logger logger,
             @NotNull DropManager dropManager,
-            @NotNull DropRegistry dropRegistry,
-            @NotNull StatisticsManager statisticsManager) {
+            @NotNull StatisticsManager statisticsManager,
+            @NotNull PlatformScheduler scheduler,
+            @NotNull PlatformItemFactory itemFactory) {
         this.version = version;
+        this.logger = logger;
         this.dropManager = dropManager;
-        this.dropRegistry = dropRegistry;
         this.statisticsManager = statisticsManager;
+        this.scheduler = scheduler;
+        this.itemFactory = itemFactory;
     }
 
-    // =========================================================================
-    // Plugin meta
-    // =========================================================================
+    /// Internal reward-selection result used by the Paper fishing pipeline.
+    ///
+    /// `drop` is always the item MythicRod will announce and record.
+    /// `externalItem` is present only when an external provider supplied the
+    /// concrete platform item to deliver.
+    public record RewardResolution(@NotNull CustomDrop drop, @Nullable PlatformItem externalItem) {
+        public boolean isExternal() {
+            return externalItem != null;
+        }
+    }
 
     @Override
     @NotNull
@@ -68,25 +96,17 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         return version;
     }
 
-    // =========================================================================
-    // Drop system
-    // =========================================================================
-
     @Override
     @NotNull
-    public DropManager getDropManager() {
+    public DropCatalog getDropCatalog() {
         return dropManager;
     }
 
     @Override
     @NotNull
-    public DropRegistry getDropRegistry() {
-        return dropRegistry;
+    public PlatformItemFactory getItemFactory() {
+        return itemFactory;
     }
-
-    // =========================================================================
-    // External drop providers
-    // =========================================================================
 
     @Override
     public void registerExternalDropProvider(@NotNull ExternalDropProvider provider) {
@@ -114,25 +134,93 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         return List.copyOf(externalProviders.values());
     }
 
-    /**
-     * Returns the raw external providers map for use by the fishing pipeline.
-     * This is an internal method — not exposed on the public API interface.
-     *
-     * @return Unmodifiable view of the providers map (by key).
-     */
-    @NotNull
-    public Map<String, ExternalDropProvider> getExternalProvidersMap() {
-        return Map.copyOf(externalProviders);
+    public double getBaseRewardWeight(@NotNull PlatformPlayer player, @Nullable String biomeName) {
+        double totalWeight = 0.0D;
+
+        for (CustomDrop drop : dropManager.getEligibleDrops(player, biomeName)) {
+            totalWeight += Math.max(0, drop.getWeight());
+        }
+
+        for (ExternalDropProvider provider : externalProviders.values()) {
+            totalWeight += getProviderWeight(provider, player);
+        }
+
+        return totalWeight;
     }
 
-    // =========================================================================
-    // Statistics — CompletableFuture-backed
-    // =========================================================================
+    @Nullable
+    public RewardResolution resolveReward(
+            @NotNull PlatformPlayer player,
+            @Nullable String biomeName,
+            double luckMultiplier) {
+        List<CustomDrop> builtInDrops = dropManager.getEligibleDrops(player, biomeName);
+        List<WeightedExternalProvider> externalChoices = new ArrayList<>(externalProviders.size());
 
+        double builtInWeight = 0.0D;
+        for (CustomDrop drop : builtInDrops) {
+            builtInWeight += dropManager.getEffectiveWeight(drop, luckMultiplier);
+        }
+
+        double externalWeight = 0.0D;
+        for (ExternalDropProvider provider : externalProviders.values()) {
+            double weight = getProviderWeight(provider, player);
+            if (weight > 0.0D) {
+                externalChoices.add(new WeightedExternalProvider(provider, weight));
+                externalWeight += weight;
+            }
+        }
+
+        double totalWeight = builtInWeight + externalWeight;
+        if (totalWeight <= 0.0D) {
+            return null;
+        }
+
+        while (totalWeight > 0.0D) {
+            double roll = ThreadLocalRandom.current().nextDouble(totalWeight);
+            double cursor = 0.0D;
+
+            for (CustomDrop drop : builtInDrops) {
+                cursor += dropManager.getEffectiveWeight(drop, luckMultiplier);
+                if (roll < cursor) {
+                    return new RewardResolution(drop, null);
+                }
+            }
+
+            boolean rerollRequired = false;
+            for (int index = 0; index < externalChoices.size(); index++) {
+                WeightedExternalProvider externalChoice = externalChoices.get(index);
+                cursor += externalChoice.weight();
+                if (roll < cursor) {
+                    PlatformItem externalItem = createExternalItem(externalChoice.provider(), player);
+                    if (externalItem != null) {
+                        return new RewardResolution(adaptExternalDrop(externalChoice.provider(), externalItem), externalItem);
+                    }
+
+                    totalWeight -= externalChoice.weight();
+                    externalChoices.remove(index);
+                    rerollRequired = true;
+                    break;
+                }
+            }
+
+            if (!rerollRequired) {
+                break;
+            }
+        }
+
+        return null;
+    }
+
+    /// Runs the single-player stats lookup away from Paper/Folia owner threads.
+    ///
+    /// The returned future completes on MythicRod's async scheduler. Callers
+    /// must reschedule to the correct owner before touching Bukkit, Paper, or
+    /// inventory state from a continuation. Missing players resolve to an empty
+    /// snapshot; unexpected read failures complete the future exceptionally.
     @Override
     @NotNull
-    public CompletableFuture<@NotNull PlayerStatSnapshot> getPlayerStats(@NotNull UUID playerId) {
-        return CompletableFuture.supplyAsync(() -> {
+    public CompletableFuture<PlayerStatSnapshot> getPlayerStats(@NotNull UUID playerId) {
+        return supplyAsync(() -> {
             PlayerStats stats = statisticsManager.getStats(playerId);
             if (stats == null) {
                 return PlayerStatSnapshot.empty(playerId, "Unknown");
@@ -141,13 +229,19 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         });
     }
 
+    /// Runs the stats lookup away from Paper/Folia owner threads.
+    ///
+    /// The returned future completes on MythicRod's async scheduler. Callers
+    /// must reschedule to the correct owner before touching Bukkit, Paper, or
+    /// inventory state from a continuation. Exceptions thrown by the stats
+    /// manager complete the future exceptionally.
     @Override
     @NotNull
-    public CompletableFuture<@NotNull List<@NotNull PlayerStatSnapshot>> getTopPlayers(
-            @NotNull StatType statType,
+    public CompletableFuture<List<PlayerStatSnapshot>> getTopPlayers(
+            @NotNull PlayerStatSnapshot.StatType statType,
             int limit) {
         int clampedLimit = Math.max(1, Math.min(100, limit));
-        return CompletableFuture.supplyAsync(() -> {
+        return supplyAsync(() -> {
             Map<UUID, PlayerStats> allStats = statisticsManager.getAllStats();
             List<PlayerStatSnapshot> snapshots = new ArrayList<>(allStats.size());
             for (PlayerStats ps : allStats.values()) {
@@ -166,15 +260,138 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         });
     }
 
+    /// Persists all loaded statistics on MythicRod's async scheduler.
+    ///
+    /// The future has no built-in timeout and may complete exceptionally when
+    /// the underlying file save fails. Cancelling the future does not guarantee
+    /// interruption of a save that has already started.
     @Override
     @NotNull
     public CompletableFuture<Void> flushAllStats() {
-        return CompletableFuture.runAsync(() -> statisticsManager.saveAll());
+        return runAsync(() -> statisticsManager.saveAll());
     }
 
-    // =========================================================================
-    // Internal helpers
-    // =========================================================================
+    private <T> CompletableFuture<T> supplyAsync(@NotNull Supplier<T> supplier) {
+        CompletableFuture<T> future = new CompletableFuture<>();
+        scheduler.runAsync(() -> {
+            try {
+                future.complete(supplier.get());
+            } catch (Throwable throwable) {
+                future.completeExceptionally(throwable);
+            }
+        });
+        return future;
+    }
+
+    private CompletableFuture<Void> runAsync(@NotNull Runnable runnable) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        scheduler.runAsync(() -> {
+            try {
+                runnable.run();
+                future.complete(null);
+            } catch (Throwable throwable) {
+                future.completeExceptionally(throwable);
+            }
+        });
+        return future;
+    }
+
+    private double getProviderWeight(@NotNull ExternalDropProvider provider, @NotNull PlatformPlayer player) {
+        try {
+            double weight = provider.getWeight(player);
+            if (Double.isNaN(weight) || Double.isInfinite(weight) || weight <= 0.0D) {
+                return 0.0D;
+            }
+            return weight;
+        } catch (Exception exception) {
+            logger.log(
+                Level.WARNING,
+                "External drop provider '" + safeProviderKey(provider) + "' failed during weight calculation",
+                exception
+            );
+            return 0.0D;
+        }
+    }
+
+    @Nullable
+    private PlatformItem createExternalItem(@NotNull ExternalDropProvider provider, @NotNull PlatformPlayer player) {
+        try {
+            return provider.generateItem(player);
+        } catch (Exception exception) {
+            logger.log(
+                Level.WARNING,
+                "External drop provider '" + safeProviderKey(provider) + "' failed while generating a reward item",
+                exception
+            );
+            return null;
+        }
+    }
+
+    private CustomDrop adaptExternalDrop(@NotNull ExternalDropProvider provider, @NotNull PlatformItem externalItem) {
+        String customName = safeDisplayName(provider, externalItem);
+        return new CustomDrop(new DropConfigurationRecord(
+            safeProviderKey(provider),
+            tierToWeight(provider.getTier()),
+            Math.max(1, externalItem.getAmount()),
+            customName,
+            externalItem.getLore(),
+            0,
+            externalItem.getEnchantments(),
+            externalItem.getItemFlags(),
+            externalItem.isGlowing(),
+            null,
+            List.of(),
+            null
+        ));
+    }
+
+    private String safeDisplayName(@NotNull ExternalDropProvider provider, @NotNull PlatformItem externalItem) {
+        try {
+            String providerName = provider.getDisplayName();
+            if (providerName != null
+                && !providerName.isBlank()
+                && !"<gray>Unknown Drop</gray>".equals(providerName)) {
+                return providerName;
+            }
+        } catch (Exception exception) {
+            logger.log(
+                Level.WARNING,
+                "External drop provider '" + safeProviderKey(provider) + "' failed while resolving its display name",
+                exception
+            );
+        }
+
+        String itemDisplayName = externalItem.getDisplayName();
+        if (itemDisplayName != null && !itemDisplayName.isBlank()) {
+            return itemDisplayName;
+        }
+        return safeProviderKey(provider);
+    }
+
+    private String safeProviderKey(@NotNull ExternalDropProvider provider) {
+        try {
+            String key = provider.getKey();
+            if (key != null && !key.isBlank()) {
+                return key;
+            }
+        } catch (Exception ignored) {
+            // Fall through to a generic identifier.
+        }
+        return provider.getClass().getName();
+    }
+
+    private int tierToWeight(@Nullable String tier) {
+        if (tier == null) {
+            return 25;
+        }
+
+        return switch (tier.trim().toLowerCase(Locale.ROOT)) {
+            case "legendary" -> 1;
+            case "rare" -> 5;
+            case "uncommon" -> 15;
+            default -> 25;
+        };
+    }
 
     private PlayerStatSnapshot toSnapshot(@NotNull PlayerStats stats) {
         long lastFishedMs = stats.getLastFished();
@@ -197,5 +414,8 @@ public class PaperMythicRodAPI implements MythicRodAPI {
                 lastFished,
                 Instant.now()
         );
+    }
+
+    private record WeightedExternalProvider(@NotNull ExternalDropProvider provider, double weight) {
     }
 }

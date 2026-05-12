@@ -1,12 +1,12 @@
 package io.xcutiboo.mythicrod.paper.platform;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.bukkit.inventory.ItemStack;
 
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.xcutiboo.mythicrod.api.platform.PlatformItem;
 
 import net.kyori.adventure.text.Component;
@@ -31,7 +31,7 @@ public class PaperItem implements PlatformItem {
 
     @Override
     public String getDisplayName() {
-        Component displayName = itemStack.getData(io.papermc.paper.datacomponent.DataComponentTypes.ITEM_NAME);
+        Component displayName = itemStack.getData(DataComponentTypes.ITEM_NAME);
         return displayName != null 
             ? PlainTextComponentSerializer.plainText().serialize(displayName) 
             : null;
@@ -40,7 +40,7 @@ public class PaperItem implements PlatformItem {
     @Override
     public List<String> getLore() {
         List<Component> lore = itemStack.lore();
-        if (lore == null) return new ArrayList<>();
+        if (lore == null) return List.of();
         return lore.stream()
             .map(component -> PlainTextComponentSerializer.plainText().serialize(component))
             .toList();
@@ -51,17 +51,17 @@ public class PaperItem implements PlatformItem {
         Map<String, Integer> enchants = new HashMap<>();
         itemStack.getEnchantments().forEach((enchant, level) -> 
             enchants.put(enchant.getKey().getKey(), level));
-        return enchants;
+        return Map.copyOf(enchants);
     }
 
     @Override
     public List<String> getItemFlags() {
-        return new ArrayList<>();
+        return List.of();
     }
 
     @Override
     public boolean isGlowing() {
-        Boolean glint = itemStack.getData(io.papermc.paper.datacomponent.DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
+        Boolean glint = itemStack.getData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
         return glint != null && glint;
     }
 

@@ -1,17 +1,19 @@
 package io.xcutiboo.mythicrod.paper.config;
 
-import io.xcutiboo.mythicrod.api.platform.PlatformConfiguration;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import io.xcutiboo.mythicrod.api.platform.PlatformConfiguration;
 
 public class PaperConfiguration implements PlatformConfiguration {
 
@@ -28,7 +30,7 @@ public class PaperConfiguration implements PlatformConfiguration {
     public PaperConfiguration(InputStream stream) {
         this(YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8)));
     }
-    
+
     public PaperConfiguration() {
         this(new YamlConfiguration());
     }
@@ -84,17 +86,18 @@ public class PaperConfiguration implements PlatformConfiguration {
     }
 
     @Override
+    public List<Map<?, ?>> getMapList(String path) {
+        return config.getMapList(path);
+    }
+
+    @Override
     public void set(String path, Object value) {
         config.set(path, value);
     }
 
     @Override
-    public Set<String> getKeys(String path, boolean deep) {
-        if (path == null || path.isEmpty()) {
-            return config.getKeys(deep);
-        }
-        ConfigurationSection section = config.getConfigurationSection(path);
-        return section != null ? section.getKeys(deep) : Collections.emptySet();
+    public Set<String> getKeys(boolean deep) {
+        return config.getKeys(deep);
     }
 
     @Override
@@ -104,7 +107,7 @@ public class PaperConfiguration implements PlatformConfiguration {
     }
 
     @Override
-    public void save(File file) throws Exception {
+    public void save(File file) throws IOException {
         if (config instanceof FileConfiguration fileConfig) {
             fileConfig.save(file);
         } else {

@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a new feature or improvement for MythicRod
+labels: ["enhancement"]
+title: "[feature] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What gap or pain point does this feature address?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should MythicRod do? Configuration shape, command names,
+        API additions, anything concrete helps.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Linked issues, related plugins, screenshots — anything that
+        helps weigh the change.

@@ -1,5 +1,18 @@
 package io.xcutiboo.mythicrod.paper.scheduler;
 
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.xcutiboo.mythicrod.api.platform.PlatformLocation;
 import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 import io.xcutiboo.mythicrod.api.platform.PlatformScheduler;
@@ -8,23 +21,18 @@ import io.xcutiboo.mythicrod.paper.platform.PaperLocation;
 import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import io.xcutiboo.mythicrod.paper.platform.PaperTask;
 import lombok.RequiredArgsConstructor;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-
-import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 public class FoliaSchedulerService implements PlatformScheduler {
     private final Plugin plugin;
     private final boolean isFolia;
+    private final Set<PaperTask> trackedTasks = ConcurrentHashMap.newKeySet();
 
     public FoliaSchedulerService(Plugin plugin) {
         this.plugin = plugin;
         this.isFolia = detectFolia();
     }
-    
+
     private boolean detectFolia() {
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
@@ -34,11 +42,38 @@ public class FoliaSchedulerService implements PlatformScheduler {
         }
     }
 
+    public boolean isFoliaRuntime() {
+        return isFolia;
+    }
+
+    public void cancelPluginTasks() {
+        if (isFolia) {
+            Bukkit.getGlobalRegionScheduler().cancelTasks(plugin);
+            Bukkit.getAsyncScheduler().cancelTasks(plugin);
+        } else {
+            Bukkit.getScheduler().cancelTasks(plugin);
+        }
+
+        for (PaperTask task : List.copyOf(trackedTasks)) {
+            try {
+                task.cancel();
+            } catch (RuntimeException e) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "Failed to cancel a scheduled MythicRod task", e);
+            }
+        }
+        trackedTasks.clear();
+    }
+
 
     @Override
     public void runAtLocation(PlatformLocation location, Runnable task) {
         Location bukkitLoc = PaperLocation.toBukkit(location, Bukkit.getServer());
-        
+        if (bukkitLoc == null) {
+            plugin.getLogger().warning("Skipping location task because the target world is unavailable");
+            return;
+        }
+
         if (isFolia) {
             Bukkit.getRegionScheduler().execute(plugin, bukkitLoc, task);
         } else {
@@ -49,18 +84,27 @@ public class FoliaSchedulerService implements PlatformScheduler {
     @Override
     public PlatformTask runAtLocationDelayed(PlatformLocation location, Runnable task, long delayTicks) {
         Location bukkitLoc = PaperLocation.toBukkit(location, Bukkit.getServer());
-        
+        if (bukkitLoc == null) {
+            plugin.getLogger().warning("Skipping delayed location task because the target world is unavailable");
+            return new PaperTask(null);
+        }
+
+        AtomicReference<PaperTask> taskRef = new AtomicReference<>();
         if (isFolia) {
             var foliaTask = Bukkit.getRegionScheduler().runDelayed(
-                plugin, 
-                bukkitLoc, 
-                scheduledTask -> task.run(), 
+                plugin,
+                bukkitLoc,
+                foliaOneShot(taskRef, task),
                 delayTicks
             );
-            return new PaperTask(foliaTask);
+            return track(foliaTask, taskRef);
         } else {
-            var bukkitTask = Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks);
-            return new PaperTask(bukkitTask);
+            var bukkitTask = Bukkit.getScheduler().runTaskLater(
+                plugin,
+                () -> runOneShot(taskRef, task),
+                delayTicks
+            );
+            return track(bukkitTask, taskRef);
         }
     }
 
@@ -68,7 +112,7 @@ public class FoliaSchedulerService implements PlatformScheduler {
     @Override
     public void runForPlayer(PlatformPlayer player, Runnable task) {
         Player bukkitPlayer = ((PaperPlayer) player).getBukkitPlayer();
-        
+
         if (isFolia) {
             bukkitPlayer.getScheduler().execute(plugin, task, null, 1L);
         } else {
@@ -79,18 +123,23 @@ public class FoliaSchedulerService implements PlatformScheduler {
     @Override
     public PlatformTask runForPlayerDelayed(PlatformPlayer player, Runnable task, long delayTicks) {
         Player bukkitPlayer = ((PaperPlayer) player).getBukkitPlayer();
-        
+
+        AtomicReference<PaperTask> taskRef = new AtomicReference<>();
         if (isFolia) {
             var foliaTask = bukkitPlayer.getScheduler().runDelayed(
-                plugin, 
-                scheduledTask -> task.run(), 
-                null, 
+                plugin,
+                foliaOneShot(taskRef, task),
+                null,
                 delayTicks
             );
-            return new PaperTask(foliaTask);
+            return track(foliaTask, taskRef);
         } else {
-            var bukkitTask = Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks);
-            return new PaperTask(bukkitTask);
+            var bukkitTask = Bukkit.getScheduler().runTaskLater(
+                plugin,
+                () -> runOneShot(taskRef, task),
+                delayTicks
+            );
+            return track(bukkitTask, taskRef);
         }
     }
 
@@ -106,16 +155,21 @@ public class FoliaSchedulerService implements PlatformScheduler {
 
     @Override
     public PlatformTask runGlobalDelayed(Runnable task, long delayTicks) {
+        AtomicReference<PaperTask> taskRef = new AtomicReference<>();
         if (isFolia) {
             var foliaTask = Bukkit.getGlobalRegionScheduler().runDelayed(
-                plugin, 
-                scheduledTask -> task.run(), 
+                plugin,
+                foliaOneShot(taskRef, task),
                 delayTicks
             );
-            return new PaperTask(foliaTask);
+            return track(foliaTask, taskRef);
         } else {
-            var bukkitTask = Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks);
-            return new PaperTask(bukkitTask);
+            var bukkitTask = Bukkit.getScheduler().runTaskLater(
+                plugin,
+                () -> runOneShot(taskRef, task),
+                delayTicks
+            );
+            return track(bukkitTask, taskRef);
         }
     }
 
@@ -123,7 +177,7 @@ public class FoliaSchedulerService implements PlatformScheduler {
     @Override
     public void runAsync(Runnable task) {
         if (isFolia) {
-            Bukkit.getAsyncScheduler().runNow(plugin, scheduledTask -> task.run());
+            Bukkit.getAsyncScheduler().runNow(plugin, foliaTask(task));
         } else {
             Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
         }
@@ -131,59 +185,106 @@ public class FoliaSchedulerService implements PlatformScheduler {
 
     @Override
     public PlatformTask runAsyncDelayed(Runnable task, long delayTicks) {
+        AtomicReference<PaperTask> taskRef = new AtomicReference<>();
         if (isFolia) {
             long delayMillis = delayTicks * 50; // Convert ticks to milliseconds
             var foliaTask = Bukkit.getAsyncScheduler().runDelayed(
-                plugin, 
-                scheduledTask -> task.run(), 
-                delayMillis, 
+                plugin,
+                foliaOneShot(taskRef, task),
+                delayMillis,
                 TimeUnit.MILLISECONDS
             );
-            return new PaperTask(foliaTask);
+            return track(foliaTask, taskRef);
         } else {
-            var bukkitTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, task, delayTicks);
-            return new PaperTask(bukkitTask);
+            var bukkitTask = Bukkit.getScheduler().runTaskLaterAsynchronously(
+                plugin,
+                () -> runOneShot(taskRef, task),
+                delayTicks
+            );
+            return track(bukkitTask, taskRef);
         }
     }
-    
-    
+
+
     @Override
     public PlatformTask runGlobalRepeating(Runnable task, long initialDelayTicks, long periodTicks) {
         if (isFolia) {
             var foliaTask = Bukkit.getGlobalRegionScheduler().runAtFixedRate(
-                plugin, 
-                scheduledTask -> task.run(), 
-                initialDelayTicks, 
+                plugin,
+                foliaTask(task),
+                initialDelayTicks,
                 periodTicks
             );
-            return new PaperTask(foliaTask);
+            return track(foliaTask);
         } else {
             var bukkitTask = Bukkit.getScheduler().runTaskTimer(plugin, task, initialDelayTicks, periodTicks);
-            return new PaperTask(bukkitTask);
+            return track(bukkitTask);
         }
     }
-    
+
     @Override
     public PlatformTask runAsyncRepeating(Runnable task, long initialDelayMillis, long periodMillis) {
         if (isFolia) {
             var foliaTask = Bukkit.getAsyncScheduler().runAtFixedRate(
-                plugin, 
-                scheduledTask -> task.run(), 
-                initialDelayMillis, 
-                periodMillis, 
+                plugin,
+                foliaTask(task),
+                initialDelayMillis,
+                periodMillis,
                 TimeUnit.MILLISECONDS
             );
-            return new PaperTask(foliaTask);
+            return track(foliaTask);
         } else {
             long delayTicks = initialDelayMillis / 50L;
             long periodTicks = periodMillis / 50L;
             var bukkitTask = Bukkit.getScheduler().runTaskTimerAsynchronously(
-                plugin, 
-                task, 
-                delayTicks, 
+                plugin,
+                task,
+                delayTicks,
                 periodTicks
             );
-            return new PaperTask(bukkitTask);
+            return track(bukkitTask);
+        }
+    }
+
+    private PaperTask track(Object nativeTask) {
+        AtomicReference<PaperTask> taskRef = new AtomicReference<>();
+        return track(nativeTask, taskRef);
+    }
+
+    private PaperTask track(Object nativeTask, AtomicReference<PaperTask> taskRef) {
+        if (nativeTask == null) {
+            return new PaperTask(null);
+        }
+
+        PaperTask platformTask = new PaperTask(nativeTask, () -> {
+            PaperTask task = taskRef.get();
+            if (task != null) {
+                trackedTasks.remove(task);
+            }
+        });
+        taskRef.set(platformTask);
+        trackedTasks.add(platformTask);
+        return platformTask;
+    }
+
+    @SuppressWarnings("unused")
+    private Consumer<ScheduledTask> foliaTask(Runnable task) {
+        return scheduledTask -> task.run();
+    }
+
+    @SuppressWarnings("unused")
+    private Consumer<ScheduledTask> foliaOneShot(AtomicReference<PaperTask> taskRef, Runnable task) {
+        return scheduledTask -> runOneShot(taskRef, task);
+    }
+
+    private void runOneShot(AtomicReference<PaperTask> taskRef, Runnable task) {
+        try {
+            task.run();
+        } finally {
+            PaperTask platformTask = taskRef.get();
+            if (platformTask != null) {
+                trackedTasks.remove(platformTask);
+            }
         }
     }
 }

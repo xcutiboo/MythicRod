@@ -1,18 +1,26 @@
 package io.xcutiboo.mythicrod.drops;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import io.xcutiboo.mythicrod.api.drop.DropCatalog;
 import io.xcutiboo.mythicrod.api.platform.PlatformConfiguration;
 import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
+import io.xcutiboo.mythicrod.constants.PermissionNodes;
 import lombok.NonNull;
 
 /**
@@ -20,30 +28,29 @@ import lombok.NonNull;
  *
  * <p><strong>Thread safety:</strong> The canonical drop table is held in an
  * {@link AtomicReference} so that a reload (which builds a completely new map)
- * is published atomically.  Readers always see either the old complete map or
- * the new complete map — never a partially-populated one.  Individual category
+ * is published atomically. Readers always see either the old complete map or
+ * the new complete map, never a partially-populated one. Individual category
  * lists use {@link CopyOnWriteArrayList} so that in-place mutations
  * ({@code updateDrop}, {@code deleteDrop}) are safe to perform while concurrent
- * readers iterate over the list.  {@code base64Drops} uses a
- * {@link ConcurrentHashMap} for the same reason.
+ * readers iterate over the list.
  */
-public class DropManager {
+public class DropManager implements DropCatalog {
     @NonNull
-    private final Logger logger;
+    private final String loggerName;
 
-    /**
-     * Atomic reference to the current drop table.
-     * Swap the entire reference on reload — never mutate the map in-place across threads.
-     */
     private final AtomicReference<Map<String, List<CustomDrop>>> dropCategoriesRef =
             new AtomicReference<>(new ConcurrentHashMap<>());
 
-    private final Map<String, String> base64Drops = new ConcurrentHashMap<>();
     private final DropSelector selector;
+    private final Object asyncPersistenceMonitor = new Object();
+    private final Object persistenceFileLock = new Object();
     private volatile boolean debugMode = false;
+    private volatile int pendingAsyncPersistenceOperations = 0;
+    private volatile PlatformConfiguration dropsConfig;
+    private volatile File dropsFile;
 
     public DropManager(@NonNull Logger logger) {
-        this.logger = logger;
+        this.loggerName = logger.getName();
         this.selector = new DropSelector(logger, false);
     }
 
@@ -52,104 +59,398 @@ public class DropManager {
         this.selector.setDebugMode(debug);
     }
 
-    // ---------------------------------------------------------------------------
-    // Internal helper — returns the live (current) categories map.
-    // ---------------------------------------------------------------------------
+    public void setUsePermissions(boolean usePermissions) {
+        this.selector.setUsePermissions(usePermissions);
+    }
+
+    public void setUseBiomeSpecificDrops(boolean useBiomeSpecificDrops) {
+        this.selector.setUseBiomeSpecificDrops(useBiomeSpecificDrops);
+    }
+
     private Map<String, List<CustomDrop>> dropCategories() {
         return dropCategoriesRef.get();
     }
 
     public void loadDrops(PlatformConfiguration config) {
+        loadDrops(config, null);
+    }
+
+    public void loadDrops(PlatformConfiguration config, File sourceFile) {
+        this.dropsConfig = config;
+        this.dropsFile = sourceFile;
+
         // Build a fresh map, then publish it atomically so concurrent readers are
         // never exposed to a partially-populated state.
         Map<String, List<CustomDrop>> newCategories = new ConcurrentHashMap<>();
+        DropLoadReport report = new DropLoadReport();
         int totalDrops = 0;
 
-        PlatformConfiguration dropsSection = config.getSection("fishing.drops");
+        PlatformConfiguration dropsSection = config.getSection("drops");
         if (dropsSection == null) {
-            logger.warning("No 'fishing.drops' section found in config! Loading defaults.");
+            dropsSection = config.getSection("fishing.drops");
+        }
+        PlatformConfiguration previousBiomeDropsSection = config.getSection("biome-drops");
+
+        if (dropsSection == null && previousBiomeDropsSection == null) {
+            warning(() -> "No 'drops', 'fishing.drops', or 'biome-drops' section found. Loading defaults.");
             loadDefaultDrops(newCategories);
             dropCategoriesRef.set(newCategories);
             return;
         }
 
-        for (String category : dropsSection.getKeys("", false)) {
-            List<CustomDrop> categoryDrops = loadCategory(dropsSection, category);
-            if (!categoryDrops.isEmpty()) {
-                // CopyOnWriteArrayList: safe for concurrent iteration while mutations occur
-                newCategories.put(category.toLowerCase(java.util.Locale.ROOT),
-                        new CopyOnWriteArrayList<>(categoryDrops));
-                totalDrops += categoryDrops.size();
+        if (dropsSection != null) {
+            totalDrops += loadConfiguredCategories(dropsSection, newCategories, report);
+        }
+
+        if (previousBiomeDropsSection != null) {
+            totalDrops += loadPreviousBiomeDropCategories(previousBiomeDropsSection, newCategories, report);
+        }
+
+        // Readers see the complete new table from this point.
+        dropCategoriesRef.set(newCategories);
+        if (report.migratedWeightAliases > 0) {
+            info(() -> "Read " + report.migratedWeightAliases
+                + " drop weight value(s) from the previous 'chance' key. Save drops once to rewrite them as 'weight'.");
+        }
+        info("Loaded " + totalDrops + " drops across " + newCategories.size() + " categories");
+    }
+
+    private int loadConfiguredCategories(
+        PlatformConfiguration dropsSection,
+        Map<String, List<CustomDrop>> target,
+        DropLoadReport report
+    ) {
+        int totalDrops = 0;
+
+        for (String category : dropsSection.getKeys(false)) {
+            String categoryKey = category.toLowerCase(Locale.ROOT);
+            List<CustomDrop> categoryDrops = applyImplicitCategoryConditions(
+                categoryKey,
+                loadCategory(dropsSection, category, report)
+            );
+            totalDrops += publishCategory(
+                target,
+                categoryKey,
+                categoryDrops
+            );
+        }
+
+        return totalDrops;
+    }
+
+    private List<CustomDrop> applyImplicitCategoryConditions(String categoryKey, List<CustomDrop> categoryDrops) {
+        if (categoryDrops.isEmpty()) {
+            return categoryDrops;
+        }
+
+        List<String> implicitBiomes = implicitBiomesForCategory(categoryKey);
+        String implicitPermission = implicitPermissionForCategory(categoryKey);
+
+        if (implicitBiomes.isEmpty() && implicitPermission == null) {
+            return categoryDrops;
+        }
+
+        List<CustomDrop> scopedDrops = new ArrayList<>(categoryDrops.size());
+        for (CustomDrop drop : categoryDrops) {
+            CustomDrop scopedDrop = drop;
+            if (!implicitBiomes.isEmpty() && scopedDrop.getBiomes().isEmpty()) {
+                scopedDrop = copyDropWithBiomes(scopedDrop, implicitBiomes);
+            }
+            if (implicitPermission != null
+                    && (scopedDrop.getPermission() == null || scopedDrop.getPermission().isBlank())) {
+                scopedDrop = copyDropWithPermission(scopedDrop, implicitPermission);
+            }
+            scopedDrops.add(scopedDrop);
+        }
+        return scopedDrops;
+    }
+
+    private List<String> implicitBiomesForCategory(String categoryKey) {
+        if (!categoryKey.startsWith("biome_")) {
+            return List.of();
+        }
+
+        String biomeKey = categoryKey.substring("biome_".length());
+        if (biomeKey.isBlank()) {
+            return List.of();
+        }
+        return List.of(normalizeBiomeKey(biomeKey));
+    }
+
+    private String implicitPermissionForCategory(String categoryKey) {
+        return switch (categoryKey) {
+            case "global" -> PermissionNodes.DROPS_GLOBAL;
+            case "rare" -> PermissionNodes.DROPS_RARE;
+            case "legendary" -> PermissionNodes.DROPS_LEGENDARY;
+            default -> null;
+        };
+    }
+
+    private int loadPreviousBiomeDropCategories(
+        PlatformConfiguration biomeDropsSection,
+        Map<String, List<CustomDrop>> target,
+        DropLoadReport report
+    ) {
+        int totalDrops = 0;
+        List<String> skippedDuplicateCategories = new ArrayList<>();
+
+        for (String biomeKey : biomeDropsSection.getKeys(false)) {
+            String categoryKey = toBiomeCategoryKey(biomeKey);
+            if (target.containsKey(categoryKey)) {
+                skippedDuplicateCategories.add("biome-drops." + biomeKey + " -> drops." + categoryKey);
+                continue;
+            }
+
+            List<CustomDrop> categoryDrops = loadCategory(biomeDropsSection, biomeKey, report);
+            if (categoryDrops.isEmpty()) {
+                continue;
+            }
+
+            List<String> biomeConstraints = List.of(normalizeBiomeKey(biomeKey));
+            List<CustomDrop> biomeScopedDrops = new ArrayList<>(categoryDrops.size());
+            for (CustomDrop drop : categoryDrops) {
+                biomeScopedDrops.add(copyDropWithBiomes(drop, biomeConstraints));
+            }
+
+            totalDrops += publishCategory(target, categoryKey, biomeScopedDrops);
+        }
+
+        if (!skippedDuplicateCategories.isEmpty()) {
+            warning(() -> "Ignored " + skippedDuplicateCategories.size()
+                + " previous biome drop section(s) because matching drops.* categories already exist: "
+                + String.join(", ", skippedDuplicateCategories)
+                + ". Save drops from the GUI once to rewrite the file to the current structure.");
+        }
+
+        return totalDrops;
+    }
+
+    private int publishCategory(
+        Map<String, List<CustomDrop>> target,
+        String categoryKey,
+        List<CustomDrop> categoryDrops
+    ) {
+        if (categoryDrops.isEmpty()) {
+            return 0;
+        }
+
+        List<CustomDrop> existingDrops = target.get(categoryKey);
+        if (existingDrops == null) {
+            target.put(categoryKey, new CopyOnWriteArrayList<>(categoryDrops));
+            return categoryDrops.size();
+        }
+
+        CopyOnWriteArrayList<CustomDrop> mergedDrops = new CopyOnWriteArrayList<>(existingDrops);
+        mergedDrops.addAll(categoryDrops);
+        target.put(categoryKey, mergedDrops);
+        warning(() -> "Merging duplicate drop category '" + categoryKey + "' from multiple configuration sections.");
+
+        return categoryDrops.size();
+    }
+
+    private CustomDrop copyDropWithBiomes(CustomDrop drop, List<String> biomeConstraints) {
+        List<String> mergedBiomes = new ArrayList<>(drop.getBiomes());
+        for (String biomeConstraint : biomeConstraints) {
+            boolean alreadyPresent = mergedBiomes.stream().anyMatch(existing -> existing.equalsIgnoreCase(biomeConstraint));
+            if (!alreadyPresent) {
+                mergedBiomes.add(biomeConstraint);
             }
         }
 
-        // Atomic publish — readers will see the complete new table from this point
-        dropCategoriesRef.set(newCategories);
-        logger.info("Loaded " + totalDrops + " drops across " + newCategories.size() + " categories");
+        return new CustomDrop(new DropConfigurationRecord(
+            drop.getIdentifier(),
+            drop.getWeight(),
+            drop.getAmount(),
+            drop.getCustomName(),
+            drop.getLore(),
+            drop.getCustomModelData(),
+            drop.getEnchantments(),
+            drop.getItemFlags(),
+            drop.isGlowing(),
+            drop.getPermission(),
+            mergedBiomes,
+            drop.isNexoItem() ? drop.getNexoItemId() : null
+        ));
     }
 
-    private List<CustomDrop> loadCategory(PlatformConfiguration dropsSection, String category) {
+    private CustomDrop copyDropWithPermission(CustomDrop drop, String permission) {
+        return new CustomDrop(new DropConfigurationRecord(
+            drop.getIdentifier(),
+            drop.getWeight(),
+            drop.getAmount(),
+            drop.getCustomName(),
+            drop.getLore(),
+            drop.getCustomModelData(),
+            drop.getEnchantments(),
+            drop.getItemFlags(),
+            drop.isGlowing(),
+            permission,
+            drop.getBiomes(),
+            drop.isNexoItem() ? drop.getNexoItemId() : null
+        ));
+    }
+
+    private String normalizeBiomeKey(String biomeKey) {
+        String normalized = biomeKey == null ? "" : biomeKey.trim().toLowerCase(Locale.ROOT);
+        if (normalized.isEmpty()) {
+            return normalized;
+        }
+        return normalized.contains(":") ? normalized : "minecraft:" + normalized;
+    }
+
+    private String toBiomeCategoryKey(String biomeKey) {
+        String normalized = biomeKey == null ? "unknown" : biomeKey.trim().toLowerCase(Locale.ROOT);
+        int namespaceSeparator = normalized.indexOf(':');
+        if (namespaceSeparator >= 0 && namespaceSeparator < normalized.length() - 1) {
+            normalized = normalized.substring(namespaceSeparator + 1);
+        }
+        return "biome_" + normalized.replace('-', '_');
+    }
+
+    private List<CustomDrop> loadCategory(
+        PlatformConfiguration dropsSection,
+        String category,
+        DropLoadReport report
+    ) {
         List<CustomDrop> drops = new ArrayList<>();
+
+        List<Map<?, ?>> mappedDrops = dropsSection.getMapList(category);
+        if (!mappedDrops.isEmpty()) {
+            for (Map<?, ?> mappedDrop : mappedDrops) {
+                CustomDrop drop = parseMappedDrop(mappedDrop, category, report);
+                if (drop != null) {
+                    drops.add(drop);
+                }
+            }
+            return drops;
+        }
+
+        List<String> simpleDrops = dropsSection.getStringList(category);
+        if (!simpleDrops.isEmpty()) {
+            for (String simpleDrop : simpleDrops) {
+                CustomDrop drop = parseSimpleDrop(simpleDrop);
+                if (drop != null) {
+                    drops.add(drop);
+                }
+            }
+            return drops;
+        }
+
         PlatformConfiguration categorySection = dropsSection.getSection(category);
-        
         if (categorySection == null) return drops;
 
         if (debugMode) {
-            logger.info("Loading category: " + category);
+            info(() -> "Loading category: " + category);
         }
 
-        for (String key : categorySection.getKeys("", false)) {
-            CustomDrop drop = parseDrop(categorySection, key);
+        for (String key : categorySection.getKeys(false)) {
+            CustomDrop drop = parseComplexDrop(categorySection, key, report);
             if (drop != null) drops.add(drop);
         }
 
         return drops;
     }
 
-    private CustomDrop parseDrop(PlatformConfiguration section, String key) {
-        PlatformConfiguration dropSection = section.getSection(key);
-        
-        if (dropSection != null) {
-            return parseComplexDrop(dropSection, key);
+    private CustomDrop parseComplexDrop(
+        PlatformConfiguration categorySection,
+        String key,
+        DropLoadReport report
+    ) {
+        PlatformConfiguration dropSection = categorySection.getSection(key);
+        if (dropSection == null) {
+            return null;
         }
-        
-        String dropString = section.getString(key);
-        if (dropString != null) {
-            return parseSimpleDrop(dropString);
-        }
-        
-        return null;
-    }
 
-    private CustomDrop parseComplexDrop(PlatformConfiguration dropSection, String key) {
         try {
-            int chance = dropSection.getInt("chance", 100);
+            int weight = readConfiguredWeight(dropSection, key, 100, report);
             int amount = dropSection.getInt("amount", 1);
-            String name = dropSection.getString("name", null);
+            int customModelData = dropSection.getInt("custom_model_data", dropSection.getInt("customModelData", 0));
+            String name = firstNonBlank(
+                dropSection.getString("custom_name", null),
+                dropSection.getString("name", null)
+            );
             List<String> lore = dropSection.getStringList("lore");
-            boolean glowing = dropSection.getBoolean("glowing", false);
+            boolean glowing = dropSection.getBoolean("glow", dropSection.getBoolean("glowing", false));
             String permission = dropSection.getString("permission", null);
             List<String> biomes = dropSection.getStringList("biomes");
 
-            String nexoItemId = dropSection.getString("nexo-item", null);
-            if (nexoItemId != null && !nexoItemId.isEmpty()) {
-                return CustomDrop.createNexoDrop(nexoItemId, chance, amount);
-            }
-
-            String material = dropSection.getString("material", null);
-            if (material == null) {
-                logger.warning("Missing material for drop: " + key);
+            String nexoItemId = firstNonBlank(
+                dropSection.getString("nexo-item", null),
+                dropSection.getString("nexo_item", null)
+            );
+            String material = firstNonBlank(
+                dropSection.getString("identifier", null),
+                dropSection.getString("material", null)
+            );
+            if ((material == null || material.isEmpty()) && (nexoItemId == null || nexoItemId.isEmpty())) {
+                warning(() -> "Missing identifier/material for drop: " + key);
                 return null;
             }
 
             Map<String, Integer> enchantments = loadEnchantments(dropSection.getSection("enchantments"));
-            List<String> flags = dropSection.getStringList("flags");
+            List<String> flags = readFlagList(dropSection);
 
-            return createDrop(material, chance, amount, name, lore, enchantments, flags, 
+            String identifier = (nexoItemId != null && !nexoItemId.isEmpty())
+                ? "nexo:" + nexoItemId
+                : material;
+
+            return createDrop(identifier, weight, amount, name, lore, customModelData, enchantments, flags,
                           glowing, permission, biomes, null);
 
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to parse drop: " + key, e);
+        } catch (IllegalArgumentException e) {
+            log(Level.SEVERE, e, () -> "Failed to parse drop: " + key);
+            return null;
+        }
+    }
+
+    private CustomDrop parseMappedDrop(Map<?, ?> mappedDrop, String category, DropLoadReport report) {
+        try {
+            String nexoItemId = firstNonBlank(
+                asString(mappedDrop.get("nexo-item")),
+                asString(mappedDrop.get("nexo_item"))
+            );
+            String identifier = firstNonBlank(
+                asString(mappedDrop.get("identifier")),
+                asString(mappedDrop.get("material"))
+            );
+
+            if ((identifier == null || identifier.isBlank()) && (nexoItemId == null || nexoItemId.isBlank())) {
+                warning(() -> "Skipping drop in category '" + category + "' because it has no identifier/material");
+                return null;
+            }
+
+            if (nexoItemId != null && !nexoItemId.isBlank()) {
+                identifier = "nexo:" + nexoItemId;
+            }
+
+            int weight = readMappedWeight(mappedDrop, category, identifier, 100, report);
+            int amount = asInt(mappedDrop.get("amount"), 1);
+            int customModelData = asInt(
+                firstMappedValue(mappedDrop, "custom_model_data", "customModelData"),
+                0
+            );
+            String customName = firstNonBlank(
+                asString(mappedDrop.get("custom_name")),
+                asString(mappedDrop.get("name"))
+            );
+            List<String> lore = asStringList(mappedDrop.get("lore"));
+            boolean glowing = asBoolean(
+                firstMappedValue(mappedDrop, "glow", "glowing"),
+                false
+            );
+            String permission = asString(mappedDrop.get("permission"));
+            List<String> biomes = asStringList(mappedDrop.get("biomes"));
+            Map<String, Integer> enchantments = asIntMap(mappedDrop.get("enchantments"));
+            List<String> flags = firstNonEmpty(
+                asStringList(mappedDrop.get("item_flags")),
+                asStringList(mappedDrop.get("item-flags")),
+                asStringList(mappedDrop.get("flags"))
+            );
+
+            return createDrop(identifier, weight, amount, customName, lore, customModelData, enchantments, flags,
+                glowing, permission, biomes, nexoItemId);
+        } catch (IllegalArgumentException e) {
+            log(Level.WARNING, e, () -> "Failed to parse mapped drop in category '" + category + "'");
             return null;
         }
     }
@@ -157,9 +458,9 @@ public class DropManager {
     private Map<String, Integer> loadEnchantments(PlatformConfiguration enchantsSection) {
         Map<String, Integer> enchantments = new HashMap<>();
         if (enchantsSection == null) return enchantments;
-        
-        for (String key : enchantsSection.getKeys("", false)) {
-            enchantments.put(key.toLowerCase(java.util.Locale.ROOT), enchantsSection.getInt(key, 1));
+
+        for (String key : enchantsSection.getKeys(false)) {
+            enchantments.put(key.toLowerCase(Locale.ROOT), enchantsSection.getInt(key, 1));
         }
         return enchantments;
     }
@@ -168,22 +469,27 @@ public class DropManager {
         if (dropString == null || dropString.isEmpty()) return null;
 
         try {
-            if (dropString.startsWith("nexo:")) {
-                String[] parts = dropString.substring(5).split(":");
+            String trimmed = dropString.trim();
+            if (trimmed.startsWith("nexo:")) {
+                String remainder = trimmed.substring(5);
+                String[] parts = remainder.contains(",") ? remainder.split(",") : remainder.split(":");
                 String nexoId = parts[0].trim();
-                int chance = parts.length > 1 ? Integer.parseInt(parts[1]) : 100;
+                int weight = parts.length > 1 ? Integer.parseInt(parts[1]) : 100;
                 int amount = parts.length > 2 ? Integer.parseInt(parts[2]) : 1;
-                return CustomDrop.createNexoDrop(nexoId, chance, amount);
+                return createDrop("nexo:" + nexoId, weight, amount, null, null, 0, Map.of(), List.of(), false, null, List.of(), nexoId);
             }
 
-            String[] parts = dropString.split(":");
-            String material = parts[0].toUpperCase(java.util.Locale.ROOT).trim();
-            int chance = parts.length > 1 ? Integer.parseInt(parts[1]) : 100;
+            String[] parts = trimmed.contains(",") ? trimmed.split(",") : trimmed.split(":");
+            String material = parts[0].trim();
+            if (!material.contains(":")) {
+                material = material.toUpperCase(Locale.ROOT);
+            }
+            int weight = parts.length > 1 ? Integer.parseInt(parts[1]) : 100;
             int amount = parts.length > 2 ? Integer.parseInt(parts[2]) : 1;
 
-            return createDrop(material, chance, amount);
-        } catch (Exception e) {
-            logger.warning("Failed to parse drop: " + dropString);
+            return createDrop(material, weight, amount);
+        } catch (IllegalArgumentException e) {
+            log(Level.WARNING, e, () -> "Failed to parse drop: " + dropString);
             return null;
         }
     }
@@ -199,75 +505,130 @@ public class DropManager {
         defaults.add(createDrop("LAPIS_LAZULI", 20, 3));
         defaults.add(createDrop("COAL", 25, 2));
         defaults.add(createDrop("COPPER_INGOT", 18, 2));
-        
+
         // Gems and valuables
         defaults.add(createDrop("AMETHYST_SHARD", 15, 2));
         defaults.add(createDrop("QUARTZ", 18, 3));
         defaults.add(createDrop("PRISMARINE_SHARD", 12, 2));
         defaults.add(createDrop("PRISMARINE_CRYSTALS", 10, 1));
-        
+
         // Treasures
         defaults.add(createDrop("NAME_TAG", 8, 1));
         defaults.add(createDrop("SADDLE", 6, 1));
         defaults.add(createDrop("NAUTILUS_SHELL", 10, 1));
         defaults.add(createDrop("HEART_OF_THE_SEA", 3, 1));
-        
+
         target.put("default", new CopyOnWriteArrayList<>(defaults));
-        logger.info("Loaded " + defaults.size() + " default drops (ores, gems, treasures).");
+        info(() -> "Loaded " + defaults.size() + " default drops (ores, gems, treasures).");
     }
 
-    private CustomDrop createDrop(String id, int chance, int amount) {
-        return new CustomDrop(new DropConfigurationRecord(id, chance, amount, null, null, 
-            0, null, null, false, null, null, null));
+    private CustomDrop createDrop(String id, int weight, int amount) {
+        return createDrop(id, weight, amount, null, null, 0, null, null, false, null, null, null);
     }
 
-    private CustomDrop createDrop(String id, int chance, int amount, String name,
-                                  List<String> lore, Map<String, Integer> enchantments,
+    private CustomDrop createDrop(String id, int weight, int amount, String name,
+                      List<String> lore, int customModelData,
+                      Map<String, Integer> enchantments,
                                   List<String> flags, boolean glowing, String permission,
                                   List<String> biomes, String nexoItemId) {
-        return new CustomDrop(new DropConfigurationRecord(id, chance, amount, name, lore,
-            0, enchantments, flags, glowing, permission, biomes, nexoItemId));
+        int sanitizedWeight = sanitizeWeight(id, weight);
+        int sanitizedAmount = sanitizeAmount(id, amount);
+        int sanitizedModelData = Math.max(0, customModelData);
+        return new CustomDrop(new DropConfigurationRecord(id, sanitizedWeight, sanitizedAmount, name, lore,
+            sanitizedModelData, enchantments, flags, glowing, permission, biomes, nexoItemId));
+    }
+
+    private int sanitizeWeight(String id, int weight) {
+        if (weight >= 1) {
+            return weight;
+        }
+        warning(() -> "Drop '" + id + "' had non-positive weight " + weight
+            + "; clamping to 1. Fix the entry to silence this warning.");
+        return 1;
+    }
+
+    private int sanitizeAmount(String id, int amount) {
+        if (amount >= 1 && amount <= 64) {
+            return amount;
+        }
+        int clamped = Math.max(1, Math.min(64, amount));
+        warning(() -> "Drop '" + id + "' had out-of-range amount " + amount
+            + "; clamping to " + clamped + ". Fix the entry to silence this warning.");
+        return clamped;
     }
 
     /**
      * Selects a random drop with a luck multiplier applied to rare/legendary
-     * drop weights.  A multiplier &gt; 1.0 makes rare catches more probable.
+     * drop weights. A multiplier &gt; 1.0 makes rare catches more probable.
      *
      * @param player         the fishing player (permission + biome checks)
      * @param biomeName      current biome key string
-     * @param luckMultiplier from {@code MythicRodRewardRollEvent}, clamped ≥ 0.01
+     * @param luckMultiplier from {@code MythicRodRewardRollEvent}, clamped to at least 0.01
      */
     public CustomDrop getRandomDrop(PlatformPlayer player, String biomeName, double luckMultiplier) {
         if (player == null || !player.isOnline()) {
-            logger.fine("[DROP-MANAGER] Player null or offline");
+            fine(() -> "Skipping reward roll because player is null or offline");
             return null;
         }
         List<CustomDrop> allDrops = getAllDrops();
         return selector.selectDrop(allDrops, player, biomeName, luckMultiplier);
     }
 
-    /** Luck-neutral overload — delegates with multiplier 1.0. */
+    /** Luck-neutral overload. */
     public CustomDrop getRandomDrop(PlatformPlayer player, String biomeName) {
         if (player == null || !player.isOnline()) {
-            logger.fine("[DROP-MANAGER] Player null or offline");
+            fine(() -> "Skipping reward roll because player is null or offline");
             return null;
         }
         // Snapshot the current drop list; the AtomicReference guarantees we see a
         // complete table even if a reload is racing on another thread.
         List<CustomDrop> allDrops = getAllDrops();
-        logger.fine("[DROP-MANAGER] Total drops available: " + allDrops.size());
+        fine(() -> "Reward roll has " + allDrops.size() + " configured drops available");
         for (CustomDrop drop : allDrops) {
-            logger.fine("[DROP-MANAGER]   - " + drop.getIdentifier() + " (chance: " + drop.getChance() + ")");
+            fine(() -> "Candidate drop: " + drop.getIdentifier() + " (weight: " + drop.getWeight() + ")");
         }
         CustomDrop result = selector.selectDrop(allDrops, player, biomeName);
-        logger.fine("[DROP-MANAGER] Selected: " + (result != null ? result.getIdentifier() : "NULL"));
+        fine(() -> "Selected reward drop: " + (result != null ? result.getIdentifier() : "none"));
         return result;
     }
 
+    @Override
     public List<CustomDrop> getAllDrops() {
         return dropCategories().values().stream()
             .flatMap(List::stream)
             .toList();
+    }
+
+    @Override
+    public List<CustomDrop> getDrops(String category) {
+        if (category == null || category.isBlank()) {
+            return List.of();
+        }
+
+        List<CustomDrop> drops = dropCategories().get(category.toLowerCase(Locale.ROOT));
+        if (drops == null || drops.isEmpty()) {
+            return List.of();
+        }
+        return List.copyOf(drops);
+    }
+
+    @Override
+    public Set<String> getCategories() {
+        return Set.copyOf(dropCategories().keySet());
+    }
+
+    public List<CustomDrop> getEligibleDrops(PlatformPlayer player, String biomeName) {
+        if (player == null || !player.isOnline()) {
+            return List.of();
+        }
+        return selector.getEligibleDrops(getAllDrops(), player, biomeName);
+    }
+
+    public int getEffectiveWeight(CustomDrop drop, double luckMultiplier) {
+        if (drop == null) {
+            return 0;
+        }
+        return selector.getEffectiveWeight(drop.getWeight(), luckMultiplier);
     }
 
     public List<CustomDrop> getAvailableDrops(PlatformPlayer player) {
@@ -285,6 +646,7 @@ public class DropManager {
         return Collections.unmodifiableMap(dropCategories());
     }
 
+    @Override
     public int getTotalDropCount() {
         return dropCategories().values().stream().mapToInt(List::size).sum();
     }
@@ -293,40 +655,45 @@ public class DropManager {
         return debugMode;
     }
 
-    /**
-     * Save a Base64 encoded item as a drop configuration.
-     * 
-     * @param id The unique ID for this drop
-     * @param base64String The Base64 encoded ItemStack data
-     * @param creator The name of the player who created it
-     */
-    public void saveBase64Drop(String id, String base64String, String creator) {
-        base64Drops.put(id, base64String);
-        logger.info("Saved Base64 drop '" + id + "' by " + creator);
-    }
-
-    /**
-     * Get a Base64 encoded drop by ID.
-     * 
-     * @param id The drop ID
-     * @return The Base64 string, or null if not found
-     */
-    public String getBase64Drop(String id) {
-        return base64Drops.get(id);
-    }
-
-    /**
-     * Check if a Base64 drop exists.
-     * 
-     * @param id The drop ID
-     * @return true if exists
-     */
-    public boolean hasBase64Drop(String id) {
-        return base64Drops.containsKey(id);
-    }
-
     public void reload(PlatformConfiguration config) {
+        awaitAsyncPersistenceOperations();
         loadDrops(config);
+    }
+
+    public void reload(PlatformConfiguration config, File sourceFile) {
+        awaitAsyncPersistenceOperations();
+        loadDrops(config, sourceFile);
+    }
+
+    public void beginAsyncPersistenceOperation() {
+        synchronized (asyncPersistenceMonitor) {
+            pendingAsyncPersistenceOperations++;
+        }
+    }
+
+    public void endAsyncPersistenceOperation() {
+        synchronized (asyncPersistenceMonitor) {
+            if (pendingAsyncPersistenceOperations > 0) {
+                pendingAsyncPersistenceOperations--;
+            }
+            if (pendingAsyncPersistenceOperations == 0) {
+                asyncPersistenceMonitor.notifyAll();
+            }
+        }
+    }
+
+    public void awaitAsyncPersistenceOperations() {
+        synchronized (asyncPersistenceMonitor) {
+            while (pendingAsyncPersistenceOperations > 0) {
+                try {
+                    asyncPersistenceMonitor.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log(Level.WARNING, e, () -> "Interrupted while waiting for pending drop persistence operations");
+                    return;
+                }
+            }
+        }
     }
 
     /**
@@ -337,38 +704,219 @@ public class DropManager {
      *
      * @param dropId     The drop identifier
      * @param category   The category name
-     * @param chance     The new chance value
+     * @param weight     The new relative roll weight
      * @param amount     The new amount
      * @param customName The new custom name (can be null)
      * @param lore       The new lore list
      * @param glowing    Whether the item should glow
      */
-    public void updateDrop(String dropId, String category, int chance, int amount,
+    public void updateDrop(String dropId, String category, int weight, int amount,
                            String customName, List<String> lore, boolean glowing) {
-        List<CustomDrop> drops = dropCategories().get(category.toLowerCase(java.util.Locale.ROOT));
+        List<CustomDrop> drops = dropCategories().get(category.toLowerCase(Locale.ROOT));
         if (drops == null) return;
-        
+
         for (int i = 0; i < drops.size(); i++) {
             CustomDrop existing = drops.get(i);
             if (existing.getIdentifier().equals(dropId)) {
-                // Create new drop with updated properties
-                DropConfigurationRecord newConfig = new DropConfigurationRecord(
-                    dropId, chance, amount, customName, lore, 
+                drops.set(i, copyDropWithEdits(
+                    existing.getIdentifier(),
+                    weight,
+                    amount,
+                    customName,
+                    lore,
                     existing.getCustomModelData(),
                     existing.getEnchantments(),
                     existing.getItemFlags(),
-                    glowing, 
-                    existing.getPermission(), 
-                    existing.getBiomes(), 
-                    existing.getNexoItemId()
-                );
-                drops.set(i, new CustomDrop(newConfig));
-                logger.info("Updated drop: " + dropId + " in category: " + category);
+                    glowing,
+                    existing.getPermission(),
+                    existing.getBiomes()
+                ));
+                info(() -> "Updated drop: " + dropId + " in category: " + category);
                 return;
             }
         }
     }
-    
+
+    public CustomDrop addDrop(
+        String category,
+        String identifier,
+        int weight,
+        int amount,
+        String customName,
+        List<String> lore,
+        int customModelData,
+        Map<String, Integer> enchantments,
+        List<String> itemFlags,
+        boolean glowing,
+        String permission,
+        List<String> biomes
+    ) {
+        if (category == null || category.isBlank() || identifier == null || identifier.isBlank()) {
+            return null;
+        }
+        if (weight <= 0 || amount <= 0 || customModelData < 0) {
+            return null;
+        }
+
+        String categoryKey = category.toLowerCase(Locale.ROOT);
+        String normalizedIdentifier = normalizeEditedIdentifier(identifier);
+        if (normalizedIdentifier == null) {
+            return null;
+        }
+
+        String nexoItemId = null;
+        if (normalizedIdentifier.regionMatches(true, 0, "nexo:", 0, 5)) {
+            nexoItemId = normalizedIdentifier.substring(5);
+        }
+        String normalizedPermission = permission == null || permission.isBlank()
+            ? null
+            : permission.trim();
+
+        CustomDrop drop = new CustomDrop(new DropConfigurationRecord(
+            normalizedIdentifier,
+            weight,
+            amount,
+            customName,
+            lore,
+            customModelData,
+            enchantments,
+            itemFlags,
+            glowing,
+            normalizedPermission,
+            biomes,
+            nexoItemId
+        ));
+        CustomDrop scopedDrop = applyImplicitCategoryConditions(categoryKey, List.of(drop)).get(0);
+
+        List<CustomDrop> existingDrops = dropCategories().get(categoryKey);
+        if (existingDrops == null) {
+            CopyOnWriteArrayList<CustomDrop> created = new CopyOnWriteArrayList<>();
+            created.add(scopedDrop);
+            dropCategories().put(categoryKey, created);
+        } else {
+            existingDrops.add(scopedDrop);
+        }
+        info(() -> "Added drop: " + scopedDrop.getIdentifier() + " to category: " + categoryKey);
+        return scopedDrop;
+    }
+
+    /**
+     * Updates the exact drop instance selected by the GUI.
+     *
+     * <p>Identifier-based updates are ambiguous when a category contains two
+     * drops with the same material. The GUI passes the live {@link CustomDrop}
+     * object it opened so only that row is replaced.
+     *
+     * @return {@code true} when the selected drop was still present
+     */
+    public boolean updateDrop(CustomDrop targetDrop, String category, int weight, int amount,
+                              String customName, List<String> lore, boolean glowing) {
+        return updateDrop(targetDrop, category, targetDrop != null ? targetDrop.getIdentifier() : null,
+            weight, amount, customName, lore, glowing);
+    }
+
+    /**
+     * Updates the exact drop instance selected by the GUI, including its item identifier.
+     *
+     * <p>The identifier overload lets the editor change a vanilla material or Nexo id while
+     * preserving the existing model data, enchantments, permission gate, and biome filters.
+     *
+     * @return {@code true} when the selected drop was still present
+     */
+    public boolean updateDrop(CustomDrop targetDrop, String category, String identifier, int weight, int amount,
+                              String customName, List<String> lore, boolean glowing) {
+        return updateDrop(
+            targetDrop,
+            category,
+            identifier,
+            weight,
+            amount,
+            customName,
+            lore,
+            targetDrop != null ? targetDrop.getCustomModelData() : 0,
+            targetDrop != null ? targetDrop.getEnchantments() : Map.of(),
+            targetDrop != null ? targetDrop.getItemFlags() : List.of(),
+            glowing,
+            targetDrop != null ? targetDrop.getPermission() : null,
+            targetDrop != null ? targetDrop.getBiomes() : List.of()
+        );
+    }
+
+    /**
+     * Updates the exact drop instance selected by the GUI, including optional
+     * gates and item metadata.
+     *
+     * @return {@code true} when the selected drop was still present and the
+     *     replacement config was valid
+     */
+    public boolean updateDrop(
+        CustomDrop targetDrop,
+        String category,
+        String identifier,
+        int weight,
+        int amount,
+        String customName,
+        List<String> lore,
+        int customModelData,
+        Map<String, Integer> enchantments,
+        List<String> itemFlags,
+        boolean glowing,
+        String permission,
+        List<String> biomes
+    ) {
+        if (targetDrop == null || category == null || category.isBlank()) {
+            return false;
+        }
+        if (identifier == null || identifier.isBlank()) {
+            return false;
+        }
+        if (weight <= 0 || amount <= 0 || customModelData < 0) {
+            return false;
+        }
+        String normalizedIdentifier = normalizeEditedIdentifier(identifier);
+        if (normalizedIdentifier == null) {
+            return false;
+        }
+        String normalizedPermission = permission == null || permission.isBlank()
+            ? null
+            : permission.trim();
+        List<String> safeLore = lore == null ? List.of() : List.copyOf(lore);
+        Map<String, Integer> safeEnchantments = enchantments == null ? Map.of() : Map.copyOf(enchantments);
+        List<String> safeItemFlags = itemFlags == null ? List.of() : List.copyOf(itemFlags);
+        List<String> safeBiomes = biomes == null ? List.of() : List.copyOf(biomes);
+
+        List<CustomDrop> drops = dropCategories().get(category.toLowerCase(Locale.ROOT));
+        if (drops == null) {
+            return false;
+        }
+
+        for (int i = 0; i < drops.size(); i++) {
+            CustomDrop existing = drops.get(i);
+            if (existing == targetDrop) {
+                CustomDrop editedDrop = copyDropWithEdits(
+                    normalizedIdentifier,
+                    weight,
+                    amount,
+                    customName,
+                    safeLore,
+                    customModelData,
+                    safeEnchantments,
+                    safeItemFlags,
+                    glowing,
+                    normalizedPermission,
+                    safeBiomes
+                );
+                drops.set(i, editedDrop);
+                info(() -> "Updated drop: " + existing.getIdentifier()
+                    + " -> " + editedDrop.getIdentifier()
+                    + " in category: " + category);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Delete a drop from a category.
      *
@@ -379,22 +927,322 @@ public class DropManager {
      * @param category The category name
      */
     public void deleteDrop(String dropId, String category) {
-        List<CustomDrop> drops = dropCategories().get(category.toLowerCase(java.util.Locale.ROOT));
+        List<CustomDrop> drops = dropCategories().get(category.toLowerCase(Locale.ROOT));
         if (drops == null) return;
-        
+
         boolean removed = drops.removeIf(d -> d.getIdentifier().equals(dropId));
         if (removed) {
-            logger.info("Deleted drop: " + dropId + " from category: " + category);
+            info(() -> "Deleted drop: " + dropId + " from category: " + category);
         }
     }
-    
+
     /**
-     * Save all drops to the configuration file.
-     * This is a placeholder - actual implementation would write to config.yml
+     * Deletes the exact drop instance selected by the GUI.
+     *
+     * @return {@code true} when the selected drop was still present
      */
+    public boolean deleteDrop(CustomDrop targetDrop, String category) {
+        if (targetDrop == null || category == null || category.isBlank()) {
+            return false;
+        }
+
+        List<CustomDrop> drops = dropCategories().get(category.toLowerCase(Locale.ROOT));
+        if (drops == null) {
+            return false;
+        }
+
+        boolean removed = drops.removeIf(drop -> drop == targetDrop);
+        if (removed) {
+            info(() -> "Deleted drop: " + targetDrop.getIdentifier() + " from category: " + category);
+        }
+        return removed;
+    }
+
+    private CustomDrop copyDropWithEdits(
+        String identifier,
+        int weight,
+        int amount,
+        String customName,
+        List<String> lore,
+        int customModelData,
+        Map<String, Integer> enchantments,
+        List<String> itemFlags,
+        boolean glowing,
+        String permission,
+        List<String> biomes
+    ) {
+        String trimmedIdentifier = identifier;
+        String nexoItemId = null;
+        if (trimmedIdentifier.regionMatches(true, 0, "nexo:", 0, 5)) {
+            nexoItemId = trimmedIdentifier.substring(5);
+            trimmedIdentifier = "nexo:" + nexoItemId;
+        }
+
+        DropConfigurationRecord newConfig = new DropConfigurationRecord(
+            trimmedIdentifier,
+            weight,
+            amount,
+            customName,
+            lore,
+            customModelData,
+            enchantments,
+            itemFlags,
+            glowing,
+            permission,
+            biomes,
+            nexoItemId
+        );
+        return new CustomDrop(newConfig);
+    }
+
+    private String normalizeEditedIdentifier(String identifier) {
+        String trimmedIdentifier = identifier == null ? "" : identifier.trim();
+        if (trimmedIdentifier.isEmpty()) {
+            return null;
+        }
+        if (trimmedIdentifier.regionMatches(true, 0, "nexo:", 0, 5)) {
+            String nexoItemId = trimmedIdentifier.substring(5).trim();
+            return nexoItemId.isEmpty() ? null : "nexo:" + nexoItemId;
+        }
+        return trimmedIdentifier;
+    }
+
+    /** Saves the current in-memory drop table back to the source configuration file. */
     public void saveDropsConfig() {
-        // In a real implementation, this would serialize dropCategories back to config
-        // For now, just log that drops were saved
-        logger.info("Drops configuration saved (" + getTotalDropCount() + " total drops)");
+        saveDrops();
+    }
+
+    public void saveDrops() {
+        synchronized (persistenceFileLock) {
+            if (dropsConfig == null || dropsFile == null) {
+                throw new IllegalStateException("Drop configuration source file is not available for saving");
+            }
+
+            dropsConfig.set("drops", null);
+            dropsConfig.set("biome-drops", null);
+            dropsConfig.set("fishing.drops", null);
+            dropCategories().entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> dropsConfig.set("drops." + entry.getKey(), serializeCategory(entry.getValue())));
+
+            try {
+                dropsConfig.save(dropsFile);
+                info(() -> "Drops configuration saved to " + dropsFile.getName() + " (" + getTotalDropCount() + " total drops)");
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to save drops configuration", e);
+            }
+        }
+    }
+
+    private List<Map<String, Object>> serializeCategory(List<CustomDrop> drops) {
+        List<Map<String, Object>> serializedDrops = new ArrayList<>(drops.size());
+        for (CustomDrop drop : drops) {
+            serializedDrops.add(serializeDrop(drop));
+        }
+        return serializedDrops;
+    }
+
+    private Map<String, Object> serializeDrop(CustomDrop drop) {
+        Map<String, Object> serializedDrop = new LinkedHashMap<>();
+
+        if (drop.isNexoItem()) {
+            serializedDrop.put("nexo-item", drop.getNexoItemId());
+        } else {
+            serializedDrop.put("identifier", drop.getIdentifier());
+        }
+
+        serializedDrop.put("weight", drop.getWeight());
+        serializedDrop.put("amount", drop.getAmount());
+
+        if (drop.getCustomName() != null && !drop.getCustomName().isBlank()) {
+            serializedDrop.put("custom_name", drop.getCustomName());
+        }
+        if (!drop.getLore().isEmpty()) {
+            serializedDrop.put("lore", new ArrayList<>(drop.getLore()));
+        }
+        if (drop.getCustomModelData() > 0) {
+            serializedDrop.put("custom_model_data", drop.getCustomModelData());
+        }
+        if (!drop.getEnchantments().isEmpty()) {
+            serializedDrop.put("enchantments", new LinkedHashMap<>(drop.getEnchantments()));
+        }
+        if (!drop.getItemFlags().isEmpty()) {
+            serializedDrop.put("item_flags", new ArrayList<>(drop.getItemFlags()));
+        }
+        if (drop.isGlowing()) {
+            serializedDrop.put("glow", true);
+        }
+        if (drop.getPermission() != null && !drop.getPermission().isBlank()) {
+            serializedDrop.put("permission", drop.getPermission());
+        }
+        if (!drop.getBiomes().isEmpty()) {
+            serializedDrop.put("biomes", new ArrayList<>(drop.getBiomes()));
+        }
+
+        return serializedDrop;
+    }
+
+    private List<String> readFlagList(PlatformConfiguration dropSection) {
+        List<String> itemFlags = dropSection.getStringList("item-flags");
+        if (!itemFlags.isEmpty()) {
+            return itemFlags;
+        }
+
+        itemFlags = dropSection.getStringList("item_flags");
+        if (!itemFlags.isEmpty()) {
+            return itemFlags;
+        }
+
+        return dropSection.getStringList("flags");
+    }
+
+    private String firstNonBlank(String... candidates) {
+        for (String candidate : candidates) {
+            if (candidate != null && !candidate.isBlank()) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private String asString(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private int readConfiguredWeight(
+        PlatformConfiguration dropSection,
+        String dropKey,
+        int defaultValue,
+        DropLoadReport report
+    ) {
+        if (dropSection.contains("weight")) {
+            return dropSection.getInt("weight", defaultValue);
+        }
+        if (dropSection.contains("chance")) {
+            report.migratedWeightAliases++;
+            return dropSection.getInt("chance", defaultValue);
+        }
+        warning(() -> "Drop '" + dropKey + "' is missing 'weight'; using " + defaultValue + ".");
+        return defaultValue;
+    }
+
+    private int readMappedWeight(
+        Map<?, ?> mappedDrop,
+        String category,
+        String identifier,
+        int defaultValue,
+        DropLoadReport report
+    ) {
+        Object configuredWeight = mappedDrop.get("weight");
+        if (configuredWeight != null) {
+            return asInt(configuredWeight, defaultValue);
+        }
+
+        Object migratedWeight = mappedDrop.get("chance");
+        if (migratedWeight != null) {
+            report.migratedWeightAliases++;
+            return asInt(migratedWeight, defaultValue);
+        }
+
+        warning(() -> "Drop '" + identifier + "' in category '" + category
+            + "' is missing 'weight'; using " + defaultValue + ".");
+        return defaultValue;
+    }
+
+    private Object firstMappedValue(Map<?, ?> map, String primaryKey, String fallbackKey) {
+        Object primary = map.get(primaryKey);
+        return primary != null ? primary : map.get(fallbackKey);
+    }
+
+    private int asInt(Object value, int defaultValue) {
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        if (value == null) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(String.valueOf(value));
+        } catch (NumberFormatException ignored) {
+            return defaultValue;
+        }
+    }
+
+    private boolean asBoolean(Object value, boolean defaultValue) {
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+        if (value == null) {
+            return defaultValue;
+        }
+        return Boolean.parseBoolean(String.valueOf(value));
+    }
+
+    private List<String> asStringList(Object value) {
+        if (!(value instanceof List<?> listValue)) {
+            return List.of();
+        }
+
+        List<String> result = new ArrayList<>(listValue.size());
+        for (Object entry : listValue) {
+            if (entry != null) {
+                result.add(String.valueOf(entry));
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Integer> asIntMap(Object value) {
+        if (!(value instanceof Map<?, ?> rawMap)) {
+            return Map.of();
+        }
+
+        Map<String, Integer> result = new LinkedHashMap<>();
+        for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+            String key = asString(entry.getKey());
+            if (key == null || key.isBlank()) {
+                continue;
+            }
+            result.put(key.toLowerCase(Locale.ROOT), asInt(entry.getValue(), 1));
+        }
+        return result;
+    }
+
+    private Logger logger() {
+        return Logger.getLogger(loggerName);
+    }
+
+    private void info(String message) {
+        logger().info(message);
+    }
+
+    private void info(Supplier<String> messageSupplier) {
+        logger().log(Level.INFO, messageSupplier);
+    }
+
+    private void warning(Supplier<String> messageSupplier) {
+        logger().log(Level.WARNING, messageSupplier);
+    }
+
+    private void fine(Supplier<String> messageSupplier) {
+        logger().log(Level.FINE, messageSupplier);
+    }
+
+    private void log(Level level, Throwable thrown, Supplier<String> messageSupplier) {
+        logger().log(level, thrown, messageSupplier);
+    }
+
+    @SafeVarargs
+    private <T> List<T> firstNonEmpty(List<T>... candidates) {
+        for (List<T> candidate : candidates) {
+            if (candidate != null && !candidate.isEmpty()) {
+                return candidate;
+            }
+        }
+        return List.of();
+    }
+
+    private static final class DropLoadReport {
+        private int migratedWeightAliases;
     }
 }

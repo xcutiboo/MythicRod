@@ -1,40 +1,62 @@
 package io.xcutiboo.mythicrod.paper.commands;
 
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
-import io.xcutiboo.mythicrod.stats.PlayerStats;
-
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
+import org.bukkit.block.Biome;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import io.xcutiboo.mythicrod.MythicRod;
-import io.xcutiboo.mythicrod.cache.MythicRodCache;
+import io.xcutiboo.mythicrod.config.ConfigManager;
+import io.xcutiboo.mythicrod.config.RewardDeliveryMode;
+import io.xcutiboo.mythicrod.constants.MythicRodKeys;
+import io.xcutiboo.mythicrod.constants.PermissionNodes;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
-import io.xcutiboo.mythicrod.metrics.StatisticsManager;
-import io.xcutiboo.mythicrod.item.RodFactory;
+import io.xcutiboo.mythicrod.paper.item.RodFactory;
+import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
+import io.xcutiboo.mythicrod.paper.util.ParticleOptions;
+import io.xcutiboo.mythicrod.paper.util.StringFormatting;
+import io.xcutiboo.mythicrod.stats.PlayerStats;
+import io.xcutiboo.mythicrod.text.ConfiguredText;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-
-import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
-import org.bukkit.command.CommandSender;
 
 public class BrigadierCommandManager {
     private final MythicRod plugin;
@@ -45,58 +67,19 @@ public class BrigadierCommandManager {
         this.rodFactory = new RodFactory(plugin);
     }
 
-    private String tr(String key) {
+    private String tr(CommandSender sender, String key) {
+        if (sender instanceof Player player) {
+            return plugin.getLanguageManager().trForPlayer(player.getUniqueId(), key);
+        }
         return plugin.getLanguageManager().tr(key);
     }
 
-    private String tr(String key, Map<String, String> args) {
+    private String tr(CommandSender sender, String key, Map<String, String> args) {
+        if (sender instanceof Player player) {
+            return plugin.getLanguageManager().trForPlayer(player.getUniqueId(), key, args);
+        }
         return plugin.getLanguageManager().tr(key, args);
     }
-
-    /**
-     * Sends formatted success message with sound (direct message version)
-     */
-    private void sendSuccess(CommandSourceStack source, String message) {
-        if (source.getSender() instanceof Player player) {
-            Component msg = MiniMessage.miniMessage().deserialize(
-                "<green>✓ " + message + "</green>"
-            );
-            player.sendMessage(msg);
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-        } else {
-            source.getSender().sendMessage(Component.text("✓ " + message).color(NamedTextColor.GREEN));
-        }
-    }
-
-    /**
-     * Sends formatted error message with sound (direct message version)
-     */
-    private void sendError(CommandSourceStack source, String message) {
-        if (source.getSender() instanceof Player player) {
-            Component msg = MiniMessage.miniMessage().deserialize(
-                "<red>✗ " + message + "</red>"
-            );
-            player.sendMessage(msg);
-            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
-        } else {
-            source.getSender().sendMessage(Component.text("✗ " + message).color(NamedTextColor.RED));
-        }
-    }
-
-    /**
-     * Sends formatted info message (direct message version)
-     */
-    private void sendInfo(CommandSourceStack source, String message) {
-        if (source.getSender() instanceof Player player) {
-            Component msg = MiniMessage.miniMessage().deserialize(
-                "<yellow>ℹ " + message + "</yellow>"
-            );
-            player.sendMessage(msg);
-        } else {
-            source.getSender().sendMessage(Component.text("ℹ " + message).color(NamedTextColor.YELLOW));
-        }
-    }
-
 
     public void initialize() {
         LifecycleEventManager<Plugin> manager = plugin.getLifecycleManager();
@@ -110,104 +93,146 @@ public class BrigadierCommandManager {
 
     private LiteralCommandNode<CommandSourceStack> buildMythicRodCommand() {
         return Commands.literal("mythicrod")
+            .requires(source -> source.getSender().hasPermission(PermissionNodes.COMMAND))
             .executes(this::executeDefault)
             .then(Commands.literal("gui")
-                .requires(source -> source.getSender().hasPermission("mythicrod.gui"))
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.GUI))
                 .executes(this::executeGui))
             .then(Commands.literal("menu")
-                .requires(source -> source.getSender().hasPermission("mythicrod.gui"))
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.GUI))
                 .executes(this::executeGui))
+            .then(Commands.literal("rod")
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.GUI))
+                .executes(context -> executeMenu(context, "rod", "command.rod.opened"))
+                .then(Commands.literal("inspect")
+                    .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
+                    .executes(this::executeRodInspect)))
             .then(Commands.literal("reload")
-                .requires(source -> source.getSender().hasPermission("mythicrod.admin.reload"))
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_RELOAD))
                 .executes(this::executeReload))
+            .then(Commands.literal("config")
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
+                .executes(this::executeConfigOverview)
+                .then(Commands.literal("sounds")
+                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                        .executes(context -> executeBooleanConfig(
+                            context,
+                            "command.config.settings.sounds",
+                            plugin.getConfigManager()::useSounds,
+                            plugin.getConfigManager()::setSoundsEnabled,
+                            null
+                        ))))
+                .then(Commands.literal("particles")
+                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                        .executes(context -> executeBooleanConfig(
+                            context,
+                            "command.config.settings.particles",
+                            plugin.getConfigManager()::useParticles,
+                            plugin.getConfigManager()::setParticlesEnabled,
+                            null
+                        ))))
+                .then(Commands.literal("statistics")
+                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                        .executes(context -> executeBooleanConfig(
+                            context,
+                            "command.config.settings.statistics",
+                            plugin.getConfigManager()::trackStatistics,
+                            plugin.getConfigManager()::setStatisticsEnabled,
+                            null
+                        ))))
+                .then(Commands.literal("biome-drops")
+                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                        .executes(context -> executeBooleanConfig(
+                            context,
+                            "command.config.settings.biome-drops",
+                            plugin.getConfigManager()::enableBiomeSpecificDrops,
+                            plugin.getConfigManager()::setBiomeDropsEnabled,
+                            plugin::applyDropRuntimeSettings
+                        ))))
+                .then(Commands.literal("permissions")
+                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                        .executes(context -> executeBooleanConfig(
+                            context,
+                            "command.config.settings.permissions",
+                            plugin.getConfigManager()::usePermissions,
+                            plugin.getConfigManager()::setPermissionsEnabled,
+                            plugin::applyDropRuntimeSettings
+                        ))))
+                .then(Commands.literal("debug")
+                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                        .executes(context -> executeBooleanConfig(
+                            context,
+                            "command.config.settings.debug",
+                            plugin.getConfigManager()::isDebugMode,
+                            plugin.getConfigManager()::setDebugEnabled,
+                            plugin::applyDropRuntimeSettings
+                        ))))
+                .then(Commands.literal("delivery-mode")
+                    .then(Commands.argument("mode", StringArgumentType.word())
+                        .suggests(this::suggestRewardDeliveryModes)
+                        .executes(this::executeDeliveryModeConfig)))
+                .then(Commands.literal("stats-save-interval")
+                    .then(Commands.argument("seconds", IntegerArgumentType.integer(60, 3600))
+                        .executes(this::executeStatsSaveIntervalConfig))))
             .then(Commands.literal("stats")
-                .requires(source -> source.getSender().hasPermission("mythicrod.stats.view"))
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.STATS_VIEW))
                 .executes(this::executeStatsOwnPlayer)
-                // BUG-005 FIX: argument was ArgumentTypes.player() but read with
-                // StringArgumentType.getString() — type mismatch → CommandSyntaxException.
-                // Changed to StringArgumentType.word() so getString() works correctly.
                 .then(Commands.argument("player", StringArgumentType.word())
-                    .suggests((context, builder) -> {
-                        Bukkit.getOnlinePlayers().forEach(p -> builder.suggest(p.getName()));
-                        return builder.buildFuture();
-                    })
+                    .requires(source -> source.getSender().hasPermission(PermissionNodes.STATS_VIEW_OTHERS))
+                    .suggests(this::suggestKnownStatsPlayers)
                     .executes(this::executeStatsSpecificPlayer)))
             .then(Commands.literal("top")
-                .requires(source -> source.getSender().hasPermission("mythicrod.stats.leaderboard"))
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.STATS_LEADERBOARD))
                 .executes(context -> executeTop(context.getSource(), 10))
                 .then(Commands.argument("limit", IntegerArgumentType.integer(1, 50))
                     .executes(context -> executeTop(context.getSource(),
                         IntegerArgumentType.getInteger(context, "limit")))))
             .then(Commands.literal("give")
-                .requires(source -> source.getSender().hasPermission("mythicrod.admin.give"))
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_GIVE))
                 .then(Commands.argument("player", StringArgumentType.word())
-                    .suggests((context, builder) -> {
-                        Bukkit.getOnlinePlayers().forEach(p -> builder.suggest(p.getName()));
-                        return builder.buildFuture();
-                    })
+                    .suggests(this::suggestOnlinePlayers)
                     .then(Commands.argument("tier", StringArgumentType.word())
-                        .suggests((context, builder) -> {
-                            builder.suggest("basic");
-                            builder.suggest("advanced");
-                            builder.suggest("legendary");
-                            return builder.buildFuture();
-                        })
+                        .suggests(this::suggestRodTiers)
                         .executes(this::executeGive))))
             .then(Commands.literal("drops")
-                .requires(source -> source.getSender().hasPermission("mythicrod.drops.view"))
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.DROPS_VIEW))
                 .executes(this::executeDrops)
                 .then(Commands.argument("category", StringArgumentType.word())
-                    .suggests((context, builder) -> {
-                        plugin.getDropManager().getDropCategories().keySet().forEach(builder::suggest);
-                        return builder.buildFuture();
-                    })
+                    .suggests(this::suggestDropCategories)
                     .executes(this::executeDropsCategory)))
             .then(Commands.literal("debug")
-                .requires(source -> source.getSender().hasPermission("mythicrod.admin.debug"))
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
                 .executes(this::executeDebug))
-            .then(Commands.literal("saveitem")
-                .requires(source -> source.getSender().hasPermission("mythicrod.admin.config"))
-                .then(Commands.argument("id", StringArgumentType.word())
-                    .executes(this::executeSaveItem)))
+            .then(Commands.literal("validate")
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
+                .executes(this::executeValidate))
+            .then(Commands.literal("testroll")
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
+                .executes(this::executeTestRoll)
+                .then(Commands.argument("biome", StringArgumentType.string())
+                    .suggests(this::suggestBiomes)
+                    .executes(this::executeTestRoll)
+                    .then(Commands.argument("count", IntegerArgumentType.integer(1, 10000))
+                        .executes(this::executeTestRoll))))
             .then(Commands.literal("particle")
-                .requires(source -> source.getSender().hasPermission("mythicrod.admin.config"))
+                .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
                 .executes(this::executeParticleInfo)
                 .then(Commands.literal("catch")
                     .then(Commands.argument("type", StringArgumentType.word())
-                        .suggests((context, builder) -> {
-                            builder.suggest("SPLASH");
-                            builder.suggest("BUBBLE_POP");
-                            builder.suggest("HAPPY_VILLAGER");
-                            builder.suggest("TOTEM");
-                            builder.suggest("HEART");
-                            builder.suggest("NOTE");
-                            builder.suggest("FLAME");
-                            return builder.buildFuture();
-                        })
+                        .suggests(this::suggestParticles)
                         .executes(this::executeParticleCatch)))
                 .then(Commands.literal("bubble")
                     .then(Commands.argument("type", StringArgumentType.word())
-                        .suggests((context, builder) -> {
-                            builder.suggest("BUBBLE_POP");
-                            builder.suggest("SPLASH");
-                            builder.suggest("HAPPY_VILLAGER");
-                            builder.suggest("NOTE");
-                            builder.suggest("FLAME");
-                            return builder.buildFuture();
-                        })
+                        .suggests(this::suggestParticles)
                         .executes(this::executeParticleBubble)))
                 .then(Commands.literal("success")
                     .then(Commands.argument("type", StringArgumentType.word())
-                        .suggests((context, builder) -> {
-                            builder.suggest("HAPPY_VILLAGER");
-                            builder.suggest("TOTEM");
-                            builder.suggest("HEART");
-                            builder.suggest("NOTE");
-                            builder.suggest("FLAME");
-                            builder.suggest("END_ROD");
-                            return builder.buildFuture();
-                        })
-                        .executes(this::executeParticleSuccess))))
+                        .suggests(this::suggestParticles)
+                        .executes(this::executeParticleSuccess)))
+                .then(Commands.literal("xp")
+                    .then(Commands.argument("type", StringArgumentType.word())
+                        .suggests(this::suggestParticles)
+                        .executes(this::executeParticleXp))))
             .then(Commands.literal("help")
                 .executes(this::executeHelp))
             .build();
@@ -216,122 +241,351 @@ public class BrigadierCommandManager {
     private int executeDefault(CommandContext<CommandSourceStack> context) {
         try {
             if (context.getSource().getSender() instanceof Player player) {
-                if (player.hasPermission("mythicrod.gui")) {
-                    plugin.getGUIManager().openMainHub(player);
-                    return Command.SINGLE_SUCCESS;
+                if (player.hasPermission(PermissionNodes.GUI)) {
+                    return plugin.getGUIManager().openMenu(player, "main") ? Command.SINGLE_SUCCESS : 0;
                 }
             }
             return executeHelp(context);
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), 
-                Component.text("Error: " + e.getMessage(), NamedTextColor.RED));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing default command", e);
             return 0;
         }
     }
 
     private int executeGui(CommandContext<CommandSourceStack> context) {
+        return executeMenu(context, "main", "command.gui.opened");
+    }
+
+    private int executeMenu(CommandContext<CommandSourceStack> context, String menuId, String successKey) {
         try {
             if (context.getSource().getSender() instanceof Player player) {
-                plugin.getGUIManager().openMainHub(player);
-                sendSuccess(context.getSource(), "GUI opened!");
+                if (!plugin.getGUIManager().openMenu(player, menuId)) {
+                    playErrorSound(player);
+                    return 0;
+                }
+                sendMessage(player, tr(player, successKey));
+                playSuccessSound(player);
                 return Command.SINGLE_SUCCESS;
             }
-            sendError(context.getSource(), "This command can only be used by players.");
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.player_only"));
+            playErrorSound(context.getSource().getSender());
             return 0;
         } catch (Exception e) {
-            sendError(context.getSource(), "Error: " + e.getMessage());
-            plugin.getLogger().log(Level.SEVERE, "Error executing gui command", e);
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            playErrorSound(context.getSource().getSender());
+            plugin.getLogger().log(Level.SEVERE, "Error executing menu command for " + menuId, e);
             return 0;
         }
     }
 
     private int executeGive(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
         try {
-            CommandSender sender = context.getSource().getSender();
             String playerName = StringArgumentType.getString(context, "player");
             String tier = StringArgumentType.getString(context, "tier");
-            if (tier == null) {
-                sendMessage(sender,
-                    Component.text("Tier cannot be null", NamedTextColor.RED));
+            if (tier == null || tier.isEmpty()) {
+                sendMessage(sender, tr(sender, "command.give.tier-missing"));
                 playErrorSound(sender);
                 return 0;
             }
-            
+
             Player target = Bukkit.getPlayer(playerName);
             if (target == null || !target.isOnline()) {
-                sendMessage(sender, 
-                    Component.text("Player not found: " + playerName, NamedTextColor.RED));
+                sendMessage(sender, tr(sender, "command.player_not_found",
+                    Map.of("player", playerName)));
                 playErrorSound(sender);
                 return 0;
             }
-            
-            ItemStack rod;
-            switch (tier.toLowerCase(java.util.Locale.ROOT)) {
-                case "basic" -> rod = rodFactory.createBasicRod();
-                case "advanced" -> rod = rodFactory.createAdvancedRod();
-                case "legendary" -> rod = rodFactory.createLegendaryRod();
-                default -> {
-                    sendMessage(sender,
-                        Component.text("Invalid tier: " + tier + ". Use: basic, advanced, legendary", NamedTextColor.RED));
-                    playErrorSound(sender);
-                    return 0;
-                }
+
+            ItemStack rod = buildRodForTier(tier);
+            if (rod == null) {
+                sendMessage(sender, tr(sender, "command.give.invalid-tier",
+                    Map.of("tier", tier)));
+                playErrorSound(sender);
+                return 0;
             }
-            
-            target.getInventory().addItem(rod);
-            
-            sendMessage(sender,
-                Component.text("Gave ", NamedTextColor.GREEN)
-                    .append(Component.text(tier, NamedTextColor.AQUA))
-                    .append(Component.text(" MythicRod to ", NamedTextColor.GREEN))
-                    .append(Component.text(target.getName(), NamedTextColor.YELLOW)));
-            
-            target.sendMessage(Component.text("You received a ", NamedTextColor.GREEN)
-                .append(Component.text(tier, NamedTextColor.AQUA))
-                .append(Component.text(" MythicRod!", NamedTextColor.GREEN)));
-            
-            playSuccessSound(sender);
-            playSuccessSound(target);
-            
+
+            if (rod.getType().isAir()) {
+                sendMessage(sender, tr(sender, "command.give.rod-creation-failed"));
+                playErrorSound(sender);
+                return 0;
+            }
+
+            deliverRodOnTargetThread(sender, target, rod.clone(), tier);
             return Command.SINGLE_SUCCESS;
-        } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), 
-                Component.text("Error giving rod: " + e.getMessage(), NamedTextColor.RED));
-            playErrorSound(context.getSource().getSender());
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, "command.give.give-failed",
+                Map.of("error", e.getMessage())));
+            playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Error executing give command", e);
             return 0;
         }
     }
-    
-    private int executeReload(CommandContext<CommandSourceStack> context) {
-        try {
-            MythicRodCache cache = plugin.getCache();
-            if (cache != null) {
-                cache.invalidateAll();
+
+    private ItemStack buildRodForTier(String tier) {
+        return switch (tier.toLowerCase(Locale.ROOT)) {
+            case "basic" -> rodFactory.createBasicRod();
+            case "advanced" -> rodFactory.createAdvancedRod();
+            case "legendary" -> rodFactory.createLegendaryRod();
+            default -> null;
+        };
+    }
+
+    private void deliverRodOnTargetThread(CommandSender sender, Player target, ItemStack rod, String tier) {
+        UUID targetId = target.getUniqueId();
+        String targetName = target.getName();
+        Runnable delivery = () -> {
+            Player onlineTarget = Bukkit.getPlayer(targetId);
+            if (onlineTarget == null || !onlineTarget.isOnline()) {
+                sendMessage(sender, tr(sender, "command.give.target-offline",
+                    Map.of("player", targetName)));
+                playErrorSound(sender);
+                return;
             }
-            plugin.reload();
-            sendSuccess(context.getSource(), "Configuration reloaded and caches cleared!");
+
+            try {
+                Map<Integer, ItemStack> leftovers = onlineTarget.getInventory().addItem(rod);
+                if (!leftovers.isEmpty()) {
+                    sendMessage(sender, tr(sender, "command.give.inventory-full",
+                        Map.of("player", onlineTarget.getName())));
+                    sendMessage(onlineTarget, tr(onlineTarget, "command.give.inventory-full-self"));
+                    playErrorSound(sender);
+                    playErrorSound(onlineTarget);
+                    return;
+                }
+            } catch (RuntimeException e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to add rod to inventory", e);
+                sendMessage(sender, tr(sender, "command.give.give-failed",
+                    Map.of("error", e.getMessage())));
+                playErrorSound(sender);
+                return;
+            }
+
+            sendMessage(sender, tr(sender, "command.give.sender-success",
+                Map.of("tier", tier, "player", onlineTarget.getName())));
+            sendMessage(onlineTarget, tr(onlineTarget, "command.give.target-success",
+                Map.of("tier", tier)));
+            playSuccessSound(sender);
+            playSuccessSound(onlineTarget);
+        };
+
+        plugin.getPlatformScheduler().runForPlayer(new PaperPlayer(target), delivery);
+    }
+
+    private int executeReload(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        CommandSender sender = source.getSender();
+        try {
+            sendMessage(sender, tr(sender, "command.reload.start"));
+
+            if (!plugin.reload()) {
+                if (plugin.isReloadInProgress()) {
+                    sendMessage(sender, tr(sender, "command.reload.already_running"));
+                    playErrorSound(sender);
+                    return 0;
+                }
+
+                sendMessage(sender, tr(sender, "command.reload.failed",
+                    Map.of("error", "See server log for details")));
+                playErrorSound(sender);
+                plugin.getLogger().log(Level.SEVERE, "Reload command reported failure");
+                return 0;
+            }
+
+            sendMessage(sender, tr(sender, "command.reload.success"));
+            playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
-        } catch (Exception e) {
-            sendError(context.getSource(), "Error reloading: " + e.getMessage());
-            plugin.getLogger().log(Level.SEVERE, "Error executing reload command", e);
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, "command.reload.failed",
+                Map.of("error", e.getMessage())));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing reload command", e);
             return 0;
         }
+    }
+
+    private int executeConfigOverview(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        ConfigManager config = plugin.getConfigManager();
+        try {
+            sendMessage(sender, tr(sender, "command.config.header"));
+            sendConfigLine(sender, "command.config.settings.sounds", configStatus(sender, config.useSounds()));
+            sendConfigLine(sender, "command.config.settings.particles", configStatus(sender, config.useParticles()));
+            sendConfigLine(sender, "command.config.settings.statistics", configStatus(sender, config.trackStatistics()));
+            sendConfigLine(sender, "command.config.settings.biome-drops", configStatus(sender, config.enableBiomeSpecificDrops()));
+            sendConfigLine(sender, "command.config.settings.permissions", configStatus(sender, config.usePermissions()));
+            sendConfigLine(sender, "command.config.settings.debug", configStatus(sender, config.isDebugMode()));
+            sendConfigLine(sender, "command.config.settings.delivery-mode", config.getRewardDeliveryMode().getConfigValue());
+            sendConfigLine(sender, "command.config.settings.stats-save-interval",
+                tr(sender, "command.config.seconds", Map.of("seconds", String.valueOf(config.getStatsSaveInterval()))));
+            sendMessage(sender, tr(sender, "command.config.usage"));
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, "general.error"));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing config overview command", e);
+            return 0;
+        }
+    }
+
+    private void sendConfigLine(CommandSender sender, String settingKey, String value) {
+        sendMessage(sender, tr(sender, "command.config.line",
+            Map.of(
+                "setting", tr(sender, settingKey),
+                "value", value
+            )));
+    }
+
+    private String configStatus(CommandSender sender, boolean enabled) {
+        return tr(sender, enabled ? "general.enabled" : "general.disabled");
+    }
+
+    private int executeBooleanConfig(
+        CommandContext<CommandSourceStack> context,
+        String settingKey,
+        BooleanSupplier currentValue,
+        Consumer<Boolean> setter,
+        Runnable afterChange
+    ) {
+        CommandSender sender = context.getSource().getSender();
+        boolean previousValue = currentValue.getAsBoolean();
+        boolean newValue = BoolArgumentType.getBool(context, "enabled");
+        try {
+            setter.accept(newValue);
+            if (afterChange != null) {
+                afterChange.run();
+            }
+            plugin.getConfigManager().saveConfig();
+            sendMessage(sender, tr(sender, "command.config.boolean-set",
+                Map.of(
+                    "setting", tr(sender, settingKey),
+                    "value", configStatus(sender, newValue)
+                )));
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (IOException | RuntimeException e) {
+            setter.accept(previousValue);
+            if (afterChange != null) {
+                afterChange.run();
+            }
+            sendMessage(sender, tr(sender, "command.config.save-failed",
+                Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Failed to update config setting " + settingKey, e);
+            return 0;
+        }
+    }
+
+    private int executeDeliveryModeConfig(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        ConfigManager config = plugin.getConfigManager();
+        RewardDeliveryMode previousMode = config.getRewardDeliveryMode();
+        String rawMode = StringArgumentType.getString(context, "mode");
+        RewardDeliveryMode newMode = parseRewardDeliveryMode(rawMode);
+        if (newMode == null) {
+            sendMessage(sender, tr(sender, "command.config.invalid-delivery-mode",
+                Map.of(
+                    "mode", rawMode,
+                    "modes", rewardDeliveryModeList()
+                )));
+            playErrorSound(sender);
+            return 0;
+        }
+
+        try {
+            config.setRewardDeliveryMode(newMode);
+            config.saveConfig();
+            sendMessage(sender, tr(sender, "command.config.delivery-set",
+                Map.of("mode", newMode.getConfigValue())));
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (IOException | RuntimeException e) {
+            config.setRewardDeliveryMode(previousMode);
+            sendMessage(sender, tr(sender, "command.config.save-failed",
+                Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Failed to update reward delivery mode", e);
+            return 0;
+        }
+    }
+
+    private int executeStatsSaveIntervalConfig(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        ConfigManager config = plugin.getConfigManager();
+        int previousInterval = config.getStatsSaveInterval();
+        int newInterval = IntegerArgumentType.getInteger(context, "seconds");
+        try {
+            config.setStatsSaveInterval(newInterval);
+            config.saveConfig();
+            plugin.refreshStatisticsAutosaveSchedule();
+            sendMessage(sender, tr(sender, "command.config.interval-set",
+                Map.of("seconds", String.valueOf(config.getStatsSaveInterval()))));
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (IOException | RuntimeException e) {
+            config.setStatsSaveInterval(previousInterval);
+            plugin.refreshStatisticsAutosaveSchedule();
+            sendMessage(sender, tr(sender, "command.config.save-failed",
+                Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Failed to update stats save interval", e);
+            return 0;
+        }
+    }
+
+    private RewardDeliveryMode parseRewardDeliveryMode(String rawMode) {
+        if (rawMode == null || rawMode.isBlank()) {
+            return null;
+        }
+
+        String normalizedMode = rawMode.trim().toLowerCase(Locale.ROOT).replace('-', '_');
+        RewardDeliveryMode configuredMode = RewardDeliveryMode.fromConfigValue(normalizedMode);
+        if (configuredMode != null) {
+            return configuredMode;
+        }
+
+        return switch (normalizedMode) {
+            case "vanilla", "retrieve" -> RewardDeliveryMode.VANILLA_RETRIEVE;
+            case "player", "drop", "drop_player" -> RewardDeliveryMode.DROP_AT_PLAYER;
+            default -> null;
+        };
+    }
+
+    private CompletableFuture<Suggestions> suggestRewardDeliveryModes(
+        @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
+        SuggestionsBuilder builder
+    ) {
+        String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+        for (RewardDeliveryMode mode : RewardDeliveryMode.values()) {
+            suggestIfMatching(builder, remaining, mode.getConfigValue());
+        }
+        suggestIfMatching(builder, remaining, "vanilla");
+        suggestIfMatching(builder, remaining, "drop");
+        return builder.buildFuture();
+    }
+
+    private String rewardDeliveryModeList() {
+        return String.join(", ",
+            RewardDeliveryMode.VANILLA_RETRIEVE.getConfigValue(),
+            RewardDeliveryMode.INVENTORY.getConfigValue(),
+            RewardDeliveryMode.DROP_AT_PLAYER.getConfigValue());
     }
 
     private int executeStatsOwnPlayer(CommandContext<CommandSourceStack> context) {
         try {
             CommandSender sender = context.getSource().getSender();
             if (!(sender instanceof Player)) {
-                sendMessage(sender, Component.text("Console must specify a player: /mythicrod stats <player>", NamedTextColor.RED));
+                sendMessage(sender, tr(sender, "stats.console-usage"));
+                playErrorSound(sender);
                 return 0;
             }
             handleStats(sender, new String[0]);
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), 
-                Component.text("Error: " + e.getMessage(), NamedTextColor.RED));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing stats command", e);
             return 0;
         }
@@ -343,8 +597,8 @@ public class BrigadierCommandManager {
             handleStats(context.getSource().getSender(), new String[]{"stats", playerName});
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), 
-                Component.text("Error: " + e.getMessage(), NamedTextColor.RED));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing stats command", e);
             return 0;
         }
@@ -352,75 +606,151 @@ public class BrigadierCommandManager {
 
     private void handleStats(CommandSender sender, String[] args) {
         if (!plugin.getConfigManager().trackStatistics()) {
-            sendMessage(sender, tr("stats.disabled"));
+            sendMessage(sender, tr(sender, "stats.disabled"));
             return;
         }
-        OfflinePlayer target;
+        StatsTarget target;
         if (args.length > 1) {
             String playerName = args[1];
-            target = Bukkit.getOfflinePlayerIfCached(playerName);
+            target = resolveStatsTarget(playerName);
             if (target == null) {
-                sendMessage(sender, tr("stats.player-not-found",
+                sendMessage(sender, tr(sender, "stats.player-not-found",
                     Map.of("player", playerName)));
                 return;
             }
         } else {
             if (!(sender instanceof Player)) {
-                sendMessage(sender, tr("stats.console-usage"));
+                sendMessage(sender, tr(sender, "stats.console-usage"));
                 return;
             }
-            target = (Player) sender;
+            Player player = (Player) sender;
+            target = new StatsTarget(player.getUniqueId(), player.getName());
         }
-        PlayerStats stats = plugin.getStatisticsManager().getOrCreate(target.getUniqueId());
-        sendMessage(sender, tr("stats.header",
-            Map.of("player", target.getName() != null ? target.getName() : "Unknown")));
-        sendMessage(sender, tr("stats.total-catches",
+        PlayerStats stats = plugin.getStatisticsManager().getStats(target.playerId());
+        if (stats == null) {
+            sendMessage(sender, tr(sender, "stats.no-stats"));
+            return;
+        }
+
+        sendMessage(sender, tr(sender, "stats.header",
+            Map.of("player", target.playerName())));
+        sendMessage(sender, tr(sender, "stats.total-catches",
             Map.of("total", String.valueOf(stats.getTotalCaught()))));
-        sendMessage(sender, tr("stats.rare-catches",
+        sendMessage(sender, tr(sender, "stats.rare-catches",
             Map.of("rare", String.valueOf(stats.getRareCaught()))));
-        Map<String, Integer> materialCounts = stats.getMaterialCounts();
-        if (!materialCounts.isEmpty()) {
-            sendMessage(sender, tr("stats.top-materials"));
-            materialCounts.entrySet().stream()
+        Map<String, Integer> tierCounts = stats.getTierCounts();
+        if (!tierCounts.isEmpty()) {
+            sendMessage(sender, tr(sender, "stats.tier-breakdown"));
+            tierCounts.entrySet().stream()
                     .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                     .limit(5)
-                    .forEach(entry -> sendMessage(sender, tr("stats.material-count",
-                        Map.of("material", entry.getKey(), "count", String.valueOf(entry.getValue())))));
+                    .forEach(entry -> sendMessage(sender, tr(sender, "stats.tier-count",
+                        Map.of("tier", StringFormatting.formatMaterialName(entry.getKey()),
+                            "count", String.valueOf(entry.getValue())))));
         }
+    }
+
+    private StatsTarget resolveStatsTarget(String playerName) {
+        Player onlinePlayer = Bukkit.getPlayerExact(playerName);
+        if (onlinePlayer != null) {
+            return new StatsTarget(onlinePlayer.getUniqueId(), onlinePlayer.getName());
+        }
+
+        OfflinePlayer cachedPlayer = Bukkit.getOfflinePlayerIfCached(playerName);
+        if (cachedPlayer != null) {
+            String resolvedName = cachedPlayer.getName() != null ? cachedPlayer.getName() : playerName;
+            return new StatsTarget(cachedPlayer.getUniqueId(), resolvedName);
+        }
+
+        return plugin.getStatisticsManager().getAllStats().values().stream()
+            .filter(stats -> stats.getPlayerName().equalsIgnoreCase(playerName))
+            .findFirst()
+            .map(stats -> new StatsTarget(
+                stats.getPlayerUuid(),
+                stats.getPlayerName()
+            ))
+            .orElse(null);
+    }
+
+    private List<String> getKnownStatsPlayerNames() {
+        Set<String> playerNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        Bukkit.getOnlinePlayers().forEach(player -> playerNames.add(player.getName()));
+        plugin.getStatisticsManager().getAllStats().values().forEach(stats -> {
+            String playerName = stats.getPlayerName();
+            if (!playerName.isBlank()) {
+                playerNames.add(playerName);
+            }
+        });
+        return List.copyOf(playerNames);
+    }
+
+    private record StatsTarget(UUID playerId, String playerName) {
     }
 
     private int executeTop(CommandSourceStack source, int limit) {
         try {
             if (!plugin.getConfigManager().trackStatistics()) {
-                sendMessage(source.getSender(), tr("stats.disabled"));
+                sendMessage(source.getSender(), tr(source.getSender(), "stats.disabled"));
                 return 0;
             }
 
-            limit = Math.clamp(limit, 1, 50);
-            List<PlayerStats> topFishers = plugin.getStatisticsManager().getTopFishers(limit);
+            final int MIN_LIMIT = 1;
+            final int MAX_LIMIT = 50;
+
+            if (limit < MIN_LIMIT) {
+                limit = MIN_LIMIT;
+            } else if (limit > MAX_LIMIT) {
+                limit = MAX_LIMIT;
+                sendMessage(source.getSender(), tr(source.getSender(), "stats.limit-capped",
+                    Map.of("limit", String.valueOf(MAX_LIMIT))));
+            }
+
+            List<PlayerStats> topFishers;
+            try {
+                topFishers = plugin.getStatisticsManager().getTopFishers(limit);
+            } catch (RuntimeException statsError) {
+                sendMessage(source.getSender(), tr(source.getSender(), "stats.retrieve-failed",
+                    Map.of("error", statsError.getMessage())));
+                playErrorSound(source.getSender());
+                plugin.getLogger().log(Level.WARNING, "Failed to read top fishers", statsError);
+                return 0;
+            }
 
             if (topFishers.isEmpty()) {
-                sendMessage(source.getSender(), tr("stats.no-stats"));
+                sendMessage(source.getSender(), tr(source.getSender(), "stats.no-stats"));
                 return 0;
             }
 
-            sendMessage(source.getSender(), tr("stats.top-header",
-                Map.of("limit", String.valueOf(limit))));
+            sendMessage(source.getSender(), tr(source.getSender(), "stats.top-header",
+                Map.of("limit", String.valueOf(Math.min(limit, topFishers.size())))));
+
             int rank = 1;
             for (PlayerStats ps : topFishers) {
-                // Prefer cached player name; fall back to OfflinePlayer lookup
-                String name = ps.getPlayerName();
-                if (name == null || name.isEmpty()) {
-                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(ps.getPlayerUuid());
-                    name = offlinePlayer.getName() != null ? offlinePlayer.getName() : "Unknown";
+                try {
+                    // Prefer cached player name; fall back to OfflinePlayer lookup
+                    String name = ps.getPlayerName();
+                    if (name.isEmpty()) {
+                        try {
+                            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(ps.getPlayerUuid());
+                            name = offlinePlayer.getName() != null ? offlinePlayer.getName() : "Unknown";
+                        } catch (RuntimeException nameError) {
+                            plugin.getLogger().log(Level.WARNING,
+                                "Failed to resolve player name for " + ps.getPlayerUuid(), nameError);
+                            name = "Unknown";
+                        }
+                    }
+                    sendMessage(source.getSender(), tr(source.getSender(), "stats.top-entry",
+                        Map.of("rank", String.valueOf(rank), "player", name, "catches", String.valueOf(ps.getTotalCaught()))));
+                    rank++;
+                } catch (RuntimeException entryError) {
+                    plugin.getLogger().log(Level.WARNING,
+                        "Failed to format leaderboard entry: " + entryError.getMessage(), entryError);
+                    // Continue to next entry rather than failing entire command
                 }
-                sendMessage(source.getSender(), tr("stats.top-entry",
-                    Map.of("rank", String.valueOf(rank), "player", name, "catches", String.valueOf(ps.getTotalCaught()))));
-                rank++;
             }
             return Command.SINGLE_SUCCESS;
-        } catch (Exception e) {
-            sendMessage(source.getSender(), tr("general.error"));
+        } catch (RuntimeException e) {
+            sendMessage(source.getSender(), tr(source.getSender(), "general.error"));
             plugin.getLogger().log(Level.SEVERE, "Error executing top command", e);
             return 0;
         }
@@ -429,14 +759,13 @@ public class BrigadierCommandManager {
     private int executeDrops(CommandContext<CommandSourceStack> context) {
         try {
             if (context.getSource().getSender() instanceof Player player) {
-                plugin.getGUIManager().openMenu(player, "drops");
-                return Command.SINGLE_SUCCESS;
+                return plugin.getGUIManager().openMenu(player, "drops") ? Command.SINGLE_SUCCESS : 0;
             }
             handleDrops(context.getSource().getSender(), new String[0]);
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), 
-                Component.text("Error: " + e.getMessage(), NamedTextColor.RED));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing drops command", e);
             return 0;
         }
@@ -444,12 +773,27 @@ public class BrigadierCommandManager {
 
     private int executeDropsCategory(CommandContext<CommandSourceStack> context) {
         try {
-            String category = StringArgumentType.getString(context, "category");
-            handleDrops(context.getSource().getSender(), new String[]{"drops", category});
+            CommandSender sender = context.getSource().getSender();
+            String category = normalizeDropCategory(StringArgumentType.getString(context, "category"));
+            Map<String, List<CustomDrop>> categories = plugin.getDropManager().getDropCategories();
+            if (categories.get(category) == null) {
+                sendUnknownDropCategory(sender, category);
+                playErrorSound(sender);
+                return 0;
+            }
+
+            if (sender instanceof Player player) {
+                return plugin.getGUIManager().openMenu(player, "drops", Map.of(
+                    "viewing_category", Boolean.TRUE,
+                    "category", category
+                )) ? Command.SINGLE_SUCCESS : 0;
+            }
+
+            displayDropCategory(sender, category);
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), 
-                Component.text("Error: " + e.getMessage(), NamedTextColor.RED));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing drops command", e);
             return 0;
         }
@@ -457,237 +801,699 @@ public class BrigadierCommandManager {
 
     private void handleDrops(CommandSender sender, String[] args) {
         if (args.length > 1) {
-            String category = args[1].toLowerCase(java.util.Locale.ROOT);
-            if (plugin.getDropManager().getDropCategories().containsKey(category)) {
+            String category = normalizeDropCategory(args[1]);
+            if (plugin.getDropManager().getDropCategories().get(category) != null) {
                 displayDropCategory(sender, category);
             } else {
-                sendMessage(sender, tr("drops.category-not-found",
-                    Map.of("category", category)));
-                sendMessage(sender, tr("drops.available-categories",
-                    Map.of("categories", String.join(", ", plugin.getDropManager().getDropCategories().keySet()))));
+                sendUnknownDropCategory(sender, category);
             }
         } else {
             Map<String, List<CustomDrop>> categories = plugin.getDropManager().getDropCategories();
-            sendMessage(sender, tr("drops.header"));
-            for (String category : categories.keySet()) {
-                sendMessage(sender, tr("drops.category-entry",
-                    Map.of("category", category, "count", String.valueOf(categories.get(category).size()))));
+            sendMessage(sender, tr(sender, "drops.header"));
+            for (String category : sortedDropCategoryIds()) {
+                sendMessage(sender, tr(sender, "drops.category-entry",
+                    Map.of(
+                        "category", category,
+                        "label", StringFormatting.formatCategoryName(category),
+                        "count", String.valueOf(categories.get(category).size())
+                    )));
             }
-            sendMessage(sender, tr("drops.usage"));
+            sendMessage(sender, tr(sender, "drops.usage-hint"));
         }
+    }
+
+    private String normalizeDropCategory(String category) {
+        if (category == null) {
+            return "";
+        }
+
+        Map<String, List<CustomDrop>> categories = plugin.getDropManager().getDropCategories();
+        String normalizedCategory = category.toLowerCase(Locale.ROOT);
+        if (categories.get(normalizedCategory) != null) {
+            return normalizedCategory;
+        }
+
+        String biomeCategory = "biome_" + normalizedCategory;
+        if (categories.get(biomeCategory) != null) {
+            return biomeCategory;
+        }
+
+        return normalizedCategory;
+    }
+
+    private void sendUnknownDropCategory(CommandSender sender, String category) {
+        sendMessage(sender, tr(sender, "drops.category-not-found",
+            Map.of("category", category)));
+        sendMessage(sender, tr(sender, "drops.available-categories",
+            Map.of("categories", String.join(", ", sortedDropCategoryIds()))));
+        sendMessage(sender, tr(sender, "drops.category-help"));
     }
 
     private void displayDropCategory(CommandSender sender, String category) {
         List<CustomDrop> drops = plugin.getDropManager().getDropCategories().get(category);
         if (drops == null || drops.isEmpty()) {
-            sendMessage(sender, tr("drops.category-not-found",
+            sendMessage(sender, tr(sender, "drops.category-not-found",
                 Map.of("category", category)));
             return;
         }
-        sendMessage(sender, tr("drops.category-header",
-            Map.of("category", category)));
+        sendMessage(sender, tr(sender, "drops.category-header",
+            Map.of(
+                "category", category,
+                "label", StringFormatting.formatCategoryName(category)
+            )));
         for (CustomDrop drop : drops) {
             String name = drop.getCustomName() != null ? drop.getCustomName() : drop.getIdentifier();
-            sendMessage(sender, tr("drops.drop-entry",
-                Map.of("name", name, "chance", String.valueOf(drop.getChance()), "amount", String.valueOf(drop.getAmount()))));
+            String weight = String.valueOf(drop.getWeight());
+            sendMessage(sender, tr(sender, "drops.drop-entry",
+                Map.of(
+                    "name", name,
+                    "weight", weight,
+                    "amount", String.valueOf(drop.getAmount())
+                )));
         }
+    }
+
+    private CompletableFuture<Suggestions> suggestDropCategories(
+        @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
+        SuggestionsBuilder builder
+    ) {
+        String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+        for (String category : sortedDropCategoryIds()) {
+            suggestIfMatching(builder, remaining, category);
+            if (category.startsWith("biome_")) {
+                suggestIfMatching(builder, remaining, category.substring("biome_".length()));
+            }
+        }
+        return builder.buildFuture();
+    }
+
+    private CompletableFuture<Suggestions> suggestKnownStatsPlayers(
+        @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
+        SuggestionsBuilder builder
+    ) {
+        getKnownStatsPlayerNames().forEach(builder::suggest);
+        return builder.buildFuture();
+    }
+
+    private CompletableFuture<Suggestions> suggestOnlinePlayers(
+        @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
+        SuggestionsBuilder builder
+    ) {
+        Bukkit.getOnlinePlayers().forEach(player -> builder.suggest(player.getName()));
+        return builder.buildFuture();
+    }
+
+    private CompletableFuture<Suggestions> suggestRodTiers(
+        @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
+        SuggestionsBuilder builder
+    ) {
+        builder.suggest("basic");
+        builder.suggest("advanced");
+        builder.suggest("legendary");
+        return builder.buildFuture();
+    }
+
+    private void suggestIfMatching(SuggestionsBuilder builder, String remaining, String suggestion) {
+        if (suggestion.startsWith(remaining)) {
+            builder.suggest(suggestion);
+        }
+    }
+
+    private List<String> sortedDropCategoryIds() {
+        return plugin.getDropManager().getDropCategories().keySet().stream()
+            .sorted(this::compareDropCategoryIds)
+            .toList();
+    }
+
+    private int compareDropCategoryIds(String left, String right) {
+        int rankCompare = Integer.compare(dropCategoryRank(left), dropCategoryRank(right));
+        if (rankCompare != 0) {
+            return rankCompare;
+        }
+        return StringFormatting.formatCategoryName(left)
+            .compareToIgnoreCase(StringFormatting.formatCategoryName(right));
+    }
+
+    private int dropCategoryRank(String category) {
+        if (category == null) {
+            return 4;
+        }
+
+        String normalizedCategory = category.toLowerCase(Locale.ROOT);
+        return switch (normalizedCategory) {
+            case "global" -> 0;
+            case "rare" -> 1;
+            case "legendary" -> 2;
+            default -> normalizedCategory.startsWith("biome_") ? 3 : 4;
+        };
     }
 
     private int executeHelp(CommandContext<CommandSourceStack> context) {
         try {
             sendHelpMessage(context.getSource().getSender());
             return Command.SINGLE_SUCCESS;
-        } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), 
-                Component.text("Error: " + e.getMessage(), NamedTextColor.RED));
+        } catch (RuntimeException e) {
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing help command", e);
             return 0;
         }
     }
 
     private void sendHelpMessage(CommandSender sender) {
-        sendMessage(sender, tr("command.help.header"));
+        sendMessage(sender, tr(sender, "command.help.header"));
+        sendMessage(sender, tr(sender, "command.help.help"));
         if (sender instanceof Player player) {
-            if (player.hasPermission("mythicrod.gui")) {
-                sendMessage(sender, tr("command.help.gui"));
+            if (player.hasPermission(PermissionNodes.GUI)) {
+                sendMessage(sender, tr(sender, "command.help.gui"));
+                sendMessage(sender, tr(sender, "command.help.rod"));
             }
-            if (player.hasPermission("mythicrod.stats.view")) {
-                sendMessage(sender, tr("command.help.stats"));
+            if (player.hasPermission(PermissionNodes.STATS_VIEW)) {
+                sendMessage(sender, tr(sender, "command.help.stats"));
             }
-            if (player.hasPermission("mythicrod.stats.leaderboard")) {
-                sendMessage(sender, tr("command.help.top"));
+            if (player.hasPermission(PermissionNodes.STATS_LEADERBOARD)) {
+                sendMessage(sender, tr(sender, "command.help.top"));
             }
-            if (player.hasPermission("mythicrod.drops.view")) {
-                sendMessage(sender, tr("command.help.drops"));
+            if (player.hasPermission(PermissionNodes.DROPS_VIEW)) {
+                sendMessage(sender, tr(sender, "command.help.drops"));
             }
-            if (player.hasPermission("mythicrod.admin.reload")) {
-                sendMessage(sender, tr("command.help.reload"));
+            if (player.hasPermission(PermissionNodes.ADMIN_RELOAD)) {
+                sendMessage(sender, tr(sender, "command.help.reload"));
             }
-            if (player.hasPermission("mythicrod.admin.give")) {
-                sendMessage(sender, tr("command.help.give"));
+            if (player.hasPermission(PermissionNodes.ADMIN_GIVE)) {
+                sendMessage(sender, tr(sender, "command.help.give"));
             }
-            if (player.hasPermission("mythicrod.admin.debug")) {
-                sendMessage(sender, tr("command.help.debug"));
+            if (player.hasPermission(PermissionNodes.ADMIN_DEBUG)) {
+                sendMessage(sender, tr(sender, "command.help.debug"));
+            }
+            if (player.hasPermission(PermissionNodes.ADMIN_CONFIG)) {
+                sendMessage(sender, tr(sender, "command.help.config"));
+                sendMessage(sender, tr(sender, "command.help.particle"));
             }
         } else {
-            sendMessage(sender, tr("command.help.reload"));
-            sendMessage(sender, tr("command.help.stats"));
-            sendMessage(sender, tr("command.help.top"));
-            sendMessage(sender, tr("command.help.drops"));
-            sendMessage(sender, tr("command.help.debug"));
+            sendMessage(sender, tr(sender, "command.help.reload"));
+            sendMessage(sender, tr(sender, "command.help.stats"));
+            sendMessage(sender, tr(sender, "command.help.top"));
+            sendMessage(sender, tr(sender, "command.help.drops"));
+            sendMessage(sender, tr(sender, "command.help.give"));
+            sendMessage(sender, tr(sender, "command.help.debug"));
+            sendMessage(sender, tr(sender, "command.help.config"));
+            sendMessage(sender, tr(sender, "command.help.particle"));
         }
-        sendMessage(sender, tr("command.help.footer"));
+        sendMessage(sender, tr(sender, "command.help.footer"));
     }
 
-    private void sendMessage(CommandSender sender, Component message) {
-        sender.sendMessage(message);
-    }
-    
     private void sendMessage(CommandSender sender, String message) {
-        try {
-            // Pure MiniMessage - no legacy serializers
-            Component prefixComponent = MiniMessage.miniMessage().deserialize(
-                plugin.getConfigManager().getPrefix());
-            Component messageComponent = MiniMessage.miniMessage().deserialize(message);
-            Component fullMessage = prefixComponent.append(messageComponent);
-            sender.sendMessage(fullMessage);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to parse MiniMessage: " + e.getMessage());
-            sender.sendMessage(message);
-        }
+        Component fullMessage = ConfiguredText.parse(plugin.getConfigManager().getPrefix())
+            .append(ConfiguredText.parse(message));
+        sender.sendMessage(fullMessage);
     }
 
-    /**
-     * Plays a success sound for the command sender if they are a player.
-     */
     private void playSuccessSound(CommandSender sender) {
-        if (sender instanceof Player player) {
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.5f, 1.2f);
-        }
+        playSound(sender, Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.2f);
     }
 
-    /**
-     * Plays an error sound for the command sender if they are a player.
-     */
     private void playErrorSound(CommandSender sender) {
-        if (sender instanceof Player player) {
-            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 0.5f, 1.0f);
+        playSound(sender, Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
+    }
+
+    private void playSound(CommandSender sender, Sound sound, float volume, float pitch) {
+        if (!plugin.getConfigManager().useSounds() || !(sender instanceof Player player)) {
+            return;
         }
+
+        plugin.getPlatformScheduler().runForPlayer(new PaperPlayer(player), () -> {
+            if (player.isOnline()) {
+                player.playSound(player, sound, SoundCategory.MASTER, volume, pitch);
+            }
+        });
+    }
+
+    private boolean isValidParticleType(String particleName) {
+        return ParticleOptions.isConfigurableParticleName(particleName);
+    }
+
+    private CompletableFuture<Suggestions> suggestParticles(
+        @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
+        SuggestionsBuilder builder
+    ) {
+        ParticleOptions.configurableNames().forEach(builder::suggest);
+        return builder.buildFuture();
     }
 
     private int executeParticleInfo(CommandContext<CommandSourceStack> context) {
         try {
             CommandSender sender = context.getSource().getSender();
-            sendMessage(sender, "<gold><bold>=== Particle Settings ===</bold></gold>");
-            sendMessage(sender, "<gray>Current particles:</gray>");
-            sendMessage(sender, "  <yellow>Catch:</yellow> <white>" + plugin.getConfigManager().getCatchParticle() + "</white>");
-            sendMessage(sender, "  <yellow>Bubble:</yellow> <white>" + plugin.getConfigManager().getBubbleParticle() + "</white>");
-            sendMessage(sender, "  <yellow>Success:</yellow> <white>" + plugin.getConfigManager().getSuccessParticle() + "</white>");
-            sendMessage(sender, "");
-            sendMessage(sender, "<yellow>Usage:</yellow>");
-            sendMessage(sender, "<gray>/mythicrod particle catch <type></gray>");
-            sendMessage(sender, "<gray>/mythicrod particle bubble <type></gray>");
-            sendMessage(sender, "<gray>/mythicrod particle success <type></gray>");
+            sendMessage(sender, tr(sender, "command.particle.header"));
+            sendMessage(sender, tr(sender, "command.particle.current"));
+            sendMessage(sender, tr(sender, "command.particle.catch-line",
+                Map.of("type", plugin.getConfigManager().getCatchParticle())));
+            sendMessage(sender, tr(sender, "command.particle.bubble-line",
+                Map.of("type", plugin.getConfigManager().getBubbleParticle())));
+            sendMessage(sender, tr(sender, "command.particle.success-line",
+                Map.of("type", plugin.getConfigManager().getSuccessParticle())));
+            sendMessage(sender, tr(sender, "command.particle.xp-line",
+                Map.of("type", plugin.getConfigManager().getXpParticle())));
+            sendMessage(sender, tr(sender, "command.particle.usage-header"));
+            sendMessage(sender, tr(sender, "command.particle.usage-catch"));
+            sendMessage(sender, tr(sender, "command.particle.usage-bubble"));
+            sendMessage(sender, tr(sender, "command.particle.usage-success"));
+            sendMessage(sender, tr(sender, "command.particle.usage-xp"));
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), Component.text("Error: " + e.getMessage(), NamedTextColor.RED));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            playErrorSound(context.getSource().getSender());
             return 0;
         }
     }
 
     private int executeParticleCatch(CommandContext<CommandSourceStack> context) {
-        try {
-            String type = StringArgumentType.getString(context, "type");
-            String particleType = type.toUpperCase(java.util.Locale.ROOT);
-            plugin.getConfigManager().setCatchParticle(particleType);
-            sendMessage(context.getSource().getSender(), "<green>✓ Catch particle set to: <yellow>" + particleType + "</yellow>");
-            playSuccessSound(context.getSource().getSender());
-            return Command.SINGLE_SUCCESS;
-        } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), Component.text("Error: " + e.getMessage(), NamedTextColor.RED));
-            return 0;
-        }
+        return updateParticleSetting(
+            context,
+            plugin.getConfigManager()::getCatchParticle,
+            plugin.getConfigManager()::setCatchParticle,
+            "command.particle.catch-set",
+            "catch"
+        );
     }
 
     private int executeParticleBubble(CommandContext<CommandSourceStack> context) {
-        try {
-            String type = StringArgumentType.getString(context, "type");
-            String particleType = type.toUpperCase(java.util.Locale.ROOT);
-            plugin.getConfigManager().setBubbleParticle(particleType);
-            sendMessage(context.getSource().getSender(), "<green>✓ Bubble particle set to: <yellow>" + particleType + "</yellow>");
-            playSuccessSound(context.getSource().getSender());
-            return Command.SINGLE_SUCCESS;
-        } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), Component.text("Error: " + e.getMessage(), NamedTextColor.RED));
-            return 0;
-        }
+        return updateParticleSetting(
+            context,
+            plugin.getConfigManager()::getBubbleParticle,
+            plugin.getConfigManager()::setBubbleParticle,
+            "command.particle.bubble-set",
+            "bubble"
+        );
     }
 
     private int executeParticleSuccess(CommandContext<CommandSourceStack> context) {
+        return updateParticleSetting(
+            context,
+            plugin.getConfigManager()::getSuccessParticle,
+            plugin.getConfigManager()::setSuccessParticle,
+            "command.particle.success-set",
+            "success"
+        );
+    }
+
+    private int executeParticleXp(CommandContext<CommandSourceStack> context) {
+        return updateParticleSetting(
+            context,
+            plugin.getConfigManager()::getXpParticle,
+            plugin.getConfigManager()::setXpParticle,
+            "command.particle.xp-set",
+            "xp"
+        );
+    }
+
+    private int updateParticleSetting(
+        CommandContext<CommandSourceStack> context,
+        Supplier<String> currentValueSupplier,
+        Consumer<String> setter,
+        String successKey,
+        String settingName
+    ) {
+        CommandSender sender = context.getSource().getSender();
+        String previousValue = currentValueSupplier.get();
+
         try {
             String type = StringArgumentType.getString(context, "type");
-            String particleType = type.toUpperCase(java.util.Locale.ROOT);
-            plugin.getConfigManager().setSuccessParticle(particleType);
-            sendMessage(context.getSource().getSender(), "<green>✓ Success particle set to: <yellow>" + particleType + "</yellow>");
-            playSuccessSound(context.getSource().getSender());
+            String particleType = ParticleOptions.normalize(type);
+
+            if (!isValidParticleType(particleType)) {
+                sendMessage(sender, tr(sender, "command.particle.invalid-type",
+                    Map.of("type", particleType)));
+                playErrorSound(sender);
+                return 0;
+            }
+
+            setter.accept(particleType);
+            plugin.getConfigManager().saveConfig();
+            sendMessage(sender, tr(sender, successKey,
+                Map.of("type", particleType)));
+            playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
-        } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), Component.text("Error: " + e.getMessage(), NamedTextColor.RED));
+        } catch (IOException | RuntimeException e) {
+            setter.accept(previousValue);
+            sendMessage(sender, tr(sender, "general.error"));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Failed to update " + settingName + " particle setting", e);
             return 0;
         }
     }
 
-    private int executeSaveItem(CommandContext<CommandSourceStack> context) {
+    private int executeValidate(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
         try {
-            if (!(context.getSource().getSender() instanceof Player player)) {
-                sendError(context.getSource(), "This command can only be used by players.");
-                return 0;
+            Map<String, List<CustomDrop>> categories = plugin.getDropManager().getDropCategories();
+            boolean nexoAvailable = plugin.getPlatformServer() != null && plugin.getPlatformServer().isNexoEnabled();
+
+            int problems = 0;
+            int dropsChecked = 0;
+            int categoriesChecked = 0;
+            int duplicateIds = 0;
+
+            sendMessage(sender, "<gold><st>            </st> <bold>MythicRod Validate</bold> <st>            </st>");
+
+            for (Map.Entry<String, List<CustomDrop>> entry : categories.entrySet()) {
+                String categoryKey = entry.getKey();
+                List<CustomDrop> drops = entry.getValue();
+                if (drops == null || drops.isEmpty()) {
+                    continue;
+                }
+                categoriesChecked++;
+
+                Map<String, Integer> identifierCounts = new HashMap<>();
+                for (CustomDrop drop : drops) {
+                    dropsChecked++;
+                    String identifier = drop.getIdentifier();
+                    identifierCounts.merge(identifier == null ? "<null>" : identifier, 1, Integer::sum);
+
+                    problems += validateDrop(sender, categoryKey, drop, nexoAvailable);
+                }
+
+                for (Map.Entry<String, Integer> idCount : identifierCounts.entrySet()) {
+                    if (idCount.getValue() > 1) {
+                        duplicateIds++;
+                        sendMessage(sender, "<yellow>⚠ Duplicate identifier <white>" + idCount.getKey()
+                            + "</white> appears " + idCount.getValue() + " times in category <white>"
+                            + categoryKey + "</white>");
+                    }
+                }
             }
-            
-            String id = StringArgumentType.getString(context, "id");
-            ItemStack heldItem = player.getInventory().getItemInMainHand();
-            
-            if (heldItem.getType().isAir()) {
-                sendError(context.getSource(), "You must hold an item in your hand to save it!");
-                return 0;
+
+            problems += duplicateIds;
+
+            if (problems == 0) {
+                sendMessage(sender, "<green>✓ Validated " + dropsChecked + " drops across "
+                    + categoriesChecked + " categories — no problems found.");
+                playSuccessSound(sender);
+            } else {
+                sendMessage(sender, "<red>✗ Found " + problems + " problem(s) across "
+                    + dropsChecked + " drops in " + categoriesChecked + " categories.");
+                sendMessage(sender, "<gray>Fix entries above, then run <yellow>/mythicrod reload</yellow>.");
+                playErrorSound(sender);
             }
-            
-            // Serialize to Base64
-            byte[] bytes = heldItem.serializeAsBytes();
-            String base64String = java.util.Base64.getEncoder().encodeToString(bytes);
-            
-            // Save to config
-            plugin.getDropManager().saveBase64Drop(id, base64String, player.getName());
-            
-            sendSuccess(context.getSource(), "Item saved as drop ID: " + id);
-            sendInfo(context.getSource(), "Material: " + heldItem.getType() + " | Amount: " + heldItem.getAmount());
-            
             return Command.SINGLE_SUCCESS;
-        } catch (Exception e) {
-            sendError(context.getSource(), "Error saving item: " + e.getMessage());
-            plugin.getLogger().log(Level.SEVERE, "Error executing saveitem command", e);
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, "general.error"));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing validate command", e);
             return 0;
         }
+    }
+
+    private int validateDrop(CommandSender sender, String category, CustomDrop drop, boolean nexoAvailable) {
+        int problems = 0;
+        String identifier = drop.getIdentifier();
+
+        if (identifier == null || identifier.isBlank()) {
+            sendMessage(sender, "<red>✗ <white>" + category + "</white>: drop has no identifier");
+            return 1;
+        }
+
+        if (drop.getWeight() <= 0) {
+            sendMessage(sender, "<red>✗ <white>" + category + "</white>/<white>" + identifier
+                + "</white>: weight must be >= 1 (was " + drop.getWeight() + ")");
+            problems++;
+        }
+
+        if (drop.getAmount() <= 0) {
+            sendMessage(sender, "<red>✗ <white>" + category + "</white>/<white>" + identifier
+                + "</white>: amount must be >= 1 (was " + drop.getAmount() + ")");
+            problems++;
+        }
+
+        if (drop.isNexoItem()) {
+            if (!nexoAvailable) {
+                sendMessage(sender, "<yellow>⚠ <white>" + category + "</white>/<white>" + identifier
+                    + "</white>: Nexo item but Nexo plugin is not enabled");
+                problems++;
+            }
+        } else {
+            Material material = Material.matchMaterial(identifier);
+            if (material == null) {
+                sendMessage(sender, "<red>✗ <white>" + category + "</white>/<white>" + identifier
+                    + "</white>: unknown material");
+                problems++;
+            } else if (!material.isItem()) {
+                sendMessage(sender, "<red>✗ <white>" + category + "</white>/<white>" + identifier
+                    + "</white>: material is not an obtainable item");
+                problems++;
+            }
+        }
+
+        for (Map.Entry<String, Integer> enchant : drop.getEnchantments().entrySet()) {
+            if (enchant.getValue() == null || enchant.getValue() < 1) {
+                sendMessage(sender, "<yellow>⚠ <white>" + identifier + "</white>: enchantment '"
+                    + enchant.getKey() + "' has invalid level " + enchant.getValue());
+                problems++;
+                continue;
+            }
+            NamespacedKey enchantKey = parseRegistryKey(enchant.getKey());
+            if (enchantKey == null
+                    || RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(enchantKey) == null) {
+                sendMessage(sender, "<yellow>⚠ <white>" + identifier + "</white>: unknown enchantment '"
+                    + enchant.getKey() + "'");
+                problems++;
+            }
+        }
+
+        for (String biome : drop.getBiomes()) {
+            if (biome == null || biome.isBlank()) {
+                continue;
+            }
+            NamespacedKey biomeKey = parseRegistryKey(biome);
+            if (biomeKey == null
+                    || RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME).get(biomeKey) == null) {
+                sendMessage(sender, "<yellow>⚠ <white>" + identifier + "</white>: unknown biome '"
+                    + biome + "'");
+                problems++;
+            }
+        }
+
+        String permission = drop.getPermission();
+        if (permission != null && !permission.isBlank() && !permission.startsWith("mythicrod.")) {
+            sendMessage(sender, "<yellow>⚠ <white>" + identifier
+                + "</white>: permission '" + permission + "' is outside the mythicrod.* namespace");
+            problems++;
+        }
+
+        return problems;
+    }
+
+    private NamespacedKey parseRegistryKey(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String trimmed = raw.trim().toLowerCase(Locale.ROOT);
+        try {
+            if (trimmed.contains(":")) {
+                return NamespacedKey.fromString(trimmed);
+            }
+            return NamespacedKey.minecraft(trimmed);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private int executeTestRoll(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        try {
+            if (!(sender instanceof Player player)) {
+                sendMessage(sender, tr(sender, "general.player_only"));
+                playErrorSound(sender);
+                return 0;
+            }
+
+            String biomeArg = null;
+            try {
+                biomeArg = StringArgumentType.getString(context, "biome");
+            } catch (IllegalArgumentException ignored) {
+            }
+            int count;
+            try {
+                count = IntegerArgumentType.getInteger(context, "count");
+            } catch (IllegalArgumentException ignored) {
+                count = 100;
+            }
+            count = Math.max(1, Math.min(10000, count));
+
+            String biome = biomeArg;
+            if (biome == null || biome.isBlank()) {
+                biome = player.getWorld().getComputedBiome(
+                    player.getLocation().getBlockX(),
+                    player.getLocation().getBlockY(),
+                    player.getLocation().getBlockZ()
+                ).getKey().asString();
+            } else {
+                NamespacedKey biomeKey = parseRegistryKey(biome);
+                if (biomeKey != null) {
+                    biome = biomeKey.asString();
+                }
+            }
+
+            PaperPlayer platformPlayer = new PaperPlayer(player);
+            Map<String, Integer> tierCounts = new LinkedHashMap<>();
+            tierCounts.put("legendary", 0);
+            tierCounts.put("rare", 0);
+            tierCounts.put("uncommon", 0);
+            tierCounts.put("common", 0);
+            Map<String, Integer> identifierCounts = new HashMap<>();
+            int nullRolls = 0;
+
+            for (int i = 0; i < count; i++) {
+                CustomDrop drop = plugin.getDropManager().getRandomDrop(platformPlayer, biome, 1.0D);
+                if (drop == null) {
+                    nullRolls++;
+                    continue;
+                }
+                tierCounts.merge(drop.getTier(), 1, Integer::sum);
+                identifierCounts.merge(drop.getIdentifier(), 1, Integer::sum);
+            }
+
+            sendMessage(sender, "<gold><st>            </st> <bold>Test Roll</bold> <st>            </st>");
+            sendMessage(sender, "<gray>Biome: <white>" + biome + "</white> · Rolls: <white>"
+                + count + "</white> · No-eligible: <white>" + nullRolls + "</white>");
+
+            int totalHits = count - nullRolls;
+            for (Map.Entry<String, Integer> tier : tierCounts.entrySet()) {
+                int tierCount = tier.getValue();
+                double pct = totalHits == 0 ? 0.0D : (tierCount * 100.0D / totalHits);
+                String color = tierColor(tier.getKey());
+                sendMessage(sender, color + tier.getKey() + "</color>: <white>" + tierCount
+                    + "</white> <gray>(" + String.format(Locale.ROOT, "%.1f", pct) + "%)");
+            }
+
+            List<Map.Entry<String, Integer>> topIdentifiers = identifierCounts.entrySet().stream()
+                .sorted(Comparator.comparingInt((Map.Entry<String, Integer> e) -> e.getValue()).reversed())
+                .limit(5)
+                .toList();
+            if (!topIdentifiers.isEmpty()) {
+                sendMessage(sender, "<gray>Top identifiers:");
+                for (Map.Entry<String, Integer> id : topIdentifiers) {
+                    sendMessage(sender, "<gray>  · <white>" + id.getKey()
+                        + "</white> <yellow>x" + id.getValue() + "</yellow>");
+                }
+            }
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, "general.error"));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing testroll command", e);
+            return 0;
+        }
+    }
+
+    private String tierColor(String tier) {
+        return switch (tier) {
+            case "legendary" -> "<gold>";
+            case "rare" -> "<aqua>";
+            case "uncommon" -> "<green>";
+            default -> "<gray>";
+        };
+    }
+
+    private int executeRodInspect(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        try {
+            if (!(sender instanceof Player player)) {
+                sendMessage(sender, tr(sender, "general.player_only"));
+                playErrorSound(sender);
+                return 0;
+            }
+
+            sendMessage(sender, "<gold><st>            </st> <bold>Rod Inspect</bold> <st>            </st>");
+            inspectRodSlot(sender, player, EquipmentSlot.HAND, "Main hand");
+            inspectRodSlot(sender, player, EquipmentSlot.OFF_HAND, "Off hand");
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, "general.error"));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing rod inspect command", e);
+            return 0;
+        }
+    }
+
+    private void inspectRodSlot(CommandSender sender, Player player, EquipmentSlot slot, String label) {
+        ItemStack item = switch (slot) {
+            case HAND -> player.getInventory().getItemInMainHand();
+            case OFF_HAND -> player.getInventory().getItemInOffHand();
+            default -> null;
+        };
+
+        if (item == null || item.getType().isAir()) {
+            sendMessage(sender, "<gray>" + label + ": <dark_gray>empty");
+            return;
+        }
+        if (item.getType() != Material.FISHING_ROD) {
+            sendMessage(sender, "<gray>" + label + ": <yellow>not a fishing rod (<white>"
+                + item.getType().name() + "</white>)");
+            return;
+        }
+        if (!rodFactory.isCustomRod(item)) {
+            sendMessage(sender, "<gray>" + label + ": <yellow>vanilla fishing rod");
+            return;
+        }
+
+        String tier = rodFactory.getRodTier(item);
+        if (tier == null || tier.isBlank()) {
+            tier = MythicRodKeys.DEFAULT_ROD_TIER;
+        }
+        double multiplier = plugin.getConfigManager().getRodLuckMultiplier(tier);
+        sendMessage(sender, "<gray>" + label + ": <green>MythicRod</green> <gray>· tier=<white>"
+            + tier + "</white> · rare-luck=<white>" + String.format(Locale.ROOT, "%.2fx", multiplier)
+            + "</white>");
+    }
+
+    private CompletableFuture<Suggestions> suggestBiomes(
+        @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
+        SuggestionsBuilder builder
+    ) {
+        String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+        for (Biome biome : RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME)) {
+            String key = biome.getKey().asString();
+            if (key.toLowerCase(Locale.ROOT).contains(remaining)) {
+                builder.suggest(key);
+            }
+        }
+        return builder.buildFuture();
     }
 
     private int executeDebug(CommandContext<CommandSourceStack> context) {
         try {
             CommandSender sender = context.getSource().getSender();
-            
-            sender.sendMessage(Component.text("=== MythicRod Debug Info ===", NamedTextColor.GOLD));
-            
-            MythicRodCache cache = plugin.getCache();
-            if (cache != null) {
-                MythicRodCache.CacheStats stats = cache.getStats();
-                sender.sendMessage(Component.text("Cache: " + stats.hits() + " hits, " + stats.misses() + " misses (" + String.format("%.2f", stats.hitRate()) + "% hit rate)", NamedTextColor.GRAY));
-            }
-            
-            sender.sendMessage(Component.text("Active fishing sessions: " + plugin.getActiveFishingCount(), NamedTextColor.GRAY));
-            sender.sendMessage(Component.text("Folia support: " + plugin.isFoliaSupported(), NamedTextColor.GRAY));
-            
+
+            sendMessage(sender, tr(sender, "command.debug.header"));
+
+            int categoryCount = plugin.getDropManager() != null
+                ? plugin.getDropManager().getDropCategories().size()
+                : 0;
+            int dropCount = plugin.getDropManager() != null
+                ? plugin.getDropManager().getTotalDropCount()
+                : 0;
+            int trackedPlayers = plugin.getStatisticsManager() != null
+                ? plugin.getStatisticsManager().getAllStats().size()
+                : 0;
+            long totalCatches = plugin.getStatisticsManager() != null
+                ? plugin.getStatisticsManager().getTotalCatches()
+                : 0L;
+            sendMessage(sender, tr(sender, "command.debug.runtime",
+                Map.of(
+                    "categories", String.valueOf(categoryCount),
+                    "drops", String.valueOf(dropCount),
+                    "players", String.valueOf(trackedPlayers),
+                    "catches", String.valueOf(totalCatches)
+                )));
+            sendMessage(sender, tr(sender, "command.debug.folia-support",
+                Map.of("status", tr(sender, plugin.isFoliaRuntime() ? "general.enabled" : "general.disabled"))));
+
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), Component.text("Error executing debug command: " + e.getMessage(), NamedTextColor.RED));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing debug command", e);
             return 0;
         }

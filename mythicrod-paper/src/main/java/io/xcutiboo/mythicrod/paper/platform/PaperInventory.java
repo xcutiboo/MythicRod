@@ -42,7 +42,7 @@ public class PaperInventory implements PlatformInventory {
                 leftover.put(entry.getKey(), new PaperItem(entry.getValue()));
             }
         }
-        return leftover;
+        return Map.copyOf(leftover);
     }
 
     @Override

@@ -1,18 +1,12 @@
 package io.xcutiboo.mythicrod.paper.fishing;
 
-import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.xcutiboo.mythicrod.MythicRod;
-import io.xcutiboo.mythicrod.drops.CustomDrop;
-import io.xcutiboo.mythicrod.paper.events.MythicRodFishCatchEvent;
-import io.xcutiboo.mythicrod.paper.events.MythicRodRewardRollEvent;
-import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -25,432 +19,890 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.api.Result;
+import io.xcutiboo.mythicrod.api.platform.PlatformItem;
+import io.xcutiboo.mythicrod.config.RewardDeliveryMode;
+import io.xcutiboo.mythicrod.constants.MythicRodKeys;
+import io.xcutiboo.mythicrod.constants.PermissionNodes;
+import io.xcutiboo.mythicrod.drops.CustomDrop;
+import io.xcutiboo.mythicrod.paper.api.PaperMythicRodAPI;
+import io.xcutiboo.mythicrod.paper.events.MythicRodFishCatchEvent;
+import io.xcutiboo.mythicrod.paper.events.MythicRodRewardRollEvent;
+import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
+import io.xcutiboo.mythicrod.paper.item.PaperPlatformItem;
+import io.xcutiboo.mythicrod.paper.item.RodFactory;
+import io.xcutiboo.mythicrod.paper.platform.PaperItem;
+import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
+import io.xcutiboo.mythicrod.paper.util.ParticleOptions;
+import io.xcutiboo.mythicrod.paper.util.StringFormatting;
+import io.xcutiboo.mythicrod.text.MiniMessageMigrator;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 /**
- * FishingListener using modern Paper 1.21.11 best practices.
- * 
- * CRITICAL: Following NotebookLM guidance:
- * - NO global ConcurrentHashMap for hook tracking (hides threading issues, memory leaks)
- * - NO hook.remove() (breaks vanilla mechanics: rod durability, XP)
- * - Use EntityScheduler for thread-safe item modifications
- * - Remove caught item entity, let vanilla handle hook naturally
+ * Fishing listener for replacing vanilla catches with MythicRod rewards.
+ *
+ * <p>Important invariants: do not store hook state globally, do not remove the
+ * fishing hook to short-circuit vanilla mechanics, and keep Folia entity/item
+ * mutation on the owning scheduler path.
  */
 public class FishingListener implements Listener {
     private final MythicRod plugin;
+    private final RodFactory rodFactory;
 
     public FishingListener(MythicRod plugin) {
         this.plugin = plugin;
+        this.rodFactory = new RodFactory(plugin);
     }
 
-    /**
-     * Handle fishing events with HIGHEST priority for final say on drops.
-     * Thread-safe: Uses EntityScheduler for all entity modifications.
-     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerFish(PlayerFishEvent event) {
-        // Only process successful catches
-        if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        Entity caughtEntity = event.getCaught();
-        
-        // Safety: Ensure they caught an item, not a mob/player
-        if (!(caughtEntity instanceof Item caughtItem)) {
-            return;
-        }
-
-        boolean debugMode = plugin.getConfigManager().isDebugMode();
-        if (debugMode) {
-            plugin.getLogger().info("CAUGHT_FISH: " + player.getName() + " caught " + caughtItem.getItemStack().getType());
-        }
-
-        // Get biome for biome-specific drops
-        Location hookLoc = event.getHook().getLocation();
-        String biomeName = hookLoc.getWorld().getComputedBiome(
-            hookLoc.getBlockX(), 
-            hookLoc.getBlockY(), 
-            hookLoc.getBlockZ()
-        ).getKey().asString();
-
-        // ── Cycle-2 event: MythicRodRewardRollEvent ──────────────────────────
-        // Fired before the weighted roll so external plugins can:
-        //   • Adjust luck via setLuckMultiplier()
-        //   • Force a specific drop via forceDrop(CustomDrop)
-        // Category passed as biomeName for now; the luck multiplier is a future
-        // DropManager hook — stored in the event for API consumers.
-        MythicRodRewardRollEvent rollEvent = new MythicRodRewardRollEvent(player, biomeName, 100.0);
-        plugin.getServer().getPluginManager().callEvent(rollEvent);
-
-        // Honour any forced drop from external plugins; otherwise run the
-        // luck-modified weighted roll using the multiplier from the event.
-        final double luckMultiplier = rollEvent.getLuckMultiplier();
-        CustomDrop drop;
-        if (rollEvent.hasForcedDrop()) {
-            drop = rollEvent.getForcedDrop();
-            if (debugMode) {
-                plugin.getLogger().info("Drop forced by external plugin: "
-                        + (drop != null ? drop.getIdentifier() : "null"));
+        try {
+            if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) {
+                return;
             }
-        } else {
-            drop = plugin.getDropManager().getRandomDrop(
-                    new PaperPlayer(player), biomeName, luckMultiplier);
-        }
 
-        if (drop == null) {
-            if (debugMode) {
-                plugin.getLogger().info("No custom drop - letting vanilla handle");
+            Player player = event.getPlayer();
+            Entity caughtEntity = event.getCaught();
+
+            if (!(caughtEntity instanceof Item caughtItem)) {
+                return;
             }
-            return;
-        }
 
-        if (debugMode) {
-            plugin.getLogger().info("Selected drop: " + drop.getIdentifier() + " x" + drop.getAmount());
-        }
+            boolean debugMode = plugin.getConfigManager().isDebugMode();
+            if (debugMode) {
+                info(() -> "CAUGHT_FISH: " + player.getName() + " caught " + caughtItem.getItemStack().getType());
+            }
 
-        // Create the custom item
-        ItemStack customItem = createItemStack(drop);
-
-        // Thread-Safe: Schedule on the caught item's EntityScheduler
-        // This ensures atomic execution on the correct region thread
-        caughtItem.getScheduler().run(plugin, (task) -> {
-            // CRITICAL: Remove the vanilla item entity so it can't be picked up
-            // This prevents double-drops without needing flags or maps
-            caughtItem.remove();
-
-            // Now give the custom item to the player
-            giveCustomDrop(player, customItem, drop, hookLoc);
-        }, null);
-    }
-
-    /**
-     * Give custom drop to player - scheduled on player's EntityScheduler
-     * for thread safety in Folia environments.
-     */
-    private void giveCustomDrop(Player player, ItemStack customItem, CustomDrop drop, Location hookLoc) {
-        player.getScheduler().run(plugin, (task) -> {
-            // ── Cycle-2 event: MythicRodFishCatchEvent ──────────────────────
-            // Fired on the player's region thread (Folia-safe).
-            // • Cancelling prevents MythicRod from applying the custom drop.
-            // • External plugins may replace the reward item via setRewardItem().
-            MythicRodFishCatchEvent catchEvent =
-                    new MythicRodFishCatchEvent(player, drop, customItem);
-            plugin.getServer().getPluginManager().callEvent(catchEvent);
-            if (catchEvent.isCancelled()) {
-                if (plugin.getConfigManager().isDebugMode()) {
-                    plugin.getLogger().info("MythicRodFishCatchEvent cancelled for " + player.getName());
+            Location hookLoc;
+            String biomeName;
+            try {
+                hookLoc = event.getHook().getLocation();
+                if (hookLoc.getWorld() == null) {
+                    if (debugMode) {
+                        plugin.getLogger().warning("Fishing hook location was unavailable during custom catch handling");
+                    }
+                    return;
                 }
-                return; // Plugin rejected this reward
+                biomeName = hookLoc.getWorld().getComputedBiome(
+                    hookLoc.getBlockX(),
+                    hookLoc.getBlockY(),
+                    hookLoc.getBlockZ()
+                ).getKey().asString();
+            } catch (RuntimeException e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to resolve fishing hook biome", e);
+                return;
             }
-            // Use the item as (possibly modified) by event listeners
-            final ItemStack finalItem = catchEvent.getRewardItem();
 
-            // Check if drop-to-inventory is enabled
-            if (plugin.getConfigManager().dropToInventory()) {
-                // Add directly to inventory, drop excess on ground
-                Map<Integer, ItemStack> excess = player.getInventory().addItem(finalItem);
-                if (!excess.isEmpty()) {
-                    excess.values().forEach(leftover ->
-                        player.getWorld().dropItemNaturally(player.getLocation(), leftover)
-                    );
+            PaperPlayer platformPlayer = new PaperPlayer(player);
+            double rodLuckMultiplier = resolveRodLuckMultiplier(player, event.getHand());
+            double baseWeight = plugin.getApiFacade().getBaseRewardWeight(platformPlayer, biomeName);
+            MythicRodRewardRollEvent rollEvent = new MythicRodRewardRollEvent(player, biomeName, baseWeight);
+            plugin.getServer().getPluginManager().callEvent(rollEvent);
+
+            final double luckMultiplier = combineLuckMultipliers(rodLuckMultiplier, rollEvent.getLuckMultiplier());
+            ItemStack customItem;
+            CustomDrop drop;
+            if (rollEvent.hasForcedDrop()) {
+                drop = rollEvent.getForcedDrop();
+                customItem = createItemStack(drop);
+                if (debugMode) {
+                    info(() -> "Drop forced by external plugin: "
+                        + (drop != null ? drop.getIdentifier() : "null"));
                 }
             } else {
-                // Physical drop at hook location (traditional fly-to-player)
-                player.getWorld().dropItemNaturally(hookLoc, finalItem);
+                PaperMythicRodAPI.RewardResolution resolution = plugin.getApiFacade().resolveReward(
+                    platformPlayer,
+                    biomeName,
+                    luckMultiplier
+                );
+                if (resolution == null) {
+                    if (debugMode) {
+                        plugin.getLogger().info("No MythicRod reward selected; preserving vanilla catch");
+                    }
+                    return;
+                }
+
+                drop = resolution.drop();
+                customItem = resolution.isExternal()
+                    ? unwrapPlatformItem(resolution.externalItem(), drop.getIdentifier())
+                    : createItemStack(drop);
             }
 
-            // Send catch message
-            sendCatchMessage(player, drop);
-
-            // Spawn effects with rarity context
-            spawnCatchEffects(player, hookLoc, drop);
-
-            // Track statistics
-            if (plugin.getConfigManager().trackStatistics()) {
-                plugin.getStatisticsManager().recordCatch(player.getUniqueId(), getCategoryFromDrop(drop));
+            if (drop == null) {
+                if (debugMode) {
+                    plugin.getLogger().info("Reward roll did not return a drop; preserving vanilla catch");
+                }
+                return;
             }
 
-            // Give experience
-            giveExperience(player, drop);
-
-            if (plugin.getConfigManager().isDebugMode()) {
-                plugin.getLogger().info("SUCCESS: Custom drop given to " + player.getName());
+            if (debugMode) {
+                info(() -> "Selected drop: " + drop.getIdentifier() + " x" + drop.getAmount());
             }
-        }, null);
+
+            if (customItem == null || customItem.getType().isAir()) {
+                warning(() -> "Resolved reward item was null or AIR for drop '" + drop.getIdentifier() + "'");
+                return;
+            }
+
+            dispatchCustomDrop(player, caughtItem, customItem, drop, hookLoc);
+        } catch (RuntimeException e) {
+            plugin.getLogger().log(Level.SEVERE, "Error processing fishing catch event", e);
+        }
+    }
+
+    private double resolveRodLuckMultiplier(Player player, EquipmentSlot hand) {
+        String tier = resolveEffectiveRodTier(player, hand);
+        return plugin.getConfigManager().getRodLuckMultiplier(tier);
+    }
+
+    private String resolveEffectiveRodTier(Player player, EquipmentSlot hand) {
+        String heldRodTier = resolveHeldRodTier(player, hand);
+        if (isAllowedRodTier(player, heldRodTier)) {
+            return normalizeRodTier(heldRodTier);
+        }
+
+        String selectedTier = plugin.getPlayerDataService() != null
+            ? plugin.getPlayerDataService().getRodTier(player)
+            : MythicRodKeys.DEFAULT_ROD_TIER;
+        if (isAllowedRodTier(player, selectedTier)) {
+            return normalizeRodTier(selectedTier);
+        }
+
+        return MythicRodKeys.DEFAULT_ROD_TIER;
+    }
+
+    private String resolveHeldRodTier(Player player, EquipmentSlot hand) {
+        if (player == null || hand == null) {
+            return null;
+        }
+
+        ItemStack usedItem = switch (hand) {
+            case HAND -> player.getInventory().getItemInMainHand();
+            case OFF_HAND -> player.getInventory().getItemInOffHand();
+            default -> null;
+        };
+        if (!rodFactory.isCustomRod(usedItem)) {
+            return null;
+        }
+        return rodFactory.getRodTier(usedItem);
+    }
+
+    private boolean isAllowedRodTier(Player player, String tier) {
+        return switch (normalizeRodTier(tier)) {
+            case "advanced" -> player != null && player.hasPermission(PermissionNodes.ROD_ADVANCED);
+            case "legendary" -> player != null && player.hasPermission(PermissionNodes.ROD_LEGENDARY);
+            case "basic" -> true;
+            default -> false;
+        };
+    }
+
+    private String normalizeRodTier(String tier) {
+        if (tier == null || tier.isBlank()) {
+            return MythicRodKeys.DEFAULT_ROD_TIER;
+        }
+
+        return switch (tier.trim().toLowerCase(Locale.ROOT)) {
+            case "advanced" -> "advanced";
+            case "legendary" -> "legendary";
+            default -> MythicRodKeys.DEFAULT_ROD_TIER;
+        };
+    }
+
+    private double combineLuckMultipliers(double rodMultiplier, double eventMultiplier) {
+        double safeRodMultiplier = Double.isFinite(rodMultiplier) ? rodMultiplier : 1.0D;
+        double safeEventMultiplier = Double.isFinite(eventMultiplier) ? eventMultiplier : 1.0D;
+        return Math.max(0.01D, Math.min(10.0D, safeRodMultiplier * safeEventMultiplier));
+    }
+
+    private void dispatchCustomDrop(Player player, Item caughtItem, ItemStack customItem, CustomDrop drop, Location hookLoc) {
+        if (!plugin.isFoliaRuntime()) {
+            giveCustomDropOnPlayerThread(player, caughtItem, customItem, drop, hookLoc);
+            return;
+        }
+
+        try {
+            if (caughtItem.getScheduler().run(plugin, foliaTask(() -> schedulePlayerOwnedDropDelivery(
+                player,
+                caughtItem,
+                customItem,
+                drop,
+                hookLoc
+            )), () -> schedulePlayerOwnedDropDelivery(player, caughtItem, customItem, drop, hookLoc)) == null) {
+                schedulePlayerOwnedDropDelivery(player, caughtItem, customItem, drop, hookLoc);
+            }
+        } catch (RuntimeException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to schedule caught item handling", e);
+            schedulePlayerOwnedDropDelivery(player, caughtItem, customItem, drop, hookLoc);
+        }
+    }
+
+    private void schedulePlayerOwnedDropDelivery(
+        Player player,
+        Item caughtItem,
+        ItemStack customItem,
+        CustomDrop drop,
+        Location hookLoc
+    ) {
+        if (player == null) {
+            return;
+        }
+
+        if (player.getScheduler().run(plugin, foliaTask(() -> {
+            try {
+                giveCustomDropOnPlayerThread(player, caughtItem, customItem, drop, hookLoc);
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE,
+                    "Error giving custom drop to " + player.getName(), e);
+            }
+        }), null) == null && plugin.getConfigManager().isDebugMode()) {
+            info(() -> "Player scheduler rejected drop delivery for " + player.getName());
+        }
     }
 
     /**
-     * Create ItemStack from CustomDrop using modern DataComponent API.
+     * Applies the final reward from the player's owner thread, or from the main
+     * server thread on ordinary Paper. Keeping the Paper path immediate avoids a
+     * client-visible flash of the vanilla item before MythicRod replaces it.
      */
+    private void giveCustomDropOnPlayerThread(Player player, Item caughtItem, ItemStack customItem, CustomDrop drop, Location hookLoc) {
+        if (player == null || !player.isOnline()) {
+            if (plugin.getConfigManager().isDebugMode()) {
+                plugin.getLogger().info("Player went offline before drop delivery");
+            }
+            return;
+        }
+
+        MythicRodFishCatchEvent catchEvent = new MythicRodFishCatchEvent(player, drop, customItem);
+        plugin.getServer().getPluginManager().callEvent(catchEvent);
+        if (catchEvent.isCancelled()) {
+            if (plugin.getConfigManager().isDebugMode()) {
+                info(() -> "MythicRodFishCatchEvent cancelled for " + player.getName());
+            }
+            return;
+        }
+
+        final ItemStack finalItem = sanitizeRewardItem(catchEvent.getRewardItem(), drop.getIdentifier());
+        if (finalItem == null || finalItem.getType().isAir()) {
+            warning(() -> "Final reward item was null or air for drop '" + drop.getIdentifier() + "'");
+            return;
+        }
+
+        RewardDeliveryMode deliveryMode = plugin.getConfigManager().getRewardDeliveryMode();
+        Location feedbackLocation = resolveFeedbackLocation(player, hookLoc, deliveryMode);
+        deliverConfiguredReward(player, caughtItem, finalItem, drop, feedbackLocation, deliveryMode);
+    }
+
+    private void deliverConfiguredReward(
+        Player player,
+        Item caughtItem,
+        ItemStack rewardItem,
+        CustomDrop drop,
+        Location feedbackLocation,
+        RewardDeliveryMode deliveryMode
+    ) {
+        switch (deliveryMode) {
+            case VANILLA_RETRIEVE -> deliverViaVanillaRetrieve(player, caughtItem, rewardItem, drop, feedbackLocation);
+            case INVENTORY -> removeCaughtItemThen(player, caughtItem, () -> {
+                if (!deliverToInventory(player, rewardItem.clone())) {
+                    return;
+                }
+                finalizeRewardDelivery(player, drop, feedbackLocation, rewardItem);
+            });
+            case DROP_AT_PLAYER -> removeCaughtItemThen(player, caughtItem, () -> {
+                if (!dropAtPlayerLocation(player, rewardItem.clone())) {
+                    return;
+                }
+                finalizeRewardDelivery(player, drop, feedbackLocation, rewardItem);
+            });
+        }
+    }
+
+    private void deliverViaVanillaRetrieve(
+        Player player,
+        Item caughtItem,
+        ItemStack rewardItem,
+        CustomDrop drop,
+        Location feedbackLocation
+    ) {
+        Runnable playerDropFallback = () -> {
+            Location fallbackLocation = player.getLocation();
+            if (!dropAtPlayerLocation(player, rewardItem.clone())) {
+                return;
+            }
+            finalizeRewardDelivery(player, drop, fallbackLocation, rewardItem);
+        };
+
+        if (caughtItem == null || caughtItem.isDead()) {
+            playerDropFallback.run();
+            return;
+        }
+
+        if (!plugin.isFoliaRuntime()) {
+            try {
+                caughtItem.setItemStack(rewardItem.clone());
+                caughtItem.setOwner(player.getUniqueId());
+                caughtItem.setThrower(player.getUniqueId());
+                caughtItem.setPickupDelay(0);
+                finalizeRewardDelivery(player, drop, feedbackLocation, rewardItem);
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to convert caught item into custom reward", e);
+                playerDropFallback.run();
+            }
+            return;
+        }
+
+        if (caughtItem.getScheduler().run(plugin, foliaTask(() -> {
+            try {
+                if (caughtItem.isDead()) {
+                    dispatchToPlayerOrGlobal(player, playerDropFallback);
+                    return;
+                }
+
+                caughtItem.setItemStack(rewardItem.clone());
+                caughtItem.setOwner(player.getUniqueId());
+                caughtItem.setThrower(player.getUniqueId());
+                caughtItem.setPickupDelay(0);
+
+                dispatchToPlayerOrGlobal(player, () -> finalizeRewardDelivery(player, drop, feedbackLocation, rewardItem));
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to convert caught item into custom reward", e);
+                dispatchToPlayerOrGlobal(player, playerDropFallback);
+            }
+        }), () -> dispatchToPlayerOrGlobal(player, playerDropFallback)) == null) {
+            playerDropFallback.run();
+        }
+    }
+
+    private void removeCaughtItemThen(Player player, Item caughtItem, Runnable continuation) {
+        if (caughtItem == null || caughtItem.isDead()) {
+            continuation.run();
+            return;
+        }
+
+        if (!plugin.isFoliaRuntime()) {
+            try {
+                caughtItem.remove();
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to remove vanilla caught item before custom delivery", e);
+            }
+            continuation.run();
+            return;
+        }
+
+        if (caughtItem.getScheduler().run(plugin, foliaTask(() -> {
+            try {
+                if (!caughtItem.isDead()) {
+                    caughtItem.remove();
+                }
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to remove vanilla caught item before custom delivery", e);
+            }
+            dispatchToPlayerOrGlobal(player, continuation);
+        }), () -> dispatchToPlayerOrGlobal(player, continuation)) == null) {
+            continuation.run();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private Consumer<ScheduledTask> foliaTask(Runnable action) {
+        return task -> action.run();
+    }
+
+    private void dispatchToPlayerOrGlobal(Player player, Runnable action) {
+        if (player != null && player.isOnline()) {
+            plugin.getPlatformScheduler().runForPlayer(new PaperPlayer(player), action);
+            return;
+        }
+
+        plugin.getPlatformScheduler().runGlobal(action);
+    }
+
+    private boolean deliverToInventory(Player player, ItemStack rewardItem) {
+        try {
+            Map<Integer, ItemStack> excess = player.getInventory().addItem(rewardItem);
+            if (excess.isEmpty()) {
+                return true;
+            }
+
+            excess.values().forEach(leftover -> {
+                if (!dropAtPlayerLocation(player, leftover)) {
+                    warning(() -> "Failed to deliver excess reward item for " + player.getName());
+                }
+            });
+            return true;
+        } catch (RuntimeException e) {
+            plugin.getLogger().log(Level.WARNING, "Error delivering drop to inventory", e);
+            return false;
+        }
+    }
+
+    private boolean dropAtPlayerLocation(Player player, ItemStack rewardItem) {
+        try {
+            Item droppedItem = player.getWorld().dropItemNaturally(player.getLocation(), rewardItem);
+            droppedItem.setOwner(player.getUniqueId());
+            droppedItem.setThrower(player.getUniqueId());
+            droppedItem.setPickupDelay(0);
+            return true;
+        } catch (RuntimeException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to drop reward at player location", e);
+            return false;
+        }
+    }
+
+    private void finalizeRewardDelivery(Player player, CustomDrop drop, Location rewardLocation, ItemStack deliveredItem) {
+        recordCatchStatistics(player, drop);
+
+        if (player == null || !player.isOnline()) {
+            if (plugin.getConfigManager().isDebugMode()) {
+                plugin.getLogger().info("Reward delivered after player disconnected; skipping online-only feedback");
+            }
+            return;
+        }
+
+        sendCatchMessage(player, drop, deliveredItem);
+        spawnCatchEffects(player, rewardLocation, drop);
+
+        giveExperience(player, drop);
+
+        if (plugin.getConfigManager().isDebugMode()) {
+            info(() -> "SUCCESS: Custom drop given to " + player.getName());
+        }
+    }
+
+    private void recordCatchStatistics(Player player, CustomDrop drop) {
+        if (player == null || drop == null) {
+            return;
+        }
+        if (plugin.getConfigManager().trackStatistics()) {
+            try {
+                plugin.getStatisticsManager().recordCatch(player.getUniqueId(), drop.getTier());
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to record catch statistics", e);
+            }
+        }
+    }
+
+    private Location resolveFeedbackLocation(Player player, Location hookLocation, RewardDeliveryMode deliveryMode) {
+        if (deliveryMode == RewardDeliveryMode.VANILLA_RETRIEVE && hookLocation != null && hookLocation.getWorld() != null) {
+            return hookLocation.clone();
+        }
+        return player.getLocation();
+    }
+
+    private ItemStack sanitizeRewardItem(ItemStack rewardItem, String rewardId) {
+        if (rewardItem == null || rewardItem.getType().isAir()) {
+            return null;
+        }
+
+        ItemStack sanitized = rewardItem.clone();
+        int maxStackSize = Math.max(1, sanitized.getMaxStackSize());
+        int amount = sanitized.getAmount();
+        int safeAmount = Math.max(1, Math.min(maxStackSize, amount));
+        if (safeAmount != amount) {
+            warning(() -> "Reward item amount " + amount
+                + " out of bounds for '" + rewardId + "', clamped to " + safeAmount);
+            sanitized.setAmount(safeAmount);
+        }
+        return sanitized;
+    }
+
     private ItemStack createItemStack(CustomDrop drop) {
+        if (drop == null) {
+            plugin.getLogger().warning("Drop was null while building a reward item; using COD");
+            ItemStack fallback = ItemStack.of(Material.COD);
+            fallback.setAmount(1);
+            return fallback;
+        }
+
         String identifier = drop.getIdentifier();
-        
-        // Modern Material resolution using Registry
-        String formattedKey = identifier.toLowerCase(java.util.Locale.ROOT);
-        if (!formattedKey.contains(":")) {
-            formattedKey = "minecraft:" + formattedKey;
+
+        if (identifier == null || identifier.isEmpty()) {
+            plugin.getLogger().warning("Drop identifier was empty while building a reward item; using COD");
+            ItemStack fallback = ItemStack.of(Material.COD);
+            fallback.setAmount(1);
+            return fallback;
         }
-        
-        Material material = org.bukkit.Registry.MATERIAL.get(org.bukkit.NamespacedKey.fromString(formattedKey));
-        if (material == null) {
-            plugin.getLogger().warning("Invalid material: " + identifier + ", using COD");
-            material = Material.COD;
+
+        ItemStack baseItem = createBaseItem(identifier);
+        int maxStackSize = Math.max(1, baseItem.getMaxStackSize());
+        int dropAmount = drop.getAmount();
+        int validAmount = Math.max(1, Math.min(maxStackSize, dropAmount));
+        if (dropAmount != validAmount) {
+            warning(() -> "Drop amount " + dropAmount
+                + " out of bounds for " + identifier + ", clamped to " + validAmount);
         }
-        
-        ItemStack item = ItemStack.of(material);
-        item.setAmount(drop.getAmount());
-        
-        // Use DataComponent API for custom name
+
+        ItemBuilder itemBuilder = ItemBuilder.from(baseItem).amount(validAmount);
+
         if (drop.getCustomName() != null && !drop.getCustomName().isEmpty()) {
-            Component nameComponent = MiniMessage.miniMessage().deserialize(drop.getCustomName());
-            item.setData(DataComponentTypes.ITEM_NAME, nameComponent);
+            try {
+                itemBuilder.name(drop.getCustomName());
+            } catch (Exception e) {
+                warning(() -> "Failed to parse custom reward name for " + identifier + ": " + e.getMessage());
+            }
         }
-        
-        // Use DataComponent API for lore
+
         if (drop.getLore() != null && !drop.getLore().isEmpty()) {
-            List<Component> loreComponents = drop.getLore().stream()
-                .map(line -> MiniMessage.miniMessage().deserialize(line))
-                .collect(Collectors.toList());
-            item.lore(loreComponents);
+            try {
+                itemBuilder.lore(drop.getLore());
+            } catch (Exception e) {
+                warning(() -> "Failed to parse reward lore for " + identifier + ": " + e.getMessage());
+            }
         }
-        
+
+        if (drop.getCustomModelData() > 0) {
+            itemBuilder.customModelData(drop.getCustomModelData());
+        }
+
+        if (!drop.getEnchantments().isEmpty()) {
+            itemBuilder.enchantments(drop.getEnchantments());
+        }
+
+        if (drop.isGlowing()) {
+            itemBuilder.glow();
+        }
+
+        ItemStack item = itemBuilder.build();
+        applyItemFlags(item, drop.getItemFlags(), identifier);
         return item;
     }
 
-    private void spawnCatchEffects(Player player, Location hookLocation, CustomDrop drop) {
-        boolean debugMode = plugin.getConfigManager().isDebugMode();
-        
-        // Spawn particles based on rarity
-        if (plugin.getConfigManager().useParticles()) {
-            spawnRarityParticles(player, hookLocation, drop.getChance());
+    private ItemStack createBaseItem(String identifier) {
+        Result<PlatformItem> createResult = plugin.getPlatformServer().getItemFactory().createItem(identifier, 1);
+        if (!createResult.isSuccess()) {
+            warning(() -> "Failed to create drop item '" + identifier
+                + "': " + createResult.getError() + ". Falling back to COD.");
+            return ItemStack.of(Material.COD);
         }
 
-        // Play contextual sounds based on drop rarity
-        if (plugin.getConfigManager().useSounds()) {
-            playRaritySounds(player, hookLocation, drop.getChance());
+        ItemStack baseItem = unwrapPlatformItem(createResult.getValue(), identifier);
+        if (baseItem != null) {
+            return baseItem;
         }
-        
+
+        warning(() -> "Unsupported platform item implementation for '"
+            + identifier + "'. Falling back to COD.");
+        return ItemStack.of(Material.COD);
+    }
+
+    private ItemStack unwrapPlatformItem(PlatformItem platformItem, String identifier) {
+        if (platformItem == null) {
+            return null;
+        }
+
+        if (platformItem instanceof PaperPlatformItem paperPlatformItem) {
+            return paperPlatformItem.getItemStack().clone();
+        }
+        if (platformItem instanceof PaperItem paperItem) {
+            return paperItem.getBukkitItem();
+        }
+
+        warning(() -> "Unsupported platform item implementation for '"
+            + identifier + "': " + platformItem.getClass().getName());
+        return null;
+    }
+
+    private void applyItemFlags(ItemStack item, List<String> itemFlags, String identifier) {
+        if (itemFlags == null || itemFlags.isEmpty()) {
+            return;
+        }
+
+        item.editMeta(meta -> {
+            for (String flagName : itemFlags) {
+                if (flagName == null || flagName.isBlank()) {
+                    continue;
+                }
+
+                try {
+                    meta.addItemFlags(ItemFlag.valueOf(flagName.trim().toUpperCase(Locale.ROOT)));
+                } catch (IllegalArgumentException e) {
+                    warning(() -> "Unknown item flag '" + flagName
+                        + "' for drop '" + identifier + "'");
+                }
+            }
+        });
+    }
+
+    private void spawnCatchEffects(Player player, Location hookLocation, CustomDrop drop) {
+        Location effectLocation = hookLocation != null && hookLocation.getWorld() != null
+            ? hookLocation
+            : player.getLocation();
+        boolean debugMode = plugin.getConfigManager().isDebugMode();
+        int weight = drop.getWeight();
+
+        if (shouldShowParticles(player)) {
+            spawnRarityParticles(player, effectLocation, weight);
+        }
+
+        if (plugin.getConfigManager().useSounds()) {
+            playRaritySounds(player, effectLocation, weight);
+        }
+
         if (debugMode) {
-            plugin.getLogger().info("Effects spawned for " + player.getName() + " (rarity: " + drop.getChance() + ")");
+            info(() -> "Catch effects spawned for " + player.getName() + " (weight " + weight + ")");
         }
     }
-    
-    /**
-     * Spawn particles appropriate for the drop rarity.
-     * Common: Basic splash
-     * Rare: Enhanced with totem particles
-     * Legendary: Celebration with multiple particle types
-     */
-    private void spawnRarityParticles(Player player, Location hookLocation, int chance) {
-        // Base water splash at hook location
+
+    private boolean shouldShowParticles(Player player) {
+        return plugin.getConfigManager().useParticles()
+            && player != null
+            && player.isOnline()
+            && (plugin.getPlayerDataService() == null
+                || !plugin.getPlayerDataService().hasReducedEffects(player));
+    }
+
+    private void spawnRarityParticles(Player player, Location hookLocation, int weight) {
         spawnParticle(player, hookLocation, plugin.getConfigManager().getCatchParticle(), Particle.SPLASH, 30, 0.3D, 0.15D);
         spawnParticle(player, hookLocation.clone().add(0.0D, 0.3D, 0.0D), plugin.getConfigManager().getBubbleParticle(), Particle.BUBBLE_POP, 15, 0.2D, 0.05D);
-        
-        // Rarity-based enhancements
-        if (chance <= 1) {
-            // Legendary - dramatic celebration
+
+        if (weight <= 1) {
             Location playerLoc = player.getLocation().add(0.0D, 2.0D, 0.0D);
             player.spawnParticle(Particle.TOTEM_OF_UNDYING, playerLoc, 50, 1.0D, 0.5D, 1.0D, 0.3D);
             player.spawnParticle(Particle.END_ROD, playerLoc, 30, 0.8D, 0.3D, 0.8D, 0.1D);
             player.spawnParticle(Particle.HAPPY_VILLAGER, playerLoc, 20, 0.5D, 0.3D, 0.5D, 0.1D);
-        } else if (chance <= 5) {
-            // Rare - enhanced success particles
+        } else if (weight <= 5) {
             Location playerLoc = player.getLocation().add(0.0D, 1.5D, 0.0D);
             player.spawnParticle(Particle.HAPPY_VILLAGER, playerLoc, 15, 0.4D, 0.3D, 0.4D, 0.05D);
             player.spawnParticle(Particle.END_ROD, hookLocation, 10, 0.3D, 0.3D, 0.3D, 0.05D);
+        } else if (weight <= 15) {
+            spawnParticle(player, player.getLocation().add(0.0D, 1.5D, 0.0D), plugin.getConfigManager().getSuccessParticle(), Particle.HAPPY_VILLAGER, 10, 0.35D, 0.04D);
         } else {
-            // Common/Uncommon - basic success particle
             spawnParticle(player, player.getLocation().add(0.0D, 1.5D, 0.0D), plugin.getConfigManager().getSuccessParticle(), Particle.HAPPY_VILLAGER, 5, 0.3D, 0.02D);
         }
     }
-    
-    /**
-     * Play sounds appropriate for the drop rarity.
-     * Uses SoundCategory.PLAYERS for proper audio mixing.
-     */
-    private void playRaritySounds(Player player, Location hookLocation, int chance) {
-        // Base fishing sounds at hook location (spatial audio)
+
+    private void playRaritySounds(Player player, Location hookLocation, int weight) {
         player.playSound(hookLocation, Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.8F, 1.0F);
         player.playSound(hookLocation, Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.6F, 1.1F);
-        
-        if (chance <= 1) {
-            // Legendary catch - epic celebration sequence
+
+        if (weight <= 1) {
             playLegendarySounds(player, hookLocation);
-        } else if (chance <= 5) {
-            // Rare catch - enhanced rewarding sounds
+        } else if (weight <= 5) {
             playRareSounds(player, hookLocation);
-        } else if (chance <= 15) {
-            // Uncommon - satisfying catch sound
+        } else if (weight <= 15) {
             playUncommonSounds(player, hookLocation);
-        } else {
-            // Common - simple catch sound
-            playCommonSounds(player, hookLocation);
         }
     }
-    
+
     private void playLegendarySounds(Player player, Location hookLocation) {
-        // Immediate impact sounds at hook
         player.playSound(hookLocation, Sound.BLOCK_BEACON_POWER_SELECT, SoundCategory.PLAYERS, 0.7F, 1.5F);
         player.playSound(hookLocation, Sound.ENTITY_ENDER_DRAGON_GROWL, SoundCategory.PLAYERS, 0.3F, 1.8F);
-        
-        // Delayed epic celebration at player location
-        plugin.getPlatformScheduler().runAtLocationDelayed(
-            io.xcutiboo.mythicrod.paper.platform.PaperLocation.fromBukkit(player.getLocation()),
+
+        plugin.getPlatformScheduler().runForPlayerDelayed(
+            new PaperPlayer(player),
             () -> {
                 if (player.isOnline()) {
-                    player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.PLAYERS, 0.8F, 1.0F);
-                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.6F, 1.2F);
-                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.PLAYERS, 0.5F, 2.0F);
+                    player.playSound(player, Sound.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.PLAYERS, 0.8F, 1.0F);
+                    player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.6F, 1.2F);
+                    player.playSound(player, Sound.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.PLAYERS, 0.5F, 2.0F);
                 }
             },
             5L
         );
     }
-    
+
     private void playRareSounds(Player player, Location hookLocation) {
-        // Impact sound at hook
         player.playSound(hookLocation, Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.PLAYERS, 0.6F, 2.0F);
-        
-        // Rewarding chime at player location
-        plugin.getPlatformScheduler().runAtLocationDelayed(
-            io.xcutiboo.mythicrod.paper.platform.PaperLocation.fromBukkit(player.getLocation()),
+
+        plugin.getPlatformScheduler().runForPlayerDelayed(
+            new PaperPlayer(player),
             () -> {
                 if (player.isOnline()) {
-                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.5F, 1.5F);
-                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, SoundCategory.PLAYERS, 0.4F, 1.5F);
+                    player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.5F, 1.5F);
+                    player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BELL, SoundCategory.PLAYERS, 0.4F, 1.5F);
                 }
             },
             4L
         );
     }
-    
+
     private void playUncommonSounds(Player player, Location hookLocation) {
-        // Satisfying click at hook
         player.playSound(hookLocation, Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.PLAYERS, 0.4F, 1.8F);
-        
-        // Subtle reward at player location
-        plugin.getPlatformScheduler().runAtLocationDelayed(
-            io.xcutiboo.mythicrod.paper.platform.PaperLocation.fromBukkit(player.getLocation()),
+
+        plugin.getPlatformScheduler().runForPlayerDelayed(
+            new PaperPlayer(player),
             () -> {
                 if (player.isOnline()) {
-                    player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.4F, 1.2F);
+                    player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.4F, 1.2F);
                 }
             },
             3L
         );
     }
-    
-    private void playCommonSounds(Player player, Location hookLocation) {
-        // Simple water splash only - no additional sounds
-        // This keeps common catches subtle and non-intrusive
-    }
-    
+
     private void spawnParticle(Player player, Location location, String particleName, Particle fallback, int count, double offset, double extra) {
         try {
             Particle particle = Particle.valueOf(particleName);
-            player.spawnParticle(particle, location, count, offset, offset, offset, extra);
-        } catch (IllegalArgumentException e) {
+            Object data = ParticleOptions.defaultDataFor(particle, location);
+            if (data == null) {
+                player.spawnParticle(particle, location, count, offset, offset, offset, extra);
+            } else {
+                player.spawnParticle(particle, location, count, offset, offset, offset, extra, data);
+            }
+        } catch (IllegalArgumentException | IllegalStateException e) {
             player.spawnParticle(fallback, location, count, offset, offset, offset, extra);
         }
     }
 
-    /**
-     * Sends the per-rarity catch message to the player.
-     *
-     * <p>HIGH-007 FIX: Previously used hardcoded English MiniMessage strings, completely
-     * bypassing the user-configurable templates in {@code config.yml} and breaking
-     * non-English locales.  Now delegates to
-     * {@link io.xcutiboo.mythicrod.config.ConfigManager#getMsgLegendary()} etc.,
-     * which are populated from {@code messages.catch.*} at load/reload time.
-     */
-    private void sendCatchMessage(Player player, CustomDrop drop) {
-        String itemName = drop.getCustomName() != null ? drop.getCustomName() : formatMaterialName(drop.getIdentifier());
-        String amount = String.valueOf(drop.getAmount());
+    private void sendCatchMessage(Player player, CustomDrop drop, ItemStack deliveredItem) {
+        try {
+            if (player == null || drop == null) {
+                plugin.getLogger().warning("Cannot send catch message without a player and drop");
+                return;
+            }
 
-        // Use Placeholder.unparsed() to prevent MiniMessage injection from item names
-        TagResolver resolver = TagResolver.resolver(
-            Placeholder.unparsed("item",   itemName),
-            Placeholder.unparsed("amount", amount)
-        );
+            int deliveredAmount = deliveredItem != null && !deliveredItem.getType().isAir() && deliveredItem.getAmount() > 0
+                ? deliveredItem.getAmount()
+                : drop.getAmount();
+            String amount = String.valueOf(deliveredAmount);
+            String deliveredIdentifier = deliveredItem != null && !deliveredItem.getType().isAir()
+                ? deliveredItem.getType().name()
+                : drop.getIdentifier();
+            int weight = drop.getWeight();
 
-        // Resolve template from ConfigManager (user-configurable, reload-safe)
-        String template;
-        if (drop.getChance() <= 1) {
-            template = plugin.getConfigManager().getMsgLegendary();
-        } else if (drop.getChance() <= 5) {
-            template = plugin.getConfigManager().getMsgRare();
-        } else if (drop.getChance() <= 15) {
-            template = plugin.getConfigManager().getMsgUncommon();
-        } else {
-            template = plugin.getConfigManager().getMsgCommon();
+            // Drop names come from plugin-controlled config/provider data, so they should
+            // preserve formatting in catch messages instead of leaking raw MiniMessage tags.
+            TagResolver resolver = TagResolver.resolver(
+                Placeholder.component(
+                    "item",
+                    resolveCatchItemNameComponent(resolveDeliveredItemDisplayName(deliveredItem), drop.getCustomName(), deliveredIdentifier)
+                ),
+                Placeholder.unparsed("amount", amount)
+            );
+
+            String template;
+            if (weight <= 1) {
+                template = plugin.getConfigManager().getMsgLegendary();
+            } else if (weight <= 5) {
+                template = plugin.getConfigManager().getMsgRare();
+            } else if (weight <= 15) {
+                template = plugin.getConfigManager().getMsgUncommon();
+            } else {
+                template = plugin.getConfigManager().getMsgCommon();
+            }
+
+            if (template == null || template.isEmpty()) {
+                plugin.getLogger().warning("Catch message template was empty; using fallback text");
+                template = "You caught <yellow><bold>{amount}x {item}</bold></yellow>!";
+            }
+
+            Component message = MiniMessage.miniMessage().deserialize(
+                normalizeCatchTemplate(MiniMessageMigrator.migrateWithSerializer(template)),
+                resolver
+            );
+            player.sendMessage(message);
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to send catch message", e);
         }
-
-        player.sendMessage(MiniMessage.miniMessage().deserialize(template, resolver));
     }
 
-    private String formatMaterialName(String materialName) {
-        if (materialName == null || materialName.isEmpty()) {
+    private void info(Supplier<String> messageSupplier) {
+        plugin.getLogger().log(Level.INFO, messageSupplier);
+    }
+
+    private void warning(Supplier<String> messageSupplier) {
+        plugin.getLogger().log(Level.WARNING, messageSupplier);
+    }
+
+    private static Component resolveDeliveredItemDisplayName(ItemStack deliveredItem) {
+        if (deliveredItem == null || deliveredItem.getType().isAir()) {
+            return null;
+        }
+
+        ItemMeta itemMeta = deliveredItem.getItemMeta();
+        if (itemMeta == null) {
+            return null;
+        }
+
+        return itemMeta.displayName();
+    }
+
+    static Component resolveCatchItemNameComponent(String customName, String identifier) {
+        return resolveCatchItemNameComponent(null, customName, identifier);
+    }
+
+    static Component resolveCatchItemNameComponent(Component deliveredDisplayName, String customName, String identifier) {
+        if (deliveredDisplayName != null) {
+            return deliveredDisplayName;
+        }
+
+        if (customName == null || customName.isBlank()) {
+            return Component.text(StringFormatting.formatMaterialName(identifier));
+        }
+
+        try {
+            String migratedName = MiniMessageMigrator.migrateWithSerializer(customName);
+            return MiniMessage.miniMessage().deserialize(migratedName);
+        } catch (Exception e) {
+            return Component.text(stripMiniMessageTags(customName));
+        }
+    }
+
+    private String normalizeCatchTemplate(String template) {
+        if (template == null || template.isEmpty()) {
+            return template;
+        }
+        return template
+            .replace("{item}", "<item>")
+            .replace("{amount}", "<amount>")
+            .replace("%item%", "<item>")
+            .replace("%amount%", "<amount>");
+    }
+
+    private static String stripMiniMessageTags(String input) {
+        if (input == null || input.isEmpty()) {
             return "Unknown";
         }
-        String[] words = materialName.toLowerCase(java.util.Locale.ROOT).split("_");
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < words.length; i++) {
-            if (words[i].isEmpty()) continue;
-            if (i > 0) result.append(" ");
-            result.append(Character.toUpperCase(words[i].charAt(0)));
-            if (words[i].length() > 1) {
-                result.append(words[i].substring(1));
-            }
-        }
-        return result.toString();
+        return input.replaceAll("<[^>]+>", "").trim();
     }
 
     private void giveExperience(Player player, CustomDrop drop) {
-        byte xpAmount;
-        if (drop.getChance() <= 1) {
-            xpAmount = 6;
-        } else if (drop.getChance() <= 5) {
-            xpAmount = 5;
-        } else if (drop.getChance() <= 15) {
-            xpAmount = 3;
-        } else if (drop.getChance() <= 30) {
-            xpAmount = 2;
-        } else {
-            xpAmount = 1;
+        try {
+            if (player == null || !player.isOnline()) {
+                if (plugin.getConfigManager().isDebugMode()) {
+                    plugin.getLogger().info("Cannot give XP: player is null or offline");
+                }
+                return;
+            }
+
+            byte xpAmount;
+            int weight = drop.getWeight();
+            if (weight <= 1) {
+                xpAmount = 6;
+            } else if (weight <= 5) {
+                xpAmount = 5;
+            } else if (weight <= 15) {
+                xpAmount = 3;
+            } else if (weight <= 30) {
+                xpAmount = 2;
+            } else {
+                xpAmount = 1;
+            }
+
+            player.giveExp(xpAmount);
+            if (shouldShowParticles(player)) {
+                spawnParticle(
+                    player,
+                    player.getLocation().add(0.0D, 1.2D, 0.0D),
+                    plugin.getConfigManager().getXpParticle(),
+                    Particle.HAPPY_VILLAGER,
+                    xpAmount * 2,
+                    0.2D,
+                    0.05D
+                );
+            }
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Error giving experience", e);
         }
-
-        player.giveExp(xpAmount);
-        if (plugin.getConfigManager().useParticles()) {
-            player.spawnParticle(Particle.HAPPY_VILLAGER, player.getLocation().add(0.0D, 1.2D, 0.0D), xpAmount * 2, 0.2D, 0.3D, 0.2D, 0.05D);
-        }
-    }
-
-    /**
-     * Maps a drop's chance value to a tier category string consumed by
-     * {@link io.xcutiboo.mythicrod.metrics.StatisticsManager#recordCatch(java.util.UUID, String)}.
-     *
-     * <p>Thresholds mirror those used in {@link #sendCatchMessage} and
-     * {@link #spawnRarityParticles} so category names are consistent.
-     *
-     * @param drop The resolved custom drop. Never null.
-     * @return A lower-case tier string: {@code "legendary"}, {@code "rare"},
-     *         {@code "uncommon"}, or {@code "common"}.
-     */
-    private String getCategoryFromDrop(CustomDrop drop) {
-        int chance = drop.getChance();
-        if (chance <= 1)  return "legendary";
-        if (chance <= 5)  return "rare";
-        if (chance <= 15) return "uncommon";
-        return "common";
-    }
-
-    /**
-     * Returns 0 - active hook tracking removed per NotebookLM guidance.
-     * Zero global state prevents memory leaks and threading issues.
-     */
-    public int getActiveFishingCount() {
-        return 0;
     }
 }

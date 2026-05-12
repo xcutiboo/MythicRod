@@ -2,13 +2,22 @@ package io.xcutiboo.mythicrod.paper.platform;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.xcutiboo.mythicrod.api.platform.PlatformTask;
-import lombok.RequiredArgsConstructor;
 import org.bukkit.scheduler.BukkitTask;
 
-@RequiredArgsConstructor
 public class PaperTask implements PlatformTask {
-    private final Object nativeTask; // Either ScheduledTask (Folia) or BukkitTask (Bukkit)
-    
+    private final Object nativeTask;
+    private final Runnable onCancel;
+
+    public PaperTask(Object nativeTask) {
+        this(nativeTask, () -> {
+        });
+    }
+
+    public PaperTask(Object nativeTask, Runnable onCancel) {
+        this.nativeTask = nativeTask;
+        this.onCancel = onCancel;
+    }
+
     @Override
     public void cancel() {
         if (nativeTask instanceof ScheduledTask foliaTask) {
@@ -16,8 +25,9 @@ public class PaperTask implements PlatformTask {
         } else if (nativeTask instanceof BukkitTask bukkitTask) {
             bukkitTask.cancel();
         }
+        onCancel.run();
     }
-    
+
     @Override
     public boolean isCancelled() {
         if (nativeTask instanceof ScheduledTask foliaTask) {

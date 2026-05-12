@@ -18,11 +18,15 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public class DropSelector {
+    private static final double MIN_LUCK_MULTIPLIER = 0.01D;
+    private static final double MAX_LUCK_MULTIPLIER = 10.0D;
+
     @NonNull
     private final Logger logger;
-    // NOTE: Do NOT store ThreadLocalRandom as a field — it must be obtained per-call
-    // so each Folia region thread uses its own instance.
+    // ThreadLocalRandom must be obtained per call so each Folia region thread uses
+    // its own instance.
     private boolean usePermissions = false;
+    private boolean useBiomeSpecificDrops = true;
     private boolean debugMode = false;
 
     public DropSelector(@NonNull Logger logger, boolean usePermissions) {
@@ -38,12 +42,16 @@ public class DropSelector {
         this.usePermissions = use;
     }
 
+    public void setUseBiomeSpecificDrops(boolean use) {
+        this.useBiomeSpecificDrops = use;
+    }
+
     /**
      * Selects a drop with luck-modified weights.
      *
      * <p>A {@code luckMultiplier} &gt; 1.0 scales up the effective weight of drops
-     * whose base chance is &le; 5 (rare / legendary tier), making them relatively
-     * more probable without touching common or uncommon weights.  A multiplier
+     * whose base weight is &le; 5 (rare / legendary tier), making them relatively
+     * more probable without touching common or uncommon weights. A multiplier
      * of 1.0 reproduces identical behaviour to the no-luck overload.
      *
      * @param drops          the full eligible drop pool for the category
@@ -53,9 +61,10 @@ public class DropSelector {
      */
     public CustomDrop selectDrop(List<CustomDrop> drops, PlatformPlayer player,
                                   String biomeName, double luckMultiplier) {
+        double safeLuckMultiplier = sanitizeLuckMultiplier(luckMultiplier);
         if (debugMode) {
             logger.fine("selectDrop called with " + (drops != null ? drops.size() : "null")
-                    + " drops, luckMultiplier=" + luckMultiplier);
+                    + " drops, luckMultiplier=" + safeLuckMultiplier);
         }
         if (drops == null || drops.isEmpty()) {
             if (debugMode) logger.fine("Drop list is empty or null");
@@ -67,23 +76,72 @@ public class DropSelector {
             if (debugMode) logger.fine("No eligible drops for biome: " + biomeName);
             return null;
         }
-        return selectWeightedRandomOptimized(eligible, luckMultiplier);
+        return selectWeightedRandomOptimized(eligible, safeLuckMultiplier);
     }
 
-    /** Convenience overload — luck-neutral (multiplier = 1.0). */
+    private double sanitizeLuckMultiplier(double luckMultiplier) {
+        if (Double.isNaN(luckMultiplier) || Double.isInfinite(luckMultiplier)) {
+            if (debugMode) {
+                logger.fine("Invalid luck multiplier " + luckMultiplier + ", using default 1.0");
+            }
+            return 1.0D;
+        }
+
+        double clamped = Math.max(MIN_LUCK_MULTIPLIER, Math.min(MAX_LUCK_MULTIPLIER, luckMultiplier));
+        if (debugMode && clamped != luckMultiplier) {
+            logger.fine("Luck multiplier clamped from " + luckMultiplier + " to " + clamped);
+        }
+        return clamped;
+    }
+
+    /** Convenience overload for luck-neutral selection. */
     public CustomDrop selectDrop(List<CustomDrop> drops, PlatformPlayer player, String biomeName) {
         return selectDrop(drops, player, biomeName, 1.0);
     }
 
+    /**
+     * Returns the eligible subset of the supplied drop list for the given
+     * player and biome context.
+     *
+     * @param drops     Full drop pool.
+     * @param player    Player being evaluated.
+     * @param biomeName Current biome key, or {@code null} if unavailable.
+     * @return Immutable snapshot of eligible drops.
+     */
+    public List<CustomDrop> getEligibleDrops(List<CustomDrop> drops, PlatformPlayer player, String biomeName) {
+        if (drops == null || drops.isEmpty()) {
+            return List.of();
+        }
+        return List.copyOf(filterEligible(drops, player, biomeName));
+    }
+
+    /**
+     * Computes the effective roll weight for a base drop weight after applying
+     * MythicRod's luck rules.
+     *
+     * @param baseWeight      Raw configured weight.
+     * @param luckMultiplier  Multiplier from the reward-roll event.
+     * @return Non-negative effective weight used by the selector.
+     */
+    public int getEffectiveWeight(int baseWeight, double luckMultiplier) {
+        int safeBaseWeight = Math.max(0, baseWeight);
+        double safeLuckMultiplier = sanitizeLuckMultiplier(luckMultiplier);
+
+        if (safeLuckMultiplier != 1.0D && safeBaseWeight > 0 && safeBaseWeight <= 5) {
+            return (int) Math.max(1, Math.round(safeBaseWeight * safeLuckMultiplier));
+        }
+        return safeBaseWeight;
+    }
+
     private List<CustomDrop> filterEligible(List<CustomDrop> drops, PlatformPlayer player, String biomeName) {
         List<CustomDrop> eligible = new ArrayList<>();
-        
+
         for (CustomDrop drop : drops) {
             if (isEligible(drop, player, biomeName)) {
                 eligible.add(drop);
             }
         }
-        
+
         return eligible;
     }
 
@@ -95,50 +153,36 @@ public class DropSelector {
 
     private boolean hasPermission(PlatformPlayer player, CustomDrop drop) {
         if (!usePermissions) return true;
-        
+
         String permission = drop.getPermission();
         if (permission == null || permission.isEmpty()) return true;
-        
+
         return player.hasPermission(permission);
     }
 
     private boolean matchesBiome(CustomDrop drop, String biomeName) {
         List<String> biomes = drop.getBiomes();
         if (biomes == null || biomes.isEmpty()) return true;
-        if (biomeName == null) return true;
-        
+        if (!useBiomeSpecificDrops || biomeName == null || biomeName.isBlank()) return false;
+
         return biomes.stream().anyMatch(b -> b.equalsIgnoreCase(biomeName));
     }
 
     /**
-     * Optimized weighted random selection using a primitive cumulative-weight array
-     * and a manual binary search.
+     * Selects from eligible drops using a primitive cumulative-weight array and
+     * a manual binary search.
      *
-     * <p>Compared to the previous {@code TreeMap<Integer,CustomDrop>} approach this
-     * version avoids:
-     * <ul>
-     *   <li>Integer autoboxing for every entry</li>
-     *   <li>TreeMap node heap allocations (one object per drop per roll)</li>
-     *   <li>Pointer-chasing cache misses in the red-black tree</li>
-     * </ul>
-     * Time complexity: O(n) build + O(log n) binary search.<br>
-     * GC pressure: two short-lived arrays per call (both immediately collectable
-     * by a young-gen GC since they are never escaped).
+     * <p>The implementation avoids per-roll map nodes and boxed cumulative
+     * weights. It still builds short-lived arrays for each selection because
+     * the eligible set depends on player, biome and luck context.</p>
      *
-     * <p>Thread safety: {@code ThreadLocalRandom.current()} is called per-invocation
-     * (never stored) so each Folia region thread uses its own instance.
+     * <p>Thread safety: {@code ThreadLocalRandom.current()} is called per
+     * invocation so each Folia region thread uses its own random source.</p>
      *
-     * @param drops list of eligible drops, each with a non-negative {@code chance}
+     * @param drops list of eligible drops
+     * @param luckMultiplier multiplier applied to rare drop weights
      * @return the selected drop, or {@code null} if all weights are zero
      */
-    /**
-     * Adapts luck-neutral callers to the new two-arg signature.
-     * Kept for internal call sites that don't supply a multiplier.
-     */
-    private CustomDrop selectWeightedRandomOptimized(List<CustomDrop> drops) {
-        return selectWeightedRandomOptimized(drops, 1.0);
-    }
-
     private CustomDrop selectWeightedRandomOptimized(List<CustomDrop> drops, double luckMultiplier) {
         final int n = drops.size();
 
@@ -149,17 +193,8 @@ public class DropSelector {
         int total      = 0;
         int validCount = 0;
         for (int i = 0; i < n; i++) {
-            int baseWeight = Math.max(0, dropsArr[i].getChance());
-            // Apply luck: rare (chance ≤ 5) and legendary (chance ≤ 1) drops
-            // have their effective weight multiplied by luckMultiplier so they
-            // appear proportionally more often for lucky players.  Common and
-            // uncommon drops are left untouched — only the relative share changes.
-            int weight = baseWeight;
-            if (luckMultiplier != 1.0 && baseWeight > 0) {
-                if (baseWeight <= 5) {
-                    weight = (int) Math.max(1, Math.round(baseWeight * luckMultiplier));
-                }
-            }
+            int baseWeight = Math.max(0, dropsArr[i].getWeight());
+            int weight = getEffectiveWeight(baseWeight, luckMultiplier);
             total += weight;
             cumulative[i] = total;
             if (weight > 0) validCount++;

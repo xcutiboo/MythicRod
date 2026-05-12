@@ -5,14 +5,13 @@ import org.bukkit.Location;
 import io.xcutiboo.mythicrod.api.platform.PlatformLocation;
 
 public class PaperLocation {
-    
+
     public static PlatformLocation fromBukkit(Location location) {
-        if (location == null) {
+        if (location == null || location.getWorld() == null) {
             return null;
         }
-        String worldName = location.getWorld() != null ? location.getWorld().getName() : "unknown";
         return new PlatformLocation(
-            worldName,
+            location.getWorld().getName(),
             location.getX(),
             location.getY(),
             location.getZ(),
@@ -20,7 +19,7 @@ public class PaperLocation {
             location.getPitch()
         );
     }
-    
+
     public static Location toBukkit(PlatformLocation platformLocation, org.bukkit.Server server) {
         if (platformLocation == null) {
             return null;

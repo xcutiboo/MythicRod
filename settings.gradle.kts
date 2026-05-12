@@ -1,5 +1,6 @@
 rootProject.name = "MythicRod"
 
+include("mythicrod-api")
 include("mythicrod-common")
 include("mythicrod-paper")
 

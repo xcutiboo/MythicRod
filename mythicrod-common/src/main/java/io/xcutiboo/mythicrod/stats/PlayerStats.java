@@ -1,12 +1,13 @@
 package io.xcutiboo.mythicrod.stats;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Thread-safe player fishing statistics container.
@@ -14,43 +15,30 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>All counters use atomic types so increments are safe to call from
  * any Folia region thread without external synchronization.
  *
- * <p>This class is intentionally mutable — callers accumulate stats here
- * over the player's session. Snapshots for external consumers are created
- * via {@link io.xcutiboo.mythicrod.api.PlayerStatSnapshot}.
+ * <p>Runtime code increments this object during play. Public API callers receive
+ * immutable {@link io.xcutiboo.mythicrod.api.PlayerStatSnapshot} copies.
  */
 public final class PlayerStats {
 
     private final @NotNull UUID playerUuid;
     private final @NotNull String playerName;
 
-    // ---- Catch counters ----
     private final AtomicInteger totalCaught      = new AtomicInteger(0);
     private final AtomicInteger commonCaught     = new AtomicInteger(0);
     private final AtomicInteger uncommonCaught   = new AtomicInteger(0);
     private final AtomicInteger rareCaught       = new AtomicInteger(0);
     private final AtomicInteger legendaryCaught  = new AtomicInteger(0);
 
-    // ---- Rod usage counters ----
     private final AtomicInteger basicRodUses     = new AtomicInteger(0);
     private final AtomicInteger advancedRodUses  = new AtomicInteger(0);
     private final AtomicInteger legendaryRodUses = new AtomicInteger(0);
 
-    // ---- Timestamps ----
     private final AtomicLong lastFished = new AtomicLong(0L);
 
     public PlayerStats(@NotNull UUID playerUuid, @NotNull String playerName) {
         this.playerUuid = playerUuid;
         this.playerName = playerName;
     }
-
-    /** Backward-compatible constructor for code that only has a UUID. */
-    public PlayerStats(@NotNull UUID playerUuid) {
-        this(playerUuid, "Unknown");
-    }
-
-    // =========================================================================
-    // Getters
-    // =========================================================================
 
     @NotNull
     public UUID getPlayerUuid() { return playerUuid; }
@@ -71,33 +59,20 @@ public final class PlayerStats {
     /** Returns the epoch-millisecond timestamp of the last catch, or {@code 0} if never. */
     public long getLastFished()      { return lastFished.get(); }
 
-    /**
-     * Returns a material-count breakdown.
-     *
-     * <p>The new statistics model tracks tier categories (common/uncommon/rare/legendary)
-     * rather than individual material IDs. This method is provided for backward-
-     * compatibility with GUI code written against the old inner-class model, and
-     * returns the tier breakdown as a readable map.
-     *
-     * @return An immutable map of tier-name → catch-count (never null, may be empty).
-     */
+    /** Returns non-zero catch counts by rarity tier, ordered from rarest to common. */
     @NotNull
-    public Map<String, Integer> getMaterialCounts() {
-        Map<String, Integer> counts = new java.util.LinkedHashMap<>(4);
+    public Map<String, Integer> getTierCounts() {
+        Map<String, Integer> counts = new LinkedHashMap<>(4);
         int common    = commonCaught.get();
         int uncommon  = uncommonCaught.get();
         int rare      = rareCaught.get();
         int legendary = legendaryCaught.get();
-        if (legendary > 0) counts.put("Legendary", legendary);
-        if (rare      > 0) counts.put("Rare",      rare);
-        if (uncommon  > 0) counts.put("Uncommon",  uncommon);
-        if (common    > 0) counts.put("Common",    common);
+        if (legendary > 0) counts.put("legendary", legendary);
+        if (rare      > 0) counts.put("rare",      rare);
+        if (uncommon  > 0) counts.put("uncommon",  uncommon);
+        if (common    > 0) counts.put("common",    common);
         return Collections.unmodifiableMap(counts);
     }
-
-    // =========================================================================
-    // Mutators
-    // =========================================================================
 
     public void incrementTotalCaught()      { totalCaught.incrementAndGet(); }
     public void incrementCommonCaught()     { commonCaught.incrementAndGet(); }
@@ -112,13 +87,11 @@ public final class PlayerStats {
     /** Records the current timestamp as the last fishing time. */
     public void markFished()                { lastFished.set(System.currentTimeMillis()); }
 
-    // =========================================================================
-    // Bulk load (used when restoring persisted data)
-    // =========================================================================
-
     /**
-     * Overwrites all counters with persisted values. Should only be called
-     * once during data load — never during active gameplay.
+     * Overwrites all counters with persisted values.
+     *
+     * <p>Call this while loading data, before the object is exposed to active
+     * gameplay paths.
      */
     public void loadFromPersisted(
             int total, int common, int uncommon, int rare, int legendary,

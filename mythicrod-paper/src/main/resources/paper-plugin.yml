@@ -1,58 +1,26 @@
-################################################################################
-#                                                                              #
-#                    MythicRod Paper Plugin Configuration                      #
-#           Paper-specific plugin manifest and permissions hierarchy           #
-#                                                                              #
-#  This file is used by Paper servers and defines hierarchical permissions.  #
-#  For basic Bukkit compatibility, see: plugin.yml                           #
-#  For game configuration, see: config.yml                                   #
-#                                                                              #
-################################################################################
-
-################################################################################
-# PLUGIN INFORMATION
-################################################################################
 name: MythicRod
 version: '${version}'
 main: io.xcutiboo.mythicrod.MythicRod
-api-version: '1.21'
-description: Advanced fishing plugin with customizable drops, biome-specific loot, and player statistics
+api-version: '26.1.2'
+description: Custom fishing drops, biome-aware loot, statistics, and in-game administration for Paper.
 website: https://github.com/xcutiboo/mythicrod
 authors:
   - xcutiboo
 
-# Plugin load order: POSTWORLD ensures world data is available
+# Worlds are available before MythicRod loads drops, listeners, and GUI services.
 load: POSTWORLD
 
-# Folia support (async/threaded server): Enabled for modern scheduling
+# MythicRod uses owner-aware Paper/Folia scheduler handoffs.
 folia-supported: true
 
-################################################################################
-# SOFT DEPENDENCIES (Optional - plugin works without these)
-################################################################################
-# These are optional integrations that enhance functionality but are not required
-softdepend:
-  - Nexo              # Custom item support via reflection
-  - PlaceholderAPI    # Statistics placeholders for scoreboards/holograms
-  - Oraxen            # Alternative custom item support
-
-################################################################################
-# PERMISSIONS STRUCTURE
-################################################################################
-# Paper allows hierarchical permissions with parent-child relationships
-# Format:
-#   parent-permission:
-#     description: What this permission allows
-#     default: true/false/op/not op
-#     children:
-#       child-permission: true  (inherits from parent)
-#
-# When a player has "mythicrod.*", they automatically get all children
+dependencies:
+  server:
+    Nexo:
+      load: BEFORE
+      required: false
+      join-classpath: true
 
 permissions:
-  # ============================================================================
-  # ROOT PERMISSION - Grants all MythicRod permissions
-  # ============================================================================
   mythicrod.*:
     description: All MythicRod permissions
     default: op
@@ -62,10 +30,8 @@ permissions:
       mythicrod.admin.*: true
       mythicrod.stats.*: true
       mythicrod.drops.*: true
+      mythicrod.rod.*: true
 
-  # ============================================================================
-  # BASIC COMMAND & GUI PERMISSIONS
-  # ============================================================================
   mythicrod.command:
     description: Access to the main /mythicrod command
     default: true
@@ -74,9 +40,6 @@ permissions:
     description: Access to the MythicRod GUI menu
     default: true
 
-  # ============================================================================
-  # ADMINISTRATIVE PERMISSIONS
-  # ============================================================================
   mythicrod.admin.*:
     description: All administrative permissions
     default: op
@@ -87,7 +50,7 @@ permissions:
       mythicrod.admin.config: true
 
   mythicrod.admin.config:
-    description: Allows editing of custom drops and plugin settings via GUI
+    description: Allows editing custom drops and plugin settings
     default: op
 
   mythicrod.admin.reload:
@@ -102,9 +65,6 @@ permissions:
     description: Access debug information
     default: op
 
-  # ============================================================================
-  # STATISTICS PERMISSIONS
-  # ============================================================================
   mythicrod.stats.*:
     description: All statistics permissions
     default: true
@@ -125,9 +85,6 @@ permissions:
     description: View the fishing leaderboard (top fishers)
     default: true
 
-  # ============================================================================
-  # DROP CATEGORY PERMISSIONS
-  # ============================================================================
   mythicrod.drops.*:
     description: All drop permissions
     default: op
@@ -153,6 +110,13 @@ permissions:
     description: Receive drops from the legendary category (restricted)
     default: op
 
+  mythicrod.rod.*:
+    description: All rod tier permissions
+    default: op
+    children:
+      mythicrod.rod.advanced: true
+      mythicrod.rod.legendary: true
+
   mythicrod.rod.advanced:
     description: Use advanced rod tier
     default: op
@@ -160,43 +124,3 @@ permissions:
   mythicrod.rod.legendary:
     description: Use legendary rod tier
     default: op
-################################################################################
-# PERMISSION SETUP GUIDE
-################################################################################
-#
-# HIERARCHY OVERVIEW:
-#   mythicrod.*
-#   ├── mythicrod.command
-#   ├── mythicrod.admin.*
-#   │   └── mythicrod.admin.reload
-#   ├── mythicrod.stats.*
-#   │   ├── mythicrod.stats.view
-#   │   ├── mythicrod.stats.view.others
-#   │   └── mythicrod.stats.leaderboard
-#   └── mythicrod.drops.*
-#       ├── mythicrod.drops.view
-#       ├── mythicrod.drops.global
-#       ├── mythicrod.drops.rare
-#       └── mythicrod.drops.legendary
-#
-# COMMON SETUPS:
-#
-#   Standard Player:
-#   - mythicrod.command        (Can use /mythicrod)
-#   - mythicrod.stats.view     (Can view own stats)
-#   - mythicrod.drops.view     (Can see drop info)
-#   - mythicrod.drops.global   (Can catch global drops)
-#
-#   Premium Player:
-#   - All above, plus:
-#   - mythicrod.drops.rare     (Can catch rare drops)
-#
-#   Operator/Admin:
-#   - mythicrod.*              (ALL permissions)
-#
-# PERMISSION NODES IN PERMISSION MANAGERS:
-#   LuckPerms: /lp user {player} permission set mythicrod.drops.rare true
-#   PermissionsEx: /pex user {player} add mythicrod.drops.rare
-#   GroupManager: /manaddp {player} mythicrod.drops.rare
-#
-################################################################################

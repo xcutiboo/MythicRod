@@ -1,14 +1,16 @@
 # Language Files
 
-Base language: `en_US.yml`
+This folder is documentation-only.
 
-All translations must use the same keys. Missing keys fall back to English.
+The runtime language source lives in `mythicrod-paper/src/main/resources/lang/`.
+When the plugin starts, those files are copied into the server's deployed
+`plugins/MythicRod/lang/` directory.
 
-## Adding Translations
+## Working on Translations
 
-1. Copy `en_US.yml`
-2. Rename to your locale (e.g., `fr_FR.yml`)
-3. Translate values only—keep keys unchanged
-4. Keep placeholders like `{player}` and `{count}` intact
+1. Edit `mythicrod-paper/src/main/resources/lang/en_US.yml` as the source-of-truth English file.
+2. Mirror the same key structure in every other locale file under `mythicrod-paper/src/main/resources/lang/`.
+3. Translate values only; keep keys and placeholders unchanged.
+4. Reload the plugin or copy the built files into `plugins/MythicRod/lang/` to test them in-game.
 
-Color codes (`&`) are supported in all languages.
+MiniMessage is used throughout the live lang files.

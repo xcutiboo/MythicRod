@@ -1,35 +1,47 @@
 package io.xcutiboo.mythicrod.paper.events;
 
+import java.util.Objects;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import io.xcutiboo.mythicrod.api.platform.PlatformDrop;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
 
-/**
- * Fired on the player's EntityScheduler region thread immediately before a custom
- * MythicRod drop replaces the vanilla caught item entity.
- *
- * <p>Cancelling this event prevents MythicRod from applying the custom drop,
- * allowing the vanilla item to persist unchanged.
- *
- * <p><strong>Thread context:</strong> This event is always fired on the region
- * thread that owns the player (Folia-safe). Do NOT assume this is the "main" thread.
- *
- * <p><strong>Usage for external plugins:</strong>
- * <pre>{@code
- * @EventHandler(priority = EventPriority.NORMAL)
- * public void onMythicCatch(MythicRodFishCatchEvent event) {
- *     if (event.getDrop().getTier().equals("legendary")) {
- *         // Grant quest progress
- *     }
- * }
- * }</pre>
- */
+/// Fired immediately before MythicRod applies a selected custom reward.
+///
+/// Cancelling this event skips MythicRod's replacement and leaves the original
+/// Minecraft catch untouched.
+///
+/// The exposed `CustomDrop` is always the reward descriptor MythicRod is about
+/// to process. Built-in rewards point at the configured drop entry. External
+/// provider rewards use a synthetic adapter that preserves the provider key,
+/// display name, tier, and item metadata in a familiar shape.
+///
+/// If you only need stable read-only fields such as identifier, amount, weight,
+/// or tier, prefer `getDropView()` and program against `PlatformDrop`.
+///
+/// ## Thread Context
+///
+/// This event is fired from the player-owned execution path that is about to
+/// deliver the reward. On ordinary Paper that is the synchronous fishing event
+/// thread. On Folia it is the player's owning region thread. Do not assume a
+/// global main thread exists.
+///
+/// ## Example
+///
+/// ```java
+/// @EventHandler(priority = EventPriority.NORMAL)
+/// public void onMythicCatch(MythicRodFishCatchEvent event) {
+///     if ("legendary".equalsIgnoreCase(event.getDrop().getTier())) {
+///         grantQuestProgress(event.getPlayer());
+///     }
+/// }
+/// ```
 public final class MythicRodFishCatchEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
@@ -39,64 +51,71 @@ public final class MythicRodFishCatchEvent extends Event implements Cancellable 
     private @NotNull ItemStack rewardItem;
     private boolean cancelled = false;
 
-    /**
-     * @param player     The player who caught the fish.
-     * @param drop       The selected {@link CustomDrop} before item generation.
-     * @param rewardItem The fully-built {@link ItemStack} about to be given.
-     */
+    /// @param player player who caught the fish
+    /// @param drop selected drop before item generation
+    /// @param rewardItem item MythicRod is about to give
     public MythicRodFishCatchEvent(
             @NotNull Player player,
             @NotNull CustomDrop drop,
             @NotNull ItemStack rewardItem) {
-        // Not async — fired on entity region thread in Folia
         super(false);
-        this.player = player;
-        this.drop = drop;
-        this.rewardItem = rewardItem.clone(); // defensive copy
+        this.player = Objects.requireNonNull(player, "player");
+        this.drop = Objects.requireNonNull(drop, "drop");
+        this.rewardItem = copyRewardItem(rewardItem);
     }
 
-    // -------------------------------------------------------------------------
-    // Accessors
-    // -------------------------------------------------------------------------
-
-    /** @return The player who triggered the catch. */
+    /// Returns the Bukkit player for this catch.
+    ///
+    /// The event is already running on MythicRod's player-owned execution path.
     @NotNull
     public Player getPlayer() {
         return player;
     }
 
-    /** @return The {@link CustomDrop} entry that was selected from the drop table. */
+    /// Returns the selected reward descriptor.
     @NotNull
     public CustomDrop getDrop() {
         return drop;
     }
 
-    /**
-     * @return The {@link ItemStack} that will be awarded. External plugins may
-     *         replace this via {@link #setRewardItem(ItemStack)}.
-     */
+    /// Returns the selected reward descriptor through MythicRod's stable drop view.
+    ///
+    /// Prefer this accessor when your plugin only needs read-only metadata and
+    /// should not depend on `CustomDrop`-specific methods.
+    @NotNull
+    public PlatformDrop getDropView() {
+        return drop;
+    }
+
+    /// Returns the item that will be awarded.
+    ///
+    /// External plugins may replace this through `setRewardItem(ItemStack)`.
+    /// MythicRod defensively copies the stack and clamps the delivered amount to
+    /// the material's maximum stack size.
+    ///
+    /// @return defensive copy of the pending reward item
     @NotNull
     public ItemStack getRewardItem() {
         return rewardItem.clone();
     }
 
-    /**
-     * Allows external plugins to swap the reward item before it is applied.
-     * The provided item is defensively copied.
-     *
-     * @param rewardItem Replacement item; must not be null or AIR.
-     * @throws IllegalArgumentException if the provided item is null or air.
-     */
+    /// Replaces the reward item before MythicRod applies it.
+    ///
+    /// The provided item is defensively copied before storage.
+    ///
+    /// @param rewardItem replacement item; must not be null or air
+    /// @throws IllegalArgumentException if the provided item is null or air
     public void setRewardItem(@NotNull ItemStack rewardItem) {
+        this.rewardItem = copyRewardItem(rewardItem);
+    }
+
+    private static ItemStack copyRewardItem(ItemStack rewardItem) {
+        Objects.requireNonNull(rewardItem, "rewardItem");
         if (rewardItem.getType().isAir()) {
             throw new IllegalArgumentException("Reward item cannot be AIR");
         }
-        this.rewardItem = rewardItem.clone();
+        return rewardItem.clone();
     }
-
-    // -------------------------------------------------------------------------
-    // Cancellable
-    // -------------------------------------------------------------------------
 
     @Override
     public boolean isCancelled() {
@@ -107,10 +126,6 @@ public final class MythicRodFishCatchEvent extends Event implements Cancellable 
     public void setCancelled(boolean cancel) {
         this.cancelled = cancel;
     }
-
-    // -------------------------------------------------------------------------
-    // Event boilerplate
-    // -------------------------------------------------------------------------
 
     @Override
     @NotNull

@@ -1,59 +1,57 @@
 package io.xcutiboo.mythicrod;
 
 import java.io.File;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.logging.Level;
 
-import org.slf4j.Logger;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
+import org.bstats.charts.SingleLineChart;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.slf4j.Logger;
 
-import io.xcutiboo.mythicrod.api.ExternalDropProvider;
 import io.xcutiboo.mythicrod.api.MythicRodAPI;
-import io.xcutiboo.mythicrod.api.PlayerStatSnapshot;
-import io.xcutiboo.mythicrod.api.PlayerStatSnapshot.StatType;
-import io.xcutiboo.mythicrod.drops.DropRegistry;
 import io.xcutiboo.mythicrod.api.platform.PlatformConfiguration;
 import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 import io.xcutiboo.mythicrod.api.platform.PlatformScheduler;
 import io.xcutiboo.mythicrod.api.platform.PlatformServer;
-import io.xcutiboo.mythicrod.cache.MythicRodCache;
+import io.xcutiboo.mythicrod.api.platform.PlatformTask;
 import io.xcutiboo.mythicrod.config.ConfigManager;
 import io.xcutiboo.mythicrod.config.LanguageManager;
 import io.xcutiboo.mythicrod.drops.DropManager;
-import io.xcutiboo.mythicrod.gui.GUIManager;
-import io.xcutiboo.mythicrod.gui.menus.ConfigMenu;
-import io.xcutiboo.mythicrod.gui.menus.DropsMenu;
-import io.xcutiboo.mythicrod.gui.menus.LanguageSwitchMenu;
-import io.xcutiboo.mythicrod.gui.menus.MainHubMenu;
-import io.xcutiboo.mythicrod.gui.menus.EditDropMenu;
-import io.xcutiboo.mythicrod.gui.menus.RodMenu;
-import io.xcutiboo.mythicrod.gui.menus.StatsMenu;
+import io.xcutiboo.mythicrod.internal.runtime.MythicRodRuntime;
 import io.xcutiboo.mythicrod.metrics.StatisticsManager;
-import io.xcutiboo.mythicrod.paper.util.PrettyLogger;
 import io.xcutiboo.mythicrod.paper.api.PaperMythicRodAPI;
 import io.xcutiboo.mythicrod.paper.commands.BrigadierCommandManager;
 import io.xcutiboo.mythicrod.paper.data.PlayerDataService;
+import io.xcutiboo.mythicrod.paper.data.StatisticsPlayerListener;
 import io.xcutiboo.mythicrod.paper.fishing.FishingListener;
+import io.xcutiboo.mythicrod.paper.gui.GUIManager;
+import io.xcutiboo.mythicrod.paper.gui.menus.ConfigMenu;
+import io.xcutiboo.mythicrod.paper.gui.menus.DropsMenu;
+import io.xcutiboo.mythicrod.paper.gui.menus.EditDropMenu;
+import io.xcutiboo.mythicrod.paper.gui.menus.LanguageSwitchMenu;
+import io.xcutiboo.mythicrod.paper.gui.menus.MainHubMenu;
+import io.xcutiboo.mythicrod.paper.gui.menus.RodMenu;
+import io.xcutiboo.mythicrod.paper.gui.menus.StatsMenu;
+import io.xcutiboo.mythicrod.paper.internal.config.LanguageFileLoader;
 import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import io.xcutiboo.mythicrod.paper.platform.PaperServer;
 import io.xcutiboo.mythicrod.paper.scheduler.FoliaSchedulerService;
+import io.xcutiboo.mythicrod.paper.util.ParticleOptions;
+import io.xcutiboo.mythicrod.paper.util.PrettyLogger;
+import io.xcutiboo.mythicrod.text.ConfiguredText;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.SimplePie;
-import org.bstats.charts.SingleLineChart;
 
-public final class MythicRod extends JavaPlugin implements MythicRodPlugin, MythicRodAPI {
+public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
+    private static final int BSTATS_PLUGIN_ID = 23847;
+
     private final Logger logger = getSLF4JLogger();
     private PrettyLogger prettyLogger;
 
@@ -63,21 +61,23 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
     private ConfigManager configManager;
     private LanguageManager languageManager;
     private DropManager dropManager;
-    private DropRegistry dropRegistry;
     private StatisticsManager statisticsManager;
 
     private BrigadierCommandManager commandManager;
     private FishingListener fishingListener;
     private GUIManager guiManager;
     private PlayerDataService playerDataService;
+    private StatisticsPlayerListener statisticsPlayerListener;
+    private LanguageFileLoader languageFileLoader;
 
-    private MythicRodCache cache;
-    private MythicRodAPI api;
+    private PaperMythicRodAPI api;
     private Metrics metrics;
+    private PlatformTask statisticsSaveTask;
+    private final AtomicBoolean reloadInProgress = new AtomicBoolean(false);
 
     @Override
     public void onLoad() {
-        prettyLogger = new PrettyLogger(getLogger(), "MythicRod");
+        prettyLogger = new PrettyLogger(getLogger());
         prettyLogger.startup("MythicRod-Paper loading (Brigadier-enabled)...");
     }
 
@@ -86,7 +86,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
         long start = System.nanoTime();
         try {
             this.platformServer = new PaperServer(super.getServer(), this);
-            this.platformScheduler = new FoliaSchedulerService(this);
+            this.platformScheduler = platformServer.getScheduler();
 
             File configFile = new File(getDataFolder(), "config.yml");
             if (!configFile.exists()) {
@@ -94,23 +94,34 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
             }
             PlatformConfiguration platformConfig = platformServer.loadConfiguration(configFile);
 
+            File dropsFile = new File(getDataFolder(), "drops.yml");
+            if (!dropsFile.exists()) {
+                saveResource("drops.yml", false);
+            }
+            PlatformConfiguration dropsConfig = platformServer.loadConfiguration(dropsFile);
+
             this.configManager = new ConfigManager(this, platformConfig);
             this.configManager.setConfigFile(configFile);
+            validateConfiguredParticles();
 
             this.languageManager = new LanguageManager(this, configManager);
-            loadLanguageFiles();
+            this.languageFileLoader = new LanguageFileLoader(this, logger, prettyLogger, languageManager);
+            languageFileLoader.loadLanguageFiles();
 
             this.dropManager = new DropManager(getLogger());
-            dropManager.loadDrops(platformConfig);
-            this.dropRegistry = buildDropRegistry();
+            applyDropRuntimeSettings();
+            dropManager.loadDrops(dropsConfig, dropsFile);
 
             this.statisticsManager = new StatisticsManager(this);
 
-            // Initialize stats config
             File statsFile = new File(getDataFolder(), "statistics.yml");
             PlatformConfiguration statsConfig = platformServer.loadConfiguration(statsFile);
             configManager.setStatsConfig(statsFile, statsConfig);
             statisticsManager.initialize();
+            scheduleStatisticsSaveTask();
+            this.statisticsPlayerListener = new StatisticsPlayerListener(this);
+            super.getServer().getPluginManager().registerEvents(statisticsPlayerListener, this);
+            statisticsPlayerListener.preloadOnlinePlayers();
 
             this.commandManager = new BrigadierCommandManager(this);
             commandManager.initialize();
@@ -120,19 +131,19 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
             this.guiManager = new GUIManager(this, platformScheduler);
             guiManager.initialize();
             this.playerDataService = new PlayerDataService(this);
-            this.cache = new MythicRodCache();
-
+            super.getServer().getPluginManager().registerEvents(playerDataService, this);
             this.api = new PaperMythicRodAPI(
                 getPluginMeta().getVersion(),
+                getLogger(),
                 dropManager,
-                dropRegistry,
-                statisticsManager
+                statisticsManager,
+                platformScheduler,
+                platformServer.getItemFactory()
             );
             // Register in Bukkit ServicesManager so external plugins can retrieve
             // the API without depending on MythicRod's internal class hierarchy.
             super.getServer().getServicesManager().register(
-                MythicRodAPI.class, this, this, ServicePriority.Normal);
-            this.metrics = new Metrics(this, 23847);
+                MythicRodAPI.class, api, this, ServicePriority.Normal);
 
             super.getServer().getPluginManager().registerEvents(fishingListener, this);
 
@@ -144,14 +155,15 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
             guiManager.registerMenu("language", LanguageSwitchMenu::new);
             guiManager.registerMenu("rod",      RodMenu::new);
 
-            setupMetricsCharts();
+            initializeMetrics();
 
             long ms = (System.nanoTime() - start) / 1_000_000;
+            String serverVersion = super.getServer().getName() + " " + super.getServer().getMinecraftVersion();
             Component banner = Component.text()
                 .append(Component.text("MythicRod-Paper ", NamedTextColor.AQUA, TextDecoration.BOLD))
                 .append(Component.text("v" + getPluginMeta().getVersion(), NamedTextColor.GREEN))
                 .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
-                .append(Component.text("Paper 1.21.4", NamedTextColor.YELLOW))
+                .append(Component.text(serverVersion, NamedTextColor.YELLOW))
                 .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
                 .append(Component.text("Brigadier ✓", NamedTextColor.GREEN))
                 .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
@@ -166,49 +178,172 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
 
     @Override
     public void onDisable() {
-        super.getServer().getServicesManager().unregisterAll(this);
-        if (statisticsManager != null) statisticsManager.cleanup();
-        if (guiManager != null) guiManager.shutdown();
-        if (cache != null) cache.invalidateAll();
-        if (playerDataService != null) playerDataService.clearAllCache();
-        super.getServer().getScheduler().cancelTasks(this);
-    }
+        try {
+            try {
+                super.getServer().getServicesManager().unregisterAll(this);
+                logger.info("Services unregistered");
+            } catch (Exception e) {
+                logger.warn("Error unregistering services: " + e.getMessage());
+            }
 
-    @Override
-    public void reload() {
-        File configFile = new File(getDataFolder(), "config.yml");
-        PlatformConfiguration newConfig = platformServer.loadConfiguration(configFile);
-        configManager.reload(newConfig);
+            try {
+                HandlerList.unregisterAll(this);
+                logger.info("Event handlers unregistered");
+            } catch (Exception e) {
+                logger.warn("Error unregistering event handlers: " + e.getMessage());
+            }
 
-        if (languageManager != null) {
-            languageManager.setLanguage(configManager.getLanguage());
+            if (statisticsManager != null) {
+                try {
+                    cancelStatisticsSaveTask();
+                    statisticsManager.cleanup();
+                    logger.info("Statistics manager cleaned up");
+                } catch (Exception e) {
+                    logger.warn("Error cleaning up statistics manager", e);
+                }
+            }
+
+            if (languageManager != null) {
+                try {
+                    languageManager.shutdown();
+                    logger.info("Language manager shut down");
+                } catch (Exception e) {
+                    logger.warn("Error shutting down language manager", e);
+                }
+            }
+
+            if (guiManager != null) {
+                try {
+                    guiManager.shutdown();
+                    logger.info("GUI manager shut down");
+                } catch (Exception e) {
+                    logger.warn("Error shutting down GUI manager", e);
+                }
+            }
+
+            if (playerDataService != null) {
+                try {
+                    playerDataService.clearAllCache();
+                    logger.info("Player data cache cleared");
+                } catch (Exception e) {
+                    logger.warn("Error clearing player data cache", e);
+                }
+            }
+
+            try {
+                if (platformScheduler instanceof FoliaSchedulerService schedulerService) {
+                    schedulerService.cancelPluginTasks();
+                    logger.info("Scheduled MythicRod tasks cancelled");
+                }
+            } catch (Exception e) {
+                logger.warn("Error cancelling scheduled tasks", e);
+            }
+
+            logger.info("MythicRod disabled successfully");
+        } catch (Exception e) {
+            logger.error("Unexpected error during plugin disable", e);
         }
-        dropManager.reload(configManager.getConfig());
-        // Rebuild registry contents in-place so the existing PaperMythicRodAPI
-        // reference stays valid (it holds the same DropRegistry object).
-        dropRegistry.clear();
-        dropManager.getDropCategories().forEach(dropRegistry::registerCategory);
-        statisticsManager.reload();
     }
 
-    @Override
+    public boolean reload() {
+        if (!reloadInProgress.compareAndSet(false, true)) {
+            logger.info("MythicRod reload request ignored because a reload is already in progress");
+            return false;
+        }
+
+        boolean restartStatisticsAutosave = statisticsSaveTask != null;
+        try {
+            if (guiManager != null) {
+                guiManager.invalidateOpenMenusForReload();
+            }
+
+            File configFile = new File(getDataFolder(), "config.yml");
+            PlatformConfiguration newConfig = platformServer.loadConfiguration(configFile);
+            if (dropManager != null) {
+                dropManager.awaitAsyncPersistenceOperations();
+            }
+            File dropsFile = new File(getDataFolder(), "drops.yml");
+            PlatformConfiguration newDropsConfig = platformServer.loadConfiguration(dropsFile);
+            configManager.reload(newConfig);
+            validateConfiguredParticles();
+            applyDropRuntimeSettings();
+
+            cancelStatisticsSaveTask();
+
+            if (languageManager != null) {
+                languageManager.reloadPlayerPreferences();
+                languageManager.refreshFormatting();
+                languageManager.setLanguage(configManager.getLanguage());
+                if (languageFileLoader != null) {
+                    languageFileLoader.loadLanguageFiles();
+                }
+            }
+
+            dropManager.reload(newDropsConfig, dropsFile);
+
+            if (statisticsManager != null) {
+                statisticsManager.reload();
+            }
+
+            if (statisticsPlayerListener != null) {
+                statisticsPlayerListener.preloadOnlinePlayers();
+            }
+
+            scheduleStatisticsSaveTask();
+
+            logger.info("MythicRod reload completed successfully");
+            return true;
+        } catch (Exception e) {
+            logger.error("Error during reload", e);
+            return false;
+        } finally {
+            if (restartStatisticsAutosave && statisticsSaveTask == null) {
+                scheduleStatisticsSaveTask();
+            }
+            reloadInProgress.set(false);
+        }
+    }
+
+    public void applyDropRuntimeSettings() {
+        if (dropManager == null || configManager == null) {
+            return;
+        }
+
+        dropManager.setDebugMode(configManager.isDebugMode());
+        dropManager.setUsePermissions(configManager.usePermissions());
+        dropManager.setUseBiomeSpecificDrops(configManager.enableBiomeSpecificDrops());
+    }
+
     public void sendFormattedMessage(PlatformPlayer player, String message) {
         if (!(player instanceof PaperPlayer paperPlayer)) {
             return;
         }
+
         Player bukkitPlayer = paperPlayer.getBukkitPlayer();
         if (bukkitPlayer == null || !bukkitPlayer.isOnline()) {
             return;
         }
 
+        if (message == null || message.isBlank()) {
+            return;
+        }
+
+        if (message.length() > 10000) {
+            message = message.substring(0, 10000) + "...";
+        }
+
         try {
-            Component prefixComponent = MiniMessage.miniMessage().deserialize(configManager.getPrefix());
-            Component messageComponent = MiniMessage.miniMessage().deserialize(message);
-            Component fullMessage = prefixComponent.append(messageComponent);
+            String prefix = configManager.getPrefix();
+            if (prefix == null || prefix.isBlank()) {
+                prefix = "[MythicRod] ";
+            }
+
+            Component fullMessage = ConfiguredText.parse(prefix)
+                .append(ConfiguredText.parse(message));
             bukkitPlayer.sendMessage(fullMessage);
         } catch (Exception e) {
-            this.getLogger().warning("Failed to parse MiniMessage: " + e.getMessage());
-            bukkitPlayer.sendMessage(message);
+            this.getLogger().log(Level.WARNING,
+                "Unexpected error while sending formatted message: " + e.getMessage(), e);
         }
     }
 
@@ -217,72 +352,19 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
         return platformServer;
     }
 
-    @Override
     public ConfigManager getConfigManager() { return configManager; }
-    @Override
     public DropManager getDropManager() { return dropManager; }
-    @Override
     public StatisticsManager getStatisticsManager() { return statisticsManager; }
-    @Override
     public LanguageManager getLanguageManager() { return languageManager; }
     public GUIManager getGUIManager() { return guiManager; }
+    public boolean isReloadInProgress() { return reloadInProgress.get(); }
     public PlayerDataService getPlayerDataService() { return playerDataService; }
     public MythicRodAPI getAPI() { return api; }
+    public PaperMythicRodAPI getApiFacade() { return api; }
 
-    // =========================================================================
-    // MythicRodAPI delegation — all abstract methods delegated to PaperMythicRodAPI
-    // =========================================================================
-
-    @Override
-    public @org.jetbrains.annotations.NotNull String getVersion() {
-        return getPluginMeta().getVersion();
+    public boolean isFoliaRuntime() {
+        return platformScheduler instanceof FoliaSchedulerService schedulerService && schedulerService.isFoliaRuntime();
     }
-
-    @Override
-    public @org.jetbrains.annotations.NotNull DropRegistry getDropRegistry() {
-        return dropRegistry;
-    }
-
-    @Override
-    public void registerExternalDropProvider(@org.jetbrains.annotations.NotNull ExternalDropProvider provider) {
-        api.registerExternalDropProvider(provider);
-    }
-
-    @Override
-    public boolean unregisterExternalDropProvider(@org.jetbrains.annotations.NotNull String key) {
-        return api.unregisterExternalDropProvider(key);
-    }
-
-    @Override
-    public @org.jetbrains.annotations.NotNull Optional<ExternalDropProvider> getExternalDropProvider(@org.jetbrains.annotations.NotNull String key) {
-        return api.getExternalDropProvider(key);
-    }
-
-    @Override
-    public @org.jetbrains.annotations.NotNull List<ExternalDropProvider> getExternalDropProviders() {
-        return api.getExternalDropProviders();
-    }
-
-    @Override
-    public @org.jetbrains.annotations.NotNull CompletableFuture<@org.jetbrains.annotations.NotNull PlayerStatSnapshot> getPlayerStats(@org.jetbrains.annotations.NotNull UUID playerId) {
-        return api.getPlayerStats(playerId);
-    }
-
-    @Override
-    public @org.jetbrains.annotations.NotNull CompletableFuture<@org.jetbrains.annotations.NotNull List<@org.jetbrains.annotations.NotNull PlayerStatSnapshot>> getTopPlayers(
-            @org.jetbrains.annotations.NotNull StatType statType,
-            int limit) {
-        return api.getTopPlayers(statType, limit);
-    }
-
-    @Override
-    public @org.jetbrains.annotations.NotNull CompletableFuture<Void> flushAllStats() {
-        return api.flushAllStats();
-    }
-
-    public MythicRodCache getCache() { return cache; }
-    public int getActiveFishingCount() { return fishingListener != null ? fishingListener.getActiveFishingCount() : 0; }
-    public boolean isFoliaSupported() { return platformScheduler instanceof FoliaSchedulerService; }
 
     @Override
     public void saveDefaultConfig() {
@@ -304,58 +386,137 @@ public final class MythicRod extends JavaPlugin implements MythicRodPlugin, Myth
     }
 
     public PlatformScheduler getPlatformScheduler() {
-        return platformServer.getScheduler();
+        return platformScheduler;
+    }
+
+    public void refreshStatisticsAutosaveSchedule() {
+        try {
+            cancelStatisticsSaveTask();
+            scheduleStatisticsSaveTask();
+        } catch (Exception e) {
+            logger.warn("Failed to refresh statistics autosave schedule", e);
+        }
+    }
+
+    private void initializeMetrics() {
+        try {
+            this.metrics = new Metrics(this, BSTATS_PLUGIN_ID);
+            setupMetricsCharts();
+        } catch (RuntimeException | LinkageError e) {
+            this.metrics = null;
+            logger.warn("bStats metrics are unavailable; MythicRod will continue without telemetry", e);
+        }
+    }
+
+    private void validateConfiguredParticles() {
+        if (configManager == null) {
+            return;
+        }
+
+        validateParticleSetting(
+            "features.particles.catch-particle",
+            configManager.getCatchParticle(),
+            "SPLASH",
+            configManager::setCatchParticle
+        );
+        validateParticleSetting(
+            "features.particles.bubble-particle",
+            configManager.getBubbleParticle(),
+            "BUBBLE_POP",
+            configManager::setBubbleParticle
+        );
+        validateParticleSetting(
+            "features.particles.success-particle",
+            configManager.getSuccessParticle(),
+            "HAPPY_VILLAGER",
+            configManager::setSuccessParticle
+        );
+        validateParticleSetting(
+            "features.particles.xp-particle",
+            configManager.getXpParticle(),
+            "HAPPY_VILLAGER",
+            configManager::setXpParticle
+        );
+    }
+
+    private void validateParticleSetting(String path, String configuredValue, String fallback, Consumer<String> setter) {
+        String normalized = ParticleOptions.normalize(configuredValue);
+        if (ParticleOptions.isConfigurableParticleName(normalized)) {
+            setter.accept(normalized);
+            return;
+        }
+
+        logger.warn("Invalid particle '{}' at {}. Falling back to {}.", configuredValue, path, fallback);
+        setter.accept(fallback);
     }
 
     private void setupMetricsCharts() {
+        if (metrics == null) {
+            return;
+        }
+
         metrics.addCustomChart(new SimplePie("server_type", () -> "Paper"));
+        metrics.addCustomChart(new SimplePie("minecraft_version", () -> getServer().getMinecraftVersion()));
+        metrics.addCustomChart(new SimplePie("folia_runtime", () -> isFoliaRuntime() ? "Folia" : "Paper"));
         metrics.addCustomChart(new SimplePie("language", () ->
             languageManager != null ? languageManager.getLanguage() : "en"));
+        metrics.addCustomChart(new SimplePie("profile", () ->
+            configManager != null ? configManager.getProfile() : "balanced"));
+        metrics.addCustomChart(new SimplePie("reward_delivery_mode", () ->
+            configManager != null ? configManager.getRewardDeliveryMode().getConfigValue() : "vanilla_retrieve"));
         metrics.addCustomChart(new SimplePie("statistics_enabled", () ->
-            configManager.trackStatistics() ? "Enabled" : "Disabled"));
+            enabledDisabled(configManager != null && configManager.trackStatistics())));
         metrics.addCustomChart(new SimplePie("biome_drops_enabled", () ->
-            configManager.enableBiomeSpecificDrops() ? "Enabled" : "Disabled"));
+            enabledDisabled(configManager != null && configManager.enableBiomeSpecificDrops())));
+        metrics.addCustomChart(new SimplePie("permissions_enabled", () ->
+            enabledDisabled(configManager != null && configManager.usePermissions())));
+        metrics.addCustomChart(new SimplePie("particles_enabled", () ->
+            enabledDisabled(configManager != null && configManager.useParticles())));
+        metrics.addCustomChart(new SimplePie("sounds_enabled", () ->
+            enabledDisabled(configManager != null && configManager.useSounds())));
+        metrics.addCustomChart(new SimplePie("nexo_enabled", () ->
+            enabledDisabled(platformServer != null && platformServer.isNexoEnabled())));
+        metrics.addCustomChart(new SingleLineChart("configured_drops", () ->
+            dropManager != null ? dropManager.getTotalDropCount() : 0));
+        metrics.addCustomChart(new SingleLineChart("configured_drop_categories", () ->
+            dropManager != null ? dropManager.getDropCategories().size() : 0));
+        metrics.addCustomChart(new SingleLineChart("tracked_players", () ->
+            statisticsManager != null ? statisticsManager.getAllStats().size() : 0));
         metrics.addCustomChart(new SingleLineChart("total_catches", () ->
             statisticsManager != null ? (int) Math.min(statisticsManager.getTotalCatches(), Integer.MAX_VALUE) : 0));
     }
 
-    private DropRegistry buildDropRegistry() {
-        DropRegistry registry = new DropRegistry();
-        dropManager.getDropCategories().forEach(registry::registerCategory);
-        return registry;
+    private String enabledDisabled(boolean enabled) {
+        return enabled ? "Enabled" : "Disabled";
     }
 
-    private void loadLanguageFiles() {
-        String[] bundledLangs = {"en_US", "ja_JP"};
-        for (String lang : bundledLangs) {
-            try (InputStream is = getClass().getResourceAsStream("/lang/" + lang + ".yml")) {
-                if (is != null) {
-                    YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new java.io.InputStreamReader(is));
-                    Map<String, String> translations = new HashMap<>();
-                    flattenYaml(yaml, "", translations);
-                    languageManager.loadTranslations(lang, translations);
-                    prettyLogger.info("Loaded language: " + lang + " (" + translations.size() + " entries)");
-                }
+    private void scheduleStatisticsSaveTask() {
+        if (platformScheduler == null || statisticsManager == null || configManager == null) {
+            return;
+        }
+
+        long intervalMillis = Math.max(1L, configManager.getStatsSaveInterval()) * 1000L;
+        statisticsSaveTask = platformScheduler.runAsyncRepeating(() -> {
+            try {
+                statisticsManager.saveAll();
             } catch (Exception e) {
-                prettyLogger.warning("Failed to load language: " + lang);
+                logger.warn("Error during scheduled statistics save", e);
             }
+        }, intervalMillis, intervalMillis);
+        logger.info("Scheduled statistics autosave every {} seconds", configManager.getStatsSaveInterval());
+    }
+
+    private void cancelStatisticsSaveTask() {
+        if (statisticsSaveTask == null) {
+            return;
+        }
+        try {
+            statisticsSaveTask.cancel();
+        } catch (Exception e) {
+            logger.warn("Failed to cancel statistics autosave task", e);
+        } finally {
+            statisticsSaveTask = null;
         }
     }
 
-    private void flattenYaml(org.bukkit.configuration.ConfigurationSection section, String prefix, Map<String, String> result) {
-        for (String key : section.getKeys(false)) {
-            String fullKey = prefix.isEmpty() ? key : prefix + "." + key;
-            if (section.isConfigurationSection(key)) {
-                flattenYaml(section.getConfigurationSection(key), fullKey, result);
-            } else if (section.isList(key)) {
-                List<String> list = section.getStringList(key);
-                result.put(fullKey, String.join("\n", list));
-            } else {
-                String value = section.getString(key);
-                if (value != null) {
-                    result.put(fullKey, value);
-                }
-            }
-        }
-    }
 }

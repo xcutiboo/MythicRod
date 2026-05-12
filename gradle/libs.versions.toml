@@ -1,69 +1,43 @@
 [versions]
-paper = "1.21.11-R0.1-SNAPSHOT"
-spigot = "1.21.11-R0.1-SNAPSHOT"
+paper = "26.1.2.build.64-stable"
+jetbrains-annotations = "26.1.0"
+junit = "6.0.3"
+junit-platform = "6.0.3"
 
 # Gradle Plugins
-paperweight = "1.7.7"
-shadow = "8.3.5"
-run-paper = "2.3.1"
+shadow = "9.4.1"
+run-paper = "3.0.2"
+hangar-publish = "0.1.2"
 
 # Dependencies
-lombok = "1.18.34"
-nexo = "0.1.0-dev.130"
-guice = "7.0.0"
-configurate = "4.1.2"
-adventure-platform = "4.3.4"
-adventure-minimessage = "4.17.0"
-adventure-legacy = "4.17.0"
-hikaricp = "5.1.0"
-lettuce = "6.3.2.RELEASE"
-folia-scheduler = "v1.0.2"
-bstats = "3.1.0"
-caffeine = "3.1.8"
-placeholderapi = "2.11.6"
+lombok = "1.18.46"
+adventure-minimessage = "5.1.1"
+adventure-legacy = "5.1.1"
+bstats = "3.2.1"
+caffeine = "3.2.4"
 
 # Build
-java = "21"
+java = "25"
 
 [libraries]
 # Paper Platform
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
-spigot-api = { module = "org.spigotmc:spigot-api", version.ref = "spigot" }
-
-# Integrations
-placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
-nexo = { module = "com.nexomc:nexo", version.ref = "nexo" }
-
-# Dependency Injection
-guice = { module = "com.google.inject:guice", version.ref = "guice" }
 
 # Code Generation
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 
-# Configuration
-configurate-hocon = { module = "org.spongepowered:configurate-hocon", version.ref = "configurate" }
-
-# Database & Caching
-hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
-lettuce-core = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }
-
-# Scheduler
-folia-scheduler = { module = "com.github.CJCrafter:FoliaScheduler", version.ref = "folia-scheduler" }
-
-# Caching
+# Runtime libraries
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 bstats-bukkit = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
-bstats-base = { module = "org.bstats:bstats-base", version.ref = "bstats" }
 
-# Adventure (for Spigot)
-adventure-platform-bukkit = { module = "net.kyori:adventure-platform-bukkit", version.ref = "adventure-platform" }
+# Adventure test helpers
 adventure-text-minimessage = { module = "net.kyori:adventure-text-minimessage", version.ref = "adventure-minimessage" }
 adventure-text-serializer-legacy = { module = "net.kyori:adventure-text-serializer-legacy", version.ref = "adventure-legacy" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
 
 [plugins]
-paperweight-userdev = { id = "io.papermc.paperweight.userdev", version.ref = "paperweight" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
-
-[bundles]
-adventure = ["adventure-platform-bukkit", "adventure-text-minimessage", "adventure-text-serializer-legacy"]
+hangar-publish = { id = "io.papermc.hangar-publish-plugin", version.ref = "hangar-publish" }

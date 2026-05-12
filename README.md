@@ -1,257 +1,371 @@
 # MythicRod
 
-> A professional custom fishing plugin for Paper 1.21.11+ — biome-aware drops, in-game GUI editor, full statistics tracking, and a clean developer API.
+Custom fishing progression for modern Paper servers.
 
-[![Paper](https://img.shields.io/badge/Paper-1.21.11+-blue)](https://papermc.io)
-[![Java](https://img.shields.io/badge/Java-21-orange)](https://adoptium.net)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+MythicRod turns vanilla fishing into a configurable reward loop with weighted
+loot tables, biome-aware rewards, persistent statistics, in-game editing,
+Adventure text, and a small public API for other plugins.
+
+[![Paper](https://img.shields.io/badge/Paper-26.1.2-blue)](https://papermc.io)
+[![Java](https://img.shields.io/badge/Java-25-orange)](https://adoptium.net)
+[![Release](https://img.shields.io/github/v/release/xcutiboo/MythicRod)](https://github.com/xcutiboo/MythicRod/releases)
 [![bStats](https://img.shields.io/bstats/servers/23847)](https://bstats.org/plugin/bukkit/MythicRod/23847)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
----
+## Why MythicRod
 
-## Features
+| For players                                                                         | For admins                                                                                    | For developers                                                                     |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Tiered catches, rod progression, leaderboard tracking, and cleaner reward feedback. | GUI-first editing, exact chat input for values that matter, command parity, and safe reloads. | A public API, Paper events, external drop providers, and immutable stat snapshots. |
 
-- **Weighted Drop Tables** — configure per-category drops with chance weights, custom names, lore, enchantments, and glow effects
-- **Biome-Aware Loot** — different drop pools per biome (`biome_ocean`, `biome_jungle`, etc.)
-- **In-Game GUI Editor** — admins can tweak drop chance, amount, name, and lore without touching a YAML file
-- **Statistics & Leaderboard** — per-player catch counters by tier (common / uncommon / rare / legendary), persisted to disk
-- **Rarity Effects** — tiered particles and sounds on every catch; legendary catches play a full celebration sequence
-- **MiniMessage Throughout** — all text uses Adventure's MiniMessage; no legacy `§` codes anywhere
-- **Multi-Language** — ships with `en_US` and `ja_JP`; add your own locale by dropping a YAML into `lang/`
-- **Brigadier Commands** — native Paper Brigadier command registration with tab-completion
-- **Folia-Compatible Scheduling** — all entity/player callbacks use the correct regional scheduler
-- **Developer API** — register external drop providers, query player stats, hook into `MythicRodFishCatchEvent` and `MythicRodRewardRollEvent`
+## At A Glance
 
----
+| Topic                | Details                                                                  |
+| -------------------- | ------------------------------------------------------------------------ |
+| Plugin version       | `2.0.0`                                                                  |
+| Target platform      | Paper `26.1.2` (`api-version: 26.1.2`)                                   |
+| Java runtime         | Java `25+`                                                               |
+| Optional integration | [Nexo](https://polymart.org/resource/nexo) for `nexo:*` item identifiers |
+| Bundled languages    | `en_US`, `ja_JP`                                                         |
+| Validation baseline  | Official Paper `26.1.2` build `64` on Temurin `25.0.3`                   |
+| Scheduler model      | Paper-first with Folia-aware owner scheduling                            |
 
-## Requirements
+MythicRod is built for current Paper first. Folia-aware handoffs are implemented,
+but a real Folia runtime smoke test is still recommended before production use
+on the target server build.
 
-| Dependency | Version |
-|---|---|
-| Paper | 1.21.11+ |
-| Java | 21+ |
+## Highlights
 
-No other dependencies required. Optional soft-dependency on [Nexo](https://polymart.org/resource/nexo) for custom item support.
+- Weighted reward tables with custom names, lore, enchantments, glow, model data, biome filters, and permission gates.
+- GUI and command workflows for drops, config toggles, particles, rod selection, stats, and leaderboard views.
+- MiniMessage-based text everywhere, with lenient parsing so bad admin-entered formatting falls back to visible plain text instead of breaking menus.
+- Config-backed rod luck multipliers that affect rare and legendary rolls without distorting common catches.
+- Persisted player statistics by rarity tier, with API snapshots and leaderboard access.
+- Particle validation against the running Paper API, including safe defaults for data-bound particles.
+- API hooks for external reward providers plus `MythicRodFishCatchEvent` and `MythicRodRewardRollEvent`.
 
----
+## Quick Start
 
-## Installation
+1. Download `MythicRod-Paper-x.y.z.jar` from [Releases](https://github.com/xcutiboo/MythicRod/releases).
+2. Drop it into your server's `plugins/` directory.
+3. Start the server once.
+4. Edit `plugins/MythicRod/config.yml` and `plugins/MythicRod/drops.yml`.
+5. Run `/mythicrod reload` after config changes.
 
-1. Download `MythicRod-Paper-x.y.z.jar` from [Releases](https://github.com/xcutiboo/MythicRod/releases)
-2. Drop it into your server's `plugins/` directory
-3. Restart (or `/reload confirm` if you know what you're doing)
-4. Edit `plugins/MythicRod/config.yml` and `drops.yml` to your liking
-5. `/mythicrod reload` — no restart needed after config changes
+No extra runtime dependencies are required.
 
----
+## Admin Workflow
+
+- `/mythicrod` or `/mythicrod gui` opens the main hub.
+- `/mythicrod drops` opens the drop browser and editor.
+- `/mythicrod config` mirrors the core runtime toggles available in the GUI.
+- `/mythicrod rod` opens rod-tier and visual-preference controls.
+- `/mythicrod stats` and `/mythicrod top` expose persisted player stats.
+
+The drop editor is built for real admin work, not only toy examples. It can edit
+identifier, weight, amount, display name, lore, model data, enchantments, item
+flags, permission gate, biome filter, and glow state, then save back to
+`plugins/MythicRod/drops.yml`.
+
+Text-entry fields use chat input, so admins can enter exact values instead of
+clicking through tiny increments:
+
+- Item identifiers: `DIAMOND`, `minecraft:diamond`, or `nexo:item_id`
+- Exact numbers: weight and amount
+- MiniMessage display names and lore
+- Permission nodes or `clear`
+- Biome lists such as `ocean, deep_ocean`
+- Enchantments such as `sharpness:3, unbreaking:2`
+- Item flags such as `HIDE_ENCHANTS, HIDE_ATTRIBUTES`
+
+`cancel`, `back`, and `exit` return to the editor without applying the typed
+value.
 
 ## Commands
 
-| Command | Description | Permission |
-|---|---|---|
-| `/mythicrod` | Open main GUI | `mythicrod.command` |
-| `/mythicrod gui` | Open main GUI | `mythicrod.gui` |
-| `/mythicrod reload` | Reload all configuration | `mythicrod.admin.reload` |
-| `/mythicrod stats [player]` | View fishing statistics | `mythicrod.stats.view` |
-| `/mythicrod top [limit]` | View leaderboard | `mythicrod.stats.leaderboard` |
-| `/mythicrod drops [category]` | Browse drop tables | `mythicrod.drops.view` |
-| `/mythicrod give <player> <tier>` | Give a MythicRod item | `mythicrod.admin.give` |
-| `/mythicrod debug` | Print debug info to console | `mythicrod.admin.debug` |
-| `/mythicrod help` | Show command reference | `mythicrod.command` |
+| Command                                | Description                                       | Permission                                            |
+| -------------------------------------- | ------------------------------------------------- | ----------------------------------------------------- |
+| `/mythicrod`                           | Open the main GUI                                 | `mythicrod.command`                                   |
+| `/mythicrod gui`                       | Open the main GUI directly                        | `mythicrod.gui`                                       |
+| `/mythicrod rod`                       | Open rod and visual settings                      | `mythicrod.gui`                                       |
+| `/mythicrod reload`                    | Reload config, drops, players, and language files | `mythicrod.admin.reload`                              |
+| `/mythicrod stats [player]`            | View fishing statistics                           | `mythicrod.stats.view`, `mythicrod.stats.view.others` |
+| `/mythicrod top [limit]`               | View the leaderboard                              | `mythicrod.stats.leaderboard`                         |
+| `/mythicrod drops [category]`          | Browse drop tables or open a category directly    | `mythicrod.drops.view`                                |
+| `/mythicrod give <player> <tier>`      | Give a MythicRod item                             | `mythicrod.admin.give`                                |
+| `/mythicrod config [setting] [value]`  | View or edit core settings                        | `mythicrod.admin.config`                              |
+| `/mythicrod particle [channel] <type>` | Configure fishing particles                       | `mythicrod.admin.config`                              |
+| `/mythicrod validate`                  | Run a health check on loaded drops                | `mythicrod.admin.config`                              |
+| `/mythicrod testroll [biome] [count]`  | Simulate loot rolls and print a tier histogram    | `mythicrod.admin.debug`                               |
+| `/mythicrod rod inspect`               | Dump MythicRod metadata for the held rod          | `mythicrod.admin.debug`                               |
+| `/mythicrod debug`                     | Print debug info to console                       | `mythicrod.admin.debug`                               |
+| `/mythicrod help`                      | Show the command reference                        | `mythicrod.command`                                   |
 
-### Permissions
+Config commands cover the same core toggles exposed by the GUI:
+`sounds`, `particles`, `statistics`, `biome-drops`, `permissions`, `debug`,
+`delivery-mode`, and `stats-save-interval`.
 
-```yaml
-mythicrod.command           # Base command access (default: true)
-mythicrod.gui               # Open the main GUI (default: true)
-mythicrod.stats.view        # View own/others' stats (default: true)
-mythicrod.stats.leaderboard # View leaderboard (default: true)
-mythicrod.drops.view        # Browse drop tables (default: true)
-mythicrod.admin             # All admin permissions (default: op)
-mythicrod.admin.reload      # Reload configuration
-mythicrod.admin.give        # Give MythicRod items to players
-mythicrod.admin.config      # Edit drops via GUI / access config menu
-mythicrod.admin.debug       # View debug information
-```
+Particle commands are validated against the running Paper API. If a selected
+particle requires extra data, MythicRod supplies safe defaults so a bad choice
+does not break reward delivery.
 
----
+## Permissions
+
+| Permission                    | Default | Purpose                     |
+| ----------------------------- | ------- | --------------------------- |
+| `mythicrod.command`           | `true`  | Base command access         |
+| `mythicrod.gui`               | `true`  | Open the main GUI           |
+| `mythicrod.stats.view`        | `true`  | View your own stats         |
+| `mythicrod.stats.view.others` | `op`    | View another player's stats |
+| `mythicrod.stats.leaderboard` | `true`  | View the leaderboard        |
+| `mythicrod.drops.view`        | `true`  | Browse drop tables          |
+| `mythicrod.admin.reload`      | `op`    | Reload runtime data         |
+| `mythicrod.admin.give`        | `op`    | Give MythicRod items        |
+| `mythicrod.admin.config`      | `op`    | Edit drops and config       |
+| `mythicrod.admin.debug`       | `op`    | Print debug information     |
+| `mythicrod.rod.advanced`      | `op`    | Use the Advanced rod tier   |
+| `mythicrod.rod.legendary`     | `op`    | Use the Legendary rod tier  |
+
+MythicRod also exposes grouped trees such as `mythicrod.*`, `mythicrod.admin.*`,
+`mythicrod.stats.*`, `mythicrod.drops.*`, and `mythicrod.rod.*` in
+`paper-plugin.yml`.
 
 ## Configuration
 
-### `config.yml` — core settings
+### `config.yml`
 
 ```yaml
-language: en_US          # en_US | ja_JP
-use_sounds: true
-use_particles: true
-track_statistics: true
-biome_specific_drops: true
-drop_to_inventory: false  # false = fly-to-player (vanilla feel)
-debug: false
+language:
+  default: en_US # en_US | ja_JP
 
-# Catch message templates (MiniMessage)
+features:
+  sounds:
+    enabled: true
+
+  particles:
+    enabled: true
+    catch-particle: SPLASH
+    bubble-particle: BUBBLE_POP
+    success-particle: HAPPY_VILLAGER
+    xp-particle: HAPPY_VILLAGER
+
+  statistics:
+    enabled: true
+
+  drops:
+    biome-specific:
+      enabled: true
+    delivery-mode: vanilla_retrieve # vanilla_retrieve | inventory | drop_at_player
+
+  rods:
+    luck-multipliers:
+      basic: 1.0
+      advanced: 1.25
+      legendary: 1.5
+
+  permissions:
+    enabled: true
+
+  debug:
+    enabled: false
+
+timers:
+  stats-save-interval-seconds: 600
+
 messages:
   catch:
-    common:    '<green>✓ <gray>Caught <white>%amount%× %item%<gray>!'
-    uncommon:  '<aqua>✦ <bold>RARE CATCH!</bold> <white>...'
-    rare:      '<aqua>✦ <bold>RARE CATCH!</bold> <white>...'
-    legendary: '<light_purple>✦ <bold>LEGENDARY!</bold> <white>...'
+    common: '<gray>You caught <white><bold>{amount}x {item}</bold></white>!'
+    uncommon: |-
+      <green><bold>♦ Uncommon Catch ♦</bold></green>
+      <dark_green>You caught <green><bold>{amount}x {item}</bold></green>!
+    rare: |-
+      <aqua><bold>★ Rare Catch! ★</bold></aqua>
+      <dark_aqua>You caught <aqua><bold>{amount}x {item}</bold></aqua>!
+    legendary: |-
+      <gold><bold>✨ LEGENDARY CATCH! ✨</bold></gold>
+      <yellow>You caught <gold><bold>{amount}x {item}</bold></gold>!
 ```
 
-### `drops.yml` — loot tables
+Notes:
+
+- `weight` is a relative roll weight, not a percentage.
+- Rod luck multipliers affect only rare and legendary reward weights.
+- Invalid particle names are corrected to safe defaults at startup or reload.
+- Delivery mode is configured under `features.drops.delivery-mode`.
+
+### `drops.yml`
 
 ```yaml
 drops:
   global:
     - identifier: COD
-      chance: 50
+      weight: 50
       amount: 1
 
     - identifier: SALMON
-      chance: 30
+      weight: 30
       amount: 1
       custom_name: '<aqua>★ Silver Salmon</aqua>'
       lore:
         - '<gray>A shimmering silver catch'
-      glow: false
 
   rare:
     - identifier: DIAMOND
-      chance: 2
+      weight: 2
       amount: 1
-      custom_name: '<aqua>💎 Deep-Sea Diamond</aqua>'
+      custom_name: '<aqua>Deep-Sea Diamond</aqua>'
       glow: true
 
   biome_ocean:
     - identifier: NAUTILUS_SHELL
-      chance: 5
+      weight: 5
       amount: 1
       biomes:
         - minecraft:ocean
         - minecraft:deep_ocean
 ```
 
-**Drop fields:**
+| Field               | Type                   | Meaning                                                        |
+| ------------------- | ---------------------- | -------------------------------------------------------------- |
+| `identifier`        | `String`               | Material name, `minecraft:*`, or `nexo:*` when Nexo is enabled |
+| `weight`            | `int`                  | Relative roll weight                                           |
+| `amount`            | `int`                  | Stack size                                                     |
+| `custom_name`       | `String`               | MiniMessage display name                                       |
+| `lore`              | `List<String>`         | MiniMessage lore lines                                         |
+| `custom_model_data` | `int`                  | Custom model data, `0` or omitted to disable                   |
+| `glow`              | `boolean`              | Enchantment glow without a visible enchantment                 |
+| `enchantments`      | `Map<String, Integer>` | Example: `'minecraft:unbreaking': 2`                           |
+| `item_flags`        | `List<String>`         | Bukkit item flags such as `HIDE_ENCHANTS`                      |
+| `biomes`            | `List<String>`         | Restrict a drop to specific biomes                             |
+| `permission`        | `String`               | Permission node required to catch the drop                     |
 
-| Field | Type | Description |
-|---|---|---|
-| `identifier` | String | Material name (e.g. `DIAMOND`) or namespaced key |
-| `chance` | int | Relative weight (higher = more common) |
-| `amount` | int | Stack size |
-| `custom_name` | String | MiniMessage name (optional) |
-| `lore` | List\<String\> | MiniMessage lore lines (optional) |
-| `glow` | boolean | Enchantment glow without enchantment (optional) |
-| `enchantments` | Map | `EFFICIENCY: 3` etc. (optional) |
-| `biomes` | List\<String\> | Restrict to specific biomes (optional) |
-| `permission` | String | Permission node required to catch (optional) |
+Category notes:
 
----
-
-## Building from Source
-
-```bash
-git clone https://github.com/xcutiboo/MythicRod.git
-cd MythicRod
-./gradlew clean :mythicrod-paper:shadowJar
-```
-
-Output: `mythicrod-paper/build/libs/MythicRod-Paper-x.y.z.jar`
-
-### Project Structure
-
-```
-MythicRod/
-├── mythicrod-common/      # Platform-agnostic core (drop logic, config, stats, API)
-└── mythicrod-paper/       # Paper implementation (GUI, Brigadier commands, Folia scheduler)
-```
-
----
+- Biome categories use a `biome_` prefix, such as `biome_ocean`.
+- `/mythicrod drops ocean` resolves to the same category as `/mythicrod drops biome_ocean`.
+- With `features.permissions.enabled: true`, MythicRod applies default gates for `global`, `rare`, and `legendary` unless a row defines its own `permission`.
+- Older `biome-drops.*` configs are still read during upgrade, but modern `drops.*` categories win when both exist.
 
 ## Developer API
 
-Add MythicRod as a dependency (it's registered in Bukkit's `ServicesManager`):
+MythicRod exposes a small but practical integration surface built around one
+runtime service, two Paper events, and platform-neutral item/drop/stat views.
+
+| If you want to...                 | Use                                                                |
+| --------------------------------- | ------------------------------------------------------------------ |
+| Resolve MythicRod at runtime      | `MythicRodAPI` via Bukkit `ServicesManager` or `MythicRodServices` |
+| Inspect loaded drop tables        | `DropCatalog` and `PlatformDrop`                                   |
+| Create MythicRod-compatible items | `MythicRodAPI#createItem(...)` or `PlatformItemFactory`            |
+| Inject custom rewards             | `ExternalDropProvider`                                             |
+| Read stats and leaderboards       | `PlayerStatSnapshot` futures from `MythicRodAPI`                   |
+| Intercept Paper reward flow       | `MythicRodRewardRollEvent` and `MythicRodFishCatchEvent`           |
+
+Preferred Paper lookup:
 
 ```java
-// Retrieve API — works without depending on MythicRod's internal classes
-RegisteredServiceProvider<MythicRodAPI> provider =
-    Bukkit.getServicesManager().getRegistration(MythicRodAPI.class);
-
-if (provider != null) {
-    MythicRodAPI api = provider.getProvider();
-}
+MythicRodAPI api = MythicRodServices.require();
 ```
 
-### Register a custom drop provider
+Simple provider registration:
 
 ```java
 api.registerExternalDropProvider(new ExternalDropProvider() {
-    @Override
-    public String getKey() { return "myplugin:special_drops"; }
+  @Override
+  public String getKey() {
+    return "myplugin:special_drops";
+  }
 
-    @Override
-    public Optional<CustomDrop> getRandomDrop(Player player, String biome) {
-        // Your logic here
-        return Optional.empty();
-    }
+  @Override
+  public double getWeight(PlatformPlayer player) {
+    return player.hasPermission("myplugin.special_reward") ? 2.5D : 0.0D;
+  }
+
+  @Override
+  public PlatformItem generateItem(PlatformPlayer player) {
+    return api.createItem("DIAMOND", 1).orElse(null);
+  }
+
+  @Override
+  public String getDisplayName() {
+    return "<aqua>Special Diamond</aqua>";
+  }
+
+  @Override
+  public String getTier() {
+    return "rare";
+  }
 });
 ```
 
-### Query player statistics
+Important contract notes:
 
-```java
-// Returns a CompletableFuture<PlayerStatSnapshot>
-api.getPlayerStats(player.getUniqueId()).thenAccept(snapshot -> {
-    long total     = snapshot.totalCatches();
-    long legendary = snapshot.legendaryCatches();
-});
-```
+- Future-backed API methods complete on MythicRod's async scheduler, not on a safe world or entity owner thread.
+- Provider hooks and Paper events run on MythicRod's player-owned execution path and must stay non-blocking.
+- Reward weights are relative weights, not percentages.
 
-### Hook into fishing events
+Full guide: [docs/developer-api.md](docs/developer-api.md)
 
-```java
-// Fired before the weighted roll — modify luck or force a specific drop
-@EventHandler
-public void onRewardRoll(MythicRodRewardRollEvent event) {
-    if (event.getPlayer().hasPermission("vip.luck_boost")) {
-        event.setLuckMultiplier(1.5);
-    }
-}
+## Localization
 
-// Fired after a drop is selected — cancellable, item can be replaced
-@EventHandler
-public void onFishCatch(MythicRodFishCatchEvent event) {
-    event.setRewardItem(myCustomItem);  // replace reward
-    // event.setCancelled(true);        // suppress reward entirely
-}
-```
+1. Copy `plugins/MythicRod/lang/en_US.yml` to a new locale file such as `de_DE.yml`.
+2. Translate values only. Do not rename keys.
+3. Set `language.default` in `config.yml`.
+4. Run `/mythicrod reload`.
 
-### Top fishers leaderboard
+Repository language sources live in `mythicrod-paper/src/main/resources/lang/`.
 
-```java
-api.getTopPlayers(StatType.TOTAL_CATCHES, 10).thenAccept(list -> {
-    for (PlayerStatSnapshot entry : list) {
-        Bukkit.getLogger().info(entry.playerName() + ": " + entry.totalCatches());
-    }
-});
-```
+All player-facing text uses [MiniMessage](https://docs.advntr.dev/minimessage/format.html):
 
----
-
-## Adding a Language
-
-1. Copy `plugins/MythicRod/lang/en_US.yml` to `lang/de_DE.yml` (or any locale code)
-2. Translate every value — **do not change the keys**
-3. Set `language: de_DE` in `config.yml`
-4. `/mythicrod reload`
-
-All text uses [MiniMessage](https://docs.advntr.dev/minimessage/format.html) formatting. Example:
-```
+```text
 '<gold><bold>My text</bold></gold>'
 '<#ff6600>Hex colors too!</#ff6600>'
 ```
 
----
+MythicRod deliberately ignores stale unknown keys from copied older language
+files so dead text cannot override current GUI and command behavior.
+
+## Metrics And Publishing
+
+MythicRod uses bStats (`pluginId: 23847`) for anonymous adoption and health
+signals such as Paper version, language, delivery mode, feature toggles,
+configured drop count, tracked player count, and total custom catches. bStats
+startup is isolated so a metrics issue cannot stop the plugin from enabling.
+
+Hangar publishing is wired through the official Paper Hangar Gradle plugin.
+Store the token in `HANGAR_API_TOKEN`. Do not place it in source files,
+workflow YAML, or `gradle.properties`.
+
+```bash
+./gradlew :mythicrod-paper:build \
+  :mythicrod-paper:publishPluginPublicationToHangar \
+  :mythicrod-paper:syncPluginPublicationMainResourcePagePageToHangar
+```
+
+The release workflow uses the shaded Paper jar, `README.md` as the resource
+page, `CHANGELOG.md` as the release changelog, and the `paperVersion` declared
+in `gradle.properties`.
+
+## Build From Source
+
+```bash
+git clone https://github.com/xcutiboo/MythicRod.git
+cd MythicRod
+export JAVA_HOME="$HOME/.local/java/jdk-25"
+./gradlew clean :mythicrod-paper:shadowJar
+```
+
+Output:
+`mythicrod-paper/build/libs/MythicRod-Paper-x.y.z.jar`
+
+Project layout:
+
+```text
+MythicRod/
+|- mythicrod-api/      public API, service contracts, platform-facing DTOs
+|- mythicrod-common/   shared drop logic, config, stats, and runtime policy
+`- mythicrod-paper/    Paper implementation, GUI, commands, events, adapters
+```
 
 ## License
 
-[MIT](LICENSE) — free to use, modify, and redistribute. Attribution appreciated.
+[MIT](LICENSE). Use it, modify it, ship it. Attribution is appreciated.

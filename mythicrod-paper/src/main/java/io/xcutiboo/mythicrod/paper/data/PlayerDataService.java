@@ -1,98 +1,158 @@
 package io.xcutiboo.mythicrod.paper.data;
 
-import io.xcutiboo.mythicrod.MythicRod;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import io.xcutiboo.mythicrod.MythicRod;
 
 /**
- * Manages per-player persistent data (rod tier, auto-retrieve flag).
+ * Manages per-player persistent data used by Paper-only gameplay and UI code.
  *
- * <p>Caches PDC reads in {@link ConcurrentHashMap}s for performance.
- * Implements {@link Listener} so that it can evict stale cache entries when a
- * player disconnects — preventing unbounded memory growth in long-running servers.
- * Must be registered with {@code plugin.getServer().getPluginManager().registerEvents(this, plugin)}.
+ * <p>The data lives in the player's {@link PersistentDataContainer}, so it moves
+ * with normal player data and does not leak Paper presentation preferences into
+ * the shared module.
  */
 public class PlayerDataService implements Listener {
-    private final NamespacedKey rodTierKey;
-    private final NamespacedKey autoRetrieveKey;
-    private final Map<UUID, String>  tierCache          = new ConcurrentHashMap<>();
-    private final Map<UUID, Boolean> autoRetrieveCache  = new ConcurrentHashMap<>();
-
+    private static final Logger LOGGER = Logger.getLogger("MythicRod");
     private static final String DEFAULT_TIER = "basic";
 
-    // Bukkit event handlers fire only after onEnable() returns, so 'this' is fully
-    // initialised before onPlayerQuit can ever be invoked.  The Java 21 this-escape
-    // lint warning is a false-positive here; suppress it explicitly.
-    @SuppressWarnings("this-escape")
+    private final NamespacedKey rodTierKey;
+    private final NamespacedKey reducedEffectsKey;
+    private final Map<UUID, String>  tierCache          = new ConcurrentHashMap<>();
+    private final Map<UUID, Boolean> reducedEffectsCache = new ConcurrentHashMap<>();
+
     public PlayerDataService(MythicRod plugin) {
         this.rodTierKey      = new NamespacedKey(plugin, "mythicrod_tier");
-        this.autoRetrieveKey = new NamespacedKey(plugin, "mythicrod_autoretrieve");
-        // Self-register so onPlayerQuit fires without requiring a separate call-site.
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        this.reducedEffectsKey = new NamespacedKey(plugin, "mythicrod_reduced_effects");
     }
 
     /**
-     * CACHE-LEAK FIX: Evict per-player cache entries on disconnect.
-     * Without this handler the ConcurrentHashMaps grow indefinitely —
-     * one entry per unique player that joins, never removed.
+     * Evicts per-player cache entries when a player leaves.
+     *
+     * <p>Without this handler the caches retain one entry per unique player
+     * until plugin shutdown.
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        clearCache(event.getPlayer().getUniqueId());
+        try {
+            clearCache(event.getPlayer().getUniqueId());
+        } catch (Exception e) {
+            warning(e, () -> "Failed to handle player quit cache eviction");
+        }
     }
-    
+
     public String getRodTier(Player player) {
-        return tierCache.computeIfAbsent(player.getUniqueId(), uuid -> {
-            PersistentDataContainer pdc = player.getPersistentDataContainer();
-            if (pdc.has(rodTierKey, PersistentDataType.STRING)) {
-                String tier = pdc.get(rodTierKey, PersistentDataType.STRING);
-                return tier != null ? tier : DEFAULT_TIER;
+        try {
+            if (player == null) {
+                return DEFAULT_TIER;
             }
+            return tierCache.computeIfAbsent(player.getUniqueId(), uuid -> {
+                try {
+                    PersistentDataContainer pdc = player.getPersistentDataContainer();
+                    if (pdc.has(rodTierKey, PersistentDataType.STRING)) {
+                        String tier = pdc.get(rodTierKey, PersistentDataType.STRING);
+                        return tier != null ? tier : DEFAULT_TIER;
+                    }
+                } catch (Exception e) {
+                    warning(e, () -> "Failed to read rod tier for " + uuid);
+                }
+                return DEFAULT_TIER;
+            });
+        } catch (Exception e) {
+            warning(e, () -> "Failed to resolve rod tier");
             return DEFAULT_TIER;
-        });
+        }
     }
-    
+
     public void setRodTier(Player player, String tier) {
-        player.getPersistentDataContainer().set(rodTierKey, PersistentDataType.STRING, tier);
-        tierCache.put(player.getUniqueId(), tier);
-    }
-    
-    public boolean hasAutoRetrieve(Player player) {
-        return autoRetrieveCache.computeIfAbsent(player.getUniqueId(), uuid -> {
-            PersistentDataContainer pdc = player.getPersistentDataContainer();
-            if (pdc.has(autoRetrieveKey, PersistentDataType.BYTE)) {
-                Byte value = pdc.get(autoRetrieveKey, PersistentDataType.BYTE);
-                return value != null && value == (byte) 1;
+        try {
+            if (player == null || tier == null) {
+                return;
             }
+            player.getPersistentDataContainer().set(rodTierKey, PersistentDataType.STRING, tier);
+            tierCache.put(player.getUniqueId(), tier);
+        } catch (Exception e) {
+            warning(e, () -> "Failed to persist rod tier");
+        }
+    }
+
+    public boolean hasReducedEffects(Player player) {
+        try {
+            if (player == null) {
+                return false;
+            }
+            return reducedEffectsCache.computeIfAbsent(player.getUniqueId(), uuid -> {
+                try {
+                    PersistentDataContainer pdc = player.getPersistentDataContainer();
+                    if (pdc.has(reducedEffectsKey, PersistentDataType.BYTE)) {
+                        Byte value = pdc.get(reducedEffectsKey, PersistentDataType.BYTE);
+                        return value != null && value == (byte) 1;
+                    }
+                } catch (Exception e) {
+                    warning(e, () -> "Failed to read reduced-effects preference for " + uuid);
+                }
+                return false;
+            });
+        } catch (Exception e) {
+            warning(e, () -> "Failed to resolve reduced-effects preference");
             return false;
-        });
+        }
     }
-    
-    public void setAutoRetrieve(Player player, boolean enabled) {
-        player.getPersistentDataContainer().set(autoRetrieveKey, PersistentDataType.BYTE, enabled ? (byte) 1 : (byte) 0);
-        autoRetrieveCache.put(player.getUniqueId(), enabled);
+
+    public void setReducedEffects(Player player, boolean enabled) {
+        try {
+            if (player == null) {
+                return;
+            }
+            player.getPersistentDataContainer().set(reducedEffectsKey, PersistentDataType.BYTE, enabled ? (byte) 1 : (byte) 0);
+            reducedEffectsCache.put(player.getUniqueId(), enabled);
+        } catch (Exception e) {
+            warning(e, () -> "Failed to persist reduced-effects preference");
+        }
     }
-    
-    public void toggleAutoRetrieve(Player player) {
-        setAutoRetrieve(player, !hasAutoRetrieve(player));
+
+    public void toggleReducedEffects(Player player) {
+        try {
+            setReducedEffects(player, !hasReducedEffects(player));
+        } catch (Exception e) {
+            warning(e, () -> "Failed to toggle reduced-effects preference");
+        }
     }
-    
+
     public void clearCache(UUID uuid) {
-        tierCache.remove(uuid);
-        autoRetrieveCache.remove(uuid);
+        try {
+            if (uuid != null) {
+                tierCache.remove(uuid);
+                reducedEffectsCache.remove(uuid);
+            }
+        } catch (Exception e) {
+            warning(e, () -> "Failed to clear player-data cache for " + uuid);
+        }
     }
-    
+
     public void clearAllCache() {
-        tierCache.clear();
-        autoRetrieveCache.clear();
+        try {
+            tierCache.clear();
+            reducedEffectsCache.clear();
+        } catch (Exception e) {
+            warning(e, () -> "Failed to clear all player-data caches");
+        }
+    }
+
+    private void warning(Throwable thrown, Supplier<String> messageSupplier) {
+        LOGGER.log(Level.WARNING, thrown, messageSupplier);
     }
 }
