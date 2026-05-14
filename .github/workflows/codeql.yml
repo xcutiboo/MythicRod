@@ -14,6 +14,10 @@ permissions:
 jobs:
   analyze:
     name: Analyze (java-kotlin)
+    # CodeQL is free on public repositories. On private repositories it
+    # requires GitHub Advanced Security. Skip on private so the workflow
+    # never fails during private development.
+    if: github.event.repository.private != true
     runs-on: ubuntu-latest
     permissions:
       security-events: write
