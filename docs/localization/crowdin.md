@@ -65,6 +65,51 @@ l10n_master branch + auto PR back to master
 The translation PR is `l10n: sync Crowdin translations`. Merge it the
 same way as any other PR.
 
+## Why a one-time seed is needed for bundled translations
+
+The scheduled workflow only **uploads the source file** and downloads
+finished translations. It does not upload existing translated files,
+because re-uploading them on every push could overwrite reviewer work on
+Crowdin.
+
+That means a freshly added bundled locale (for example `ja_JP.yml`
+shipped with the plugin) sits on disk, but Crowdin has no record of it.
+The **Crowdin seed translations** workflow does the one-time upload
+explicitly:
+
+```
+.github/workflows/crowdin-seed.yml
+  upload_sources: true
+  upload_translations: true
+  auto_approve_imported: false   # seeded strings stay unapproved
+  import_eq_suggestions: false   # exact matches do not silently override
+```
+
+Run it from the Actions tab after:
+- adding a new bundled locale to the repo
+- enabling a new target language in the Crowdin project
+- recovering from a Crowdin project rebuild
+
+After the seed completes, the language tile on the Crowdin dashboard
+shows imported strings. From there on, the scheduled workflow handles
+source pushes and translation pulls automatically.
+
+## When a freshly enabled target language still shows nothing
+
+Symptom: en-GB (or any new target) was enabled in Crowdin settings, but
+the project dashboard still shows zero strings for it.
+
+Fix:
+1. Confirm the target language is checked under **Project settings →
+   Languages → Target Languages** and the *section-local* Save button
+   under that list was clicked.
+2. Verify the language code in `crowdin.yml` matches the Crowdin code.
+   For example `en-GB → en_GB`.
+3. Trigger **Crowdin seed translations** from Actions. The action log
+   should print `Importing translations for file '.../<locale>.yml'`
+   followed by `✔ File '...'`.
+4. Reload the Crowdin dashboard. The tile updates within a few seconds.
+
 ## Why local edits to non-source locale files might disappear
 
 A direct edit to `ja_JP.yml` on `master` survives until the next

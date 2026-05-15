@@ -1,6 +1,7 @@
 ---
 title: Developer API
 nav_order: 8
+has_children: true
 ---
 
 # MythicRod Developer API
