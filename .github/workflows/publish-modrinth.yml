@@ -79,6 +79,53 @@ jobs:
             Nexo(optional){modrinth:nexo}
           fail-mode: warn
 
+      - name: Sync project body to Modrinth
+        if: env.MODRINTH_TOKEN != ''
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re, sys, urllib.request, urllib.error
+          base = "https://raw.githubusercontent.com/xcutiboo/MythicRod/master"
+          with open("README.md", encoding="utf-8") as fh:
+              body = fh.read()
+          body = re.sub(r'(!\[[^\]]*\]\(|src=")(?:\./)?(assets/[^)"\s]+)',
+                        lambda m: f'{m.group(1)}{base}/{m.group(2)}', body)
+          body = re.sub(r'\[([^\]]+)\]\((?:\./)?docs/([^)\s]+)\)',
+                        lambda m: f'[{m.group(1)}](https://github.com/xcutiboo/MythicRod/blob/master/docs/{m.group(2)})',
+                        body)
+          body = re.sub(r'\[([^\]]+)\]\(LICENSE\)',
+                        lambda m: f'[{m.group(1)}](https://github.com/xcutiboo/MythicRod/blob/master/LICENSE)', body)
+          body = re.sub(r'\[([^\]]+)\]\(CHANGELOG\.md\)',
+                        lambda m: f'[{m.group(1)}](https://github.com/xcutiboo/MythicRod/blob/master/CHANGELOG.md)', body)
+          payload = json.dumps({
+              "body": body,
+              "source_url": "https://github.com/xcutiboo/MythicRod",
+              "issues_url": "https://github.com/xcutiboo/MythicRod/issues",
+              "wiki_url": "https://xcutiboo.github.io/MythicRod/",
+              "discord_url": "https://discord.gg/MDwtUgxX9U",
+              "donation_urls": [
+                  {"id": "ko-fi", "platform": "Ko-fi", "url": "https://ko-fi.com/xcutiboo"}
+              ],
+          }).encode()
+          req = urllib.request.Request(
+              "https://api.modrinth.com/v2/project/mythicrod",
+              data=payload, method="PATCH",
+              headers={
+                  "Authorization": os.environ["MODRINTH_TOKEN"],
+                  "Content-Type": "application/json",
+                  "User-Agent": "xcutiboo/MythicRod (CI body sync)",
+              },
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  print(f"Modrinth body sync HTTP {resp.status}")
+          except urllib.error.HTTPError as exc:
+              print(f"Modrinth body sync failed: HTTP {exc.code}", exc.read().decode("utf-8", "replace"))
+              sys.exit(0)
+          PY
+
       - name: Skip without Modrinth token
         if: env.MODRINTH_TOKEN == ''
         run: echo "MODRINTH_TOKEN is not configured; skipping Modrinth publish."

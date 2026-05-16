@@ -66,6 +66,27 @@ tasks {
     }
 }
 
+val rawAssetBase = "https://raw.githubusercontent.com/xcutiboo/MythicRod/master"
+
+fun externalizeReadme(text: String): String {
+    // Hangar/Modrinth render the page in isolation and cannot resolve repository-relative
+    // paths. Promote the embedded SVG/PNG/JPG references and the docs/ inline links to
+    // absolute URLs so the assets actually load when the page is viewed off-GitHub.
+    val assetPath = Regex("""(!\[[^]]*]\(|src=")(?:\./)?(assets/[^)"\s]+)""")
+    val docsPath = Regex("""\[([^]]+)]\((?:\./)?docs/([^)\s]+)\)""")
+    val licenseLink = Regex("""\[([^]]+)]\(LICENSE\)""")
+    val changelogLink = Regex("""\[([^]]+)]\(CHANGELOG\.md\)""")
+    return text
+        .replace(assetPath) { mr -> mr.groupValues[1] + rawAssetBase + "/" + mr.groupValues[2] }
+        .replace(docsPath) { mr ->
+            val label = mr.groupValues[1]
+            val rel = mr.groupValues[2]
+            "[" + label + "](https://github.com/xcutiboo/MythicRod/blob/master/docs/" + rel + ")"
+        }
+        .replace(licenseLink) { mr -> "[" + mr.groupValues[1] + "](https://github.com/xcutiboo/MythicRod/blob/master/LICENSE)" }
+        .replace(changelogLink) { mr -> "[" + mr.groupValues[1] + "](https://github.com/xcutiboo/MythicRod/blob/master/CHANGELOG.md)" }
+}
+
 hangarPublish {
     publications.register("plugin") {
         version.set(project.version.toString())
@@ -75,7 +96,7 @@ hangarPublish {
         changelog.set(providers.provider {
             rootProject.file("CHANGELOG.md").takeIf { it.isFile }?.readText() ?: "MythicRod ${project.version}"
         })
-        pages.resourcePage(rootProject.file("README.md").readText())
+        pages.resourcePage(externalizeReadme(rootProject.file("README.md").readText()))
 
         platforms {
             register(Platforms.PAPER) {

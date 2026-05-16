@@ -87,6 +87,33 @@ messages:
 - `inventory`: inserts directly into the player's inventory.
 - `drop_at_player`: drops the reward at the player's feet.
 
+## Editing while the server is running
+
+Two surfaces of MythicRod can be edited live without restarting:
+
+- `drops.yml`: edit the file, run `/mythicrod validate`, then
+  `/mythicrod reload`. Reload parses the new file into a temporary state
+  first; a parse error leaves the previous valid state in place and prints
+  the failure to console.
+- `config.yml` reload picks up most flags. The bStats handshake is
+  established once on enable; toggling it later does not unhook the
+  reporter. A restart is the only reliable way to change bStats opt-in
+  after first start.
+
+`/mythicrod config language <locale>` is the supported way to change the
+active language at runtime. Editing `language.default` in `config.yml`
+takes effect on the next reload.
+
+## What survives a reload, what does not
+
+| Surface | Survives reload? |
+|---|---|
+| Open GUI menus | Yes; menus are invalidated and re-rendered with the new language. |
+| Cached player stats | Yes. They flush to `statistics.yml` on shutdown and on the configured interval. |
+| In-flight reward rolls | Yes. The reload swaps the drop table atomically, so a roll completes against either the old table or the new one but never against a mixed view. |
+| Registered `ExternalDropProvider`s | Yes, until the registering plugin is itself disabled. |
+| Custom bStats charts | Yes, but the values shown on bstats.org refresh on the bStats poll cadence rather than instantly. |
+
 ---
 
 [← Back to docs home](./) · [GitHub](https://github.com/xcutiboo/MythicRod) · [Hangar](https://hangar.papermc.io/xcutiboo/MythicRod)
