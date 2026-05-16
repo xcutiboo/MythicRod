@@ -156,5 +156,8 @@ runs/
 .local/
 .cache/
 
+# Local analysis artefacts
+graphify-out/
+
 # OS-level
 .DS_Store?
