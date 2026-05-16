@@ -296,9 +296,13 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         return future;
     }
 
+    private static final long SLOW_PROVIDER_WARN_NS = 50_000_000L;
+
     private double getProviderWeight(@NotNull ExternalDropProvider provider, @NotNull PlatformPlayer player) {
+        long start = System.nanoTime();
         try {
             double weight = provider.getWeight(player);
+            warnIfSlow(provider, "getWeight", start);
             if (Double.isNaN(weight) || Double.isInfinite(weight) || weight <= 0.0D) {
                 return 0.0D;
             }
@@ -315,8 +319,11 @@ public class PaperMythicRodAPI implements MythicRodAPI {
 
     @Nullable
     private PlatformItem createExternalItem(@NotNull ExternalDropProvider provider, @NotNull PlatformPlayer player) {
+        long start = System.nanoTime();
         try {
-            return provider.generateItem(player);
+            PlatformItem item = provider.generateItem(player);
+            warnIfSlow(provider, "generateItem", start);
+            return item;
         } catch (Exception exception) {
             logger.log(
                 Level.WARNING,
@@ -324,6 +331,18 @@ public class PaperMythicRodAPI implements MythicRodAPI {
                 exception
             );
             return null;
+        }
+    }
+
+    private void warnIfSlow(@NotNull ExternalDropProvider provider, @NotNull String stage, long startNanos) {
+        long elapsedNanos = System.nanoTime() - startNanos;
+        if (elapsedNanos > SLOW_PROVIDER_WARN_NS) {
+            long elapsedMs = elapsedNanos / 1_000_000L;
+            logger.log(
+                Level.WARNING,
+                () -> "External drop provider '" + safeProviderKey(provider) + "' " + stage
+                    + " took " + elapsedMs + "ms on the fishing path; providers must stay non-blocking."
+            );
         }
     }
 
