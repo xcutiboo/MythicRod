@@ -110,6 +110,9 @@ stats:
   tier-count: '<gray>    <dark_gray>• <white>%tier%<gray>: <yellow>%count%'
   limit-capped: '<yellow>ℹ <gray>Limit capped at <white>%limit%<gray> to protect server performance.'
   retrieve-failed: '<red>✗ <dark_red>Failed to retrieve statistics: <yellow>%error%'
+  reset:
+    success: '<green>✓ <gray>Stats reset for <white>%player%<gray>.'
+    no-entry: '<yellow>⚠ <gray>No stored stats found for <white>%player%<gray>.'
 
 # ═══════════════════════════════════════════════════════════
 # DROPS (used by commands)

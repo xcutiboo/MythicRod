@@ -177,6 +177,11 @@ public class BrigadierCommandManager {
             .then(Commands.literal("stats")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.STATS_VIEW))
                 .executes(this::executeStatsOwnPlayer)
+                .then(Commands.literal("reset")
+                    .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
+                    .then(Commands.argument("player", StringArgumentType.word())
+                        .suggests(this::suggestKnownStatsPlayers)
+                        .executes(this::executeStatsReset)))
                 .then(Commands.argument("player", StringArgumentType.word())
                     .requires(source -> source.getSender().hasPermission(PermissionNodes.STATS_VIEW_OTHERS))
                     .suggests(this::suggestKnownStatsPlayers)
@@ -685,6 +690,38 @@ public class BrigadierCommandManager {
     }
 
     private record StatsTarget(UUID playerId, String playerName) {
+    }
+
+    private int executeStatsReset(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        try {
+            String playerArg = StringArgumentType.getString(context, "player");
+            StatsTarget target = resolveStatsTarget(playerArg);
+            if (target == null) {
+                sendMessage(sender, tr(sender, "command.player_not_found",
+                    Map.of("player", playerArg)));
+                playErrorSound(sender);
+                return 0;
+            }
+
+            boolean reset = plugin.getStatisticsManager().resetStats(target.playerId());
+            if (!reset) {
+                sendMessage(sender, tr(sender, "stats.reset.no-entry",
+                    Map.of("player", target.playerName())));
+                playErrorSound(sender);
+                return 0;
+            }
+
+            sendMessage(sender, tr(sender, "stats.reset.success",
+                Map.of("player", target.playerName())));
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, "general.error"));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing stats reset command", e);
+            return 0;
+        }
     }
 
     private int executeTop(CommandSourceStack source, int limit) {

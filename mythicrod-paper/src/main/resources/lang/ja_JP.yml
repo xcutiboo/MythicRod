@@ -110,6 +110,9 @@ stats:
   tier-count: '<gray>    <dark_gray>• <white>%tier%<gray>: <yellow>%count%'
   limit-capped: '<yellow>ℹ <gray>サーバー保護のため上限を <white>%limit%<gray> に制限しました。'
   retrieve-failed: '<red>✗ <dark_red>統計の取得に失敗しました: <yellow>%error%'
+  reset:
+    success: '<green>✓ <gray><white>%player%<gray> の統計をリセットしました。'
+    no-entry: '<yellow>⚠ <gray><white>%player%<gray> の統計は見つかりませんでした。'
 
 # ═══════════════════════════════════════════════════════════
 # ドロップ（コマンド用）
