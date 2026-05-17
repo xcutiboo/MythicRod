@@ -235,6 +235,32 @@ public final class StatisticsManager {
     }
 
     /**
+     * Clears every counter for the given player and marks the entry dirty so
+     * the next persistence flush wipes the on-disk row.
+     *
+     * @param uuid Player UUID.
+     * @return {@code true} if a stats entry existed to reset; {@code false} when
+     *         no in-memory or on-disk entry was present.
+     */
+    public boolean resetStats(@NotNull UUID uuid) {
+        PlayerStats inMemory = statsCache.getIfPresent(uuid);
+        if (inMemory != null) {
+            inMemory.reset();
+            dirtySet.put(uuid, Boolean.TRUE);
+            return true;
+        }
+
+        PlayerStats persisted = loadPersistedStats(uuid, null);
+        if (persisted == null) {
+            return false;
+        }
+        persisted.reset();
+        statsCache.put(uuid, persisted);
+        dirtySet.put(uuid, Boolean.TRUE);
+        return true;
+    }
+
+    /**
      * Flushes all dirty entries to persistent storage.
      * Must be called from the async scheduler.
      */

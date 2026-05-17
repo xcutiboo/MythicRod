@@ -26,6 +26,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.api.PlayerStatSnapshot;
 import io.xcutiboo.mythicrod.api.Result;
 import io.xcutiboo.mythicrod.api.platform.PlatformItem;
 import io.xcutiboo.mythicrod.config.RewardDeliveryMode;
@@ -35,6 +36,7 @@ import io.xcutiboo.mythicrod.drops.CustomDrop;
 import io.xcutiboo.mythicrod.paper.api.PaperMythicRodAPI;
 import io.xcutiboo.mythicrod.paper.events.MythicRodFishCatchEvent;
 import io.xcutiboo.mythicrod.paper.events.MythicRodRewardRollEvent;
+import io.xcutiboo.mythicrod.paper.events.MythicRodStatsUpdateEvent;
 import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
 import io.xcutiboo.mythicrod.paper.item.PaperPlatformItem;
 import io.xcutiboo.mythicrod.paper.item.RodFactory;
@@ -483,12 +485,28 @@ public class FishingListener implements Listener {
         if (player == null || drop == null) {
             return;
         }
-        if (plugin.getConfigManager().trackStatistics()) {
-            try {
-                plugin.getStatisticsManager().recordCatch(player.getUniqueId(), drop.getTier());
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "Failed to record catch statistics", e);
+        if (!plugin.getConfigManager().trackStatistics()) {
+            return;
+        }
+        try {
+            plugin.getStatisticsManager().recordCatch(player.getUniqueId(), drop.getTier());
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to record catch statistics", e);
+            return;
+        }
+        fireStatsUpdateEvent(player, drop);
+    }
+
+    private void fireStatsUpdateEvent(Player player, CustomDrop drop) {
+        try {
+            PlayerStatSnapshot snapshot = plugin.getApiFacade().snapshotFor(player.getUniqueId());
+            if (snapshot == null) {
+                return;
             }
+            plugin.getServer().getPluginManager().callEvent(
+                new MythicRodStatsUpdateEvent(player.getUniqueId(), drop.getTier(), snapshot));
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to fire MythicRodStatsUpdateEvent", e);
         }
     }
 

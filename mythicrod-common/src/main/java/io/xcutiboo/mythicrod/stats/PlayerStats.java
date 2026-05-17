@@ -88,6 +88,22 @@ public final class PlayerStats {
     public void markFished()                { lastFished.set(System.currentTimeMillis()); }
 
     /**
+     * Resets every counter to zero. The player UUID and name are preserved so
+     * subsequent updates land on the same entry.
+     */
+    public void reset() {
+        totalCaught.set(0);
+        commonCaught.set(0);
+        uncommonCaught.set(0);
+        rareCaught.set(0);
+        legendaryCaught.set(0);
+        basicRodUses.set(0);
+        advancedRodUses.set(0);
+        legendaryRodUses.set(0);
+        lastFished.set(0L);
+    }
+
+    /**
      * Overwrites all counters with persisted values.
      *
      * <p>Call this while loading data, before the object is exposed to active
