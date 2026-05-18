@@ -612,6 +612,12 @@ public class BrigadierCommandManager {
         try {
             config.saveConfig();
             plugin.getLanguageManager().setLanguage(requested);
+            // Force open menus to rebuild against the new locale on next render
+            // and clear any cached per-player tier display strings so the GUI
+            // picks the new translations up immediately.
+            if (plugin.getGUIManager() != null) {
+                plugin.getGUIManager().invalidateOpenMenusForReload();
+            }
             sendMessage(sender, tr(sender, "command.config.language-set",
                 Map.of("locale", requested)));
             playSuccessSound(sender);
