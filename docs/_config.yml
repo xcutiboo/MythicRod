@@ -1,0 +1,24 @@
+title: MythicRod
+description: Custom fishing progression for modern Paper servers.
+remote_theme: pages-themes/minimal@v0.2.0
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+show_downloads: false
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+permalink: pretty
+include:
+  - developer-api.md
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
