@@ -1,24 +1,40 @@
 # MythicRod
 
-Custom fishing progression for modern Paper servers.
-
-MythicRod turns vanilla fishing into a configurable reward loop with weighted
-loot tables, biome-aware rewards, persistent statistics, in-game editing,
-Adventure text, and a small public API for other plugins.
+A Paper fishing plugin built around weighted loot tables, biome-aware drops,
+permission-gated rarities, persistent stats, an in-game drop editor, and a
+small public API for other plugins to integrate with.
 
 [![Paper](https://img.shields.io/badge/Paper-26.1.2-blue)](https://papermc.io)
 [![Java](https://img.shields.io/badge/Java-25-orange)](https://adoptium.net)
 [![Release](https://img.shields.io/github/v/release/xcutiboo/MythicRod)](https://github.com/xcutiboo/MythicRod/releases)
 [![bStats](https://img.shields.io/bstats/servers/23847)](https://bstats.org/plugin/bukkit/MythicRod/23847)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-mythicrod-blue)](https://xcutiboo.github.io/MythicRod/)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/xcutiboo)
 
-## Why MythicRod
+- **Documentation site:** <https://xcutiboo.github.io/MythicRod/>
+- **Developer API guide:** [docs/developer-api.md](docs/developer-api.md)
+- **Changelog:** [CHANGELOG.md](CHANGELOG.md)
+- **Support development:** <https://ko-fi.com/xcutiboo>
 
-| For players                                                                         | For admins                                                                                    | For developers                                                                     |
-| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Tiered catches, rod progression, leaderboard tracking, and cleaner reward feedback. | GUI-first editing, exact chat input for values that matter, command parity, and safe reloads. | A public API, Paper events, external drop providers, and immutable stat snapshots. |
+## What it does
 
-## At A Glance
+For **players**, MythicRod adds rarity-tiered catches, fishing rods with
+progression, and proper reward feedback (sound, particles, MiniMessage chat
+templates) without overhauling vanilla mechanics.
+
+For **server admins**, every drop is editable in-game through a GUI, mirrored
+to commands, validated on reload, and protected by namespaced permission
+gates. There's a `/mythicrod validate` config-health command, a
+`/mythicrod testroll` simulator for tuning weights, and a Folia-safe
+`/mythicrod give` to hand out tier rods.
+
+For **plugin developers**, the public API in `mythicrod-api` exposes a
+service entry point, immutable drop and stat snapshots, an external drop
+provider hook, and Paper events for the reward roll, fish catch, and stats
+update lifecycle.
+
+## At a glance
 
 | Topic                | Details                                                                  |
 | -------------------- | ------------------------------------------------------------------------ |
@@ -30,9 +46,15 @@ Adventure text, and a small public API for other plugins.
 | Validation baseline  | Official Paper `26.1.2` build `64` on Temurin `25.0.3`                   |
 | Scheduler model      | Paper-first with Folia-aware owner scheduling                            |
 
-MythicRod is built for current Paper first. Folia-aware handoffs are implemented,
-but a real Folia runtime smoke test is still recommended before production use
-on the target server build.
+MythicRod is built for current Paper first. Folia-aware scheduler handoffs are
+in place, but I have not yet smoke-tested against a live Folia build. Validate
+on your own target server before relying on Folia in production.
+
+Spigot is not officially supported. The module split (`mythicrod-api`,
+`mythicrod-common`, `mythicrod-paper`) is structured so a `mythicrod-spigot`
+module could be added later without touching the Paper code. I'm holding off
+on that work until there's enough support to justify the maintenance burden.
+If you want it, consider sponsoring through [Ko-fi](https://ko-fi.com/xcutiboo).
 
 ## Highlights
 
@@ -307,6 +329,13 @@ Full guide: [docs/developer-api.md](docs/developer-api.md)
 
 ## Localization
 
+Translations are managed on Crowdin:
+[crowdin.com/project/mythicrod](https://crowdin.com/project/mythicrod). Source
+language is `en_US`; everything else syncs back into the repo through an
+automated `l10n: sync Crowdin translations` pull request.
+
+To use a translation on your server:
+
 1. Copy `plugins/MythicRod/lang/en_US.yml` to a new locale file such as `de_DE.yml`.
 2. Translate values only. Do not rename keys.
 3. Set `language.default` in `config.yml`.
@@ -366,6 +395,13 @@ MythicRod/
 `- mythicrod-paper/    Paper implementation, GUI, commands, events, adapters
 ```
 
+## Support
+
+If MythicRod is useful to you and you want me to keep building it (in
+particular the Spigot module and more in-depth Folia validation), the easiest
+way to help is [Ko-fi](https://ko-fi.com/xcutiboo). Bug reports and PRs are
+just as welcome and free.
+
 ## License
 
-[MIT](LICENSE). Use it, modify it, ship it. Attribution is appreciated.
+MIT. See [LICENSE](LICENSE).

@@ -10,7 +10,7 @@ parts that are easy to miss.
   `gradle.properties` (`paperVersion`).
 - Git with line-ending settings appropriate for your platform.
 
-You do not need a global Gradle install — the wrapper (`./gradlew`) bundles the
+You do not need a global Gradle install - the wrapper (`./gradlew`) bundles the
 correct version.
 
 ## Module Layout
@@ -23,6 +23,13 @@ correct version.
 
 If a change pulls Paper/Bukkit types into `mythicrod-api` or `mythicrod-common`,
 treat that as a design break and find another seam.
+
+A `mythicrod-spigot` module is intentionally not yet present. The module split
+is set up so adding it later is straightforward, but the maintenance load of a
+second runtime is meaningful and there's no point shipping a half-finished one.
+If you're interested in seeing a Spigot module land sooner, the easiest signal
+is sponsoring via [Ko-fi](https://ko-fi.com/xcutiboo); otherwise it stays on
+the back burner.
 
 ## Build and Test
 
@@ -39,7 +46,7 @@ CI runs the same `./gradlew build` on every push and pull request.
 - Match the existing code: 4-space indentation, no wildcard imports, no
   trailing whitespace.
 - Compilation is run with `-Werror` on `mythicrod-common`/`mythicrod-api`.
-  Treat new warnings as errors locally — do not suppress them blindly.
+  Treat new warnings as errors locally - do not suppress them blindly.
 - Do not introduce `System.out`, `System.err`, `printStackTrace`, or ad-hoc
   debug prints. Use the plugin logger.
 - Keep `mythicrod-api` source-compatible across minor releases. Breaking
@@ -60,7 +67,7 @@ code, entity mutations, or schedulers:
 ## Pull Requests
 
 1. Open an issue first for non-trivial changes so the design can be discussed.
-2. Keep PRs focused — one logical change per PR.
+2. Keep PRs focused - one logical change per PR.
 3. Update `CHANGELOG.md` under the `[Unreleased]` section.
 4. Run `./gradlew build` locally before pushing.
 5. Reference related issues in the PR description.
@@ -70,6 +77,21 @@ code, entity mutations, or schedulers:
 Use the issue templates under `.github/ISSUE_TEMPLATE/` so the maintainers have
 the information they need. Server logs, the MythicRod version, Paper build,
 and reproduction steps are the most useful.
+
+## Translations
+
+In-game text lives in `mythicrod-paper/src/main/resources/lang/`. `en_US.yml`
+is the source of truth; all other locales mirror its key set.
+
+If you want to translate MythicRod, please use Crowdin rather than editing
+files directly: <https://crowdin.com/project/mythicrod>. The Crowdin GitHub
+action syncs `en_US.yml` upstream and opens an `l10n: sync Crowdin
+translations` pull request when translations land. Direct PRs against locale
+files are accepted as a fallback when Crowdin isn't an option for you, but
+they will be replaced the next time Crowdin syncs unless the same change is
+also entered on Crowdin.
+
+Keep keys and placeholders identical to `en_US.yml`. Translate values only.
 
 ## Security Issues
 
