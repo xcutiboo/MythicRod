@@ -1224,7 +1224,7 @@ public class BrigadierCommandManager {
 
             if (problems == 0) {
                 sendMessage(sender, "<green>✓ Validated " + dropsChecked + " drops across "
-                    + categoriesChecked + " categories — no problems found.");
+                    + categoriesChecked + " categories - no problems found.");
                 playSuccessSound(sender);
             } else {
                 sendMessage(sender, "<red>✗ Found " + problems + " problem(s) across "

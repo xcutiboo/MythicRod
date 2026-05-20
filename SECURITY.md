@@ -41,7 +41,7 @@ In scope:
 
 Out of scope:
 
-- Vulnerabilities in Paper, Folia, Adventure, or other upstream dependencies —
+- Vulnerabilities in Paper, Folia, Adventure, or other upstream dependencies.
   report those to their respective projects.
 - Issues that require an operator to grant `mythicrod.admin.*` to untrusted
   players.

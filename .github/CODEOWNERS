@@ -1,7 +1,7 @@
 # Default owner for any unclaimed area.
 *                                @xcutiboo
 
-# Public API surface — review carefully, breaking changes need a major version bump.
+# Public API surface - review carefully, breaking changes need a major version bump.
 /mythicrod-api/                  @xcutiboo
 /docs/developer-api.md           @xcutiboo
 

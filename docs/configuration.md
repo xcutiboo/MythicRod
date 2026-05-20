@@ -75,7 +75,7 @@ messages:
 - Negative or zero `weight` and out-of-range `amount` values are clamped at
   load with a console warning that names the offending drop.
 - `delivery-mode`:
-  - `vanilla_retrieve` (default) — replaces the caught entity in-flight so
+  - `vanilla_retrieve` (default) - replaces the caught entity in-flight so
     the reward arcs back to the player like a vanilla catch.
-  - `inventory` — inserts directly into the player's inventory.
-  - `drop_at_player` — drops the reward at the player's feet.
+  - `inventory` - inserts directly into the player's inventory.
+  - `drop_at_player` - drops the reward at the player's feet.

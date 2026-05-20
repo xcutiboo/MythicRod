@@ -29,5 +29,5 @@ body:
     id: context
     attributes:
       label: Additional context
-      description: Linked issues, related plugins, screenshots — anything that
+      description: Linked issues, related plugins, screenshots - anything that
         helps weigh the change.

@@ -7,9 +7,9 @@ title: Custom rods
 MythicRod ships three rod tiers: `basic`, `advanced`, and `legendary`. Each is
 a regular fishing rod marked with two PersistentDataContainer keys:
 
-- `mythicrod:custom_rod` — byte marker (`1`) that identifies the item as a
+- `mythicrod:custom_rod` - byte marker (`1`) that identifies the item as a
   MythicRod rod.
-- `mythicrod:rod_tier` — string with the tier name.
+- `mythicrod:rod_tier` - string with the tier name.
 
 Players cannot fabricate these markers in survival; admins distribute rods
 through `/mythicrod give <player> <tier>`.
@@ -22,7 +22,7 @@ through `/mythicrod give <player> <tier>`.
 | `advanced`  | `mythicrod.rod.advanced`    | configurable, default `1.25x` |
 | `legendary` | `mythicrod.rod.legendary`   | configurable, default `1.50x` |
 
-Multipliers apply only to drops with `weight <= 5` — that is the rare and
+Multipliers apply only to drops with `weight <= 5` - that is the rare and
 legendary tiers. Common/uncommon catches are unaffected.
 
 ## Inspecting metadata

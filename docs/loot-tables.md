@@ -58,9 +58,9 @@ drops:
 
 ## Implicit category behaviour
 
-- `global` — base catches; permission gate `mythicrod.drops.global`.
-- `rare` — uncommon/rare catches; permission gate `mythicrod.drops.rare`.
-- `legendary` — top-tier catches; permission gate `mythicrod.drops.legendary`.
+- `global` - base catches; permission gate `mythicrod.drops.global`.
+- `rare` - uncommon/rare catches; permission gate `mythicrod.drops.rare`.
+- `legendary` - top-tier catches; permission gate `mythicrod.drops.legendary`.
 
 Categories named `biome_<name>` are automatically scoped to the matching
 biome. `/mythicrod drops ocean` resolves to `biome_ocean`.

@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to report a bug. Please fill out as much of
-        the form as you can — the more we know up front, the faster we can fix it.
+        the form as you can - the more we know up front, the faster we can fix it.
 
   - type: input
     id: mythicrod-version
