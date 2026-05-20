@@ -1,0 +1,51 @@
+name: Crowdin
+
+on:
+  push:
+    branches: ['master']
+    paths:
+      - 'mythicrod-paper/src/main/resources/lang/en_US.yml'
+      - 'crowdin.yml'
+      - '.github/workflows/crowdin.yml'
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: crowdin
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: ${{ vars.CROWDIN_PROJECT_ID != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync translations with Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: true
+          upload_translations: false
+          download_translations: true
+          localization_branch_name: l10n_master
+          create_pull_request: true
+          pull_request_title: 'l10n: sync Crowdin translations'
+          pull_request_body: |
+            Updated translations from Crowdin.
+
+            Source file: `mythicrod-paper/src/main/resources/lang/en_US.yml`
+            Project dashboard: https://crowdin.com/project/mythicrod
+          pull_request_base_branch_name: master
+          pull_request_labels: l10n
+          commit_message: 'l10n: refresh translations from Crowdin'
+          config: crowdin.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ vars.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
