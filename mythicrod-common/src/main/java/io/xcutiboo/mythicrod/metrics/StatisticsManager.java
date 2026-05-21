@@ -144,8 +144,12 @@ public final class StatisticsManager {
      */
     @NotNull
     public List<PlayerStats> getTopFishers(int limit) {
+        Comparator<PlayerStats> byTotalDesc = Comparator.comparingInt(PlayerStats::getTotalCaught).reversed();
+        Comparator<PlayerStats> byLegendaryDesc = Comparator.comparingInt(PlayerStats::getLegendaryCaught).reversed();
+        Comparator<PlayerStats> byRecentDesc = Comparator.comparingLong(PlayerStats::getLastFished).reversed();
+        Comparator<PlayerStats> byUuid = Comparator.comparing(s -> s.getPlayerUuid().toString());
         return getAllStats().values().stream()
-                .sorted(Comparator.comparingInt(PlayerStats::getTotalCaught).reversed())
+                .sorted(byTotalDesc.thenComparing(byLegendaryDesc).thenComparing(byRecentDesc).thenComparing(byUuid))
                 .limit(Math.max(1, limit))
                 .collect(Collectors.toList());
     }

@@ -247,14 +247,18 @@ public class PaperMythicRodAPI implements MythicRodAPI {
             for (PlayerStats ps : allStats.values()) {
                 snapshots.add(toSnapshot(ps));
             }
-            Comparator<PlayerStatSnapshot> comparator = switch (statType) {
+            Comparator<PlayerStatSnapshot> primary = switch (statType) {
                 case TOTAL_CAUGHT -> Comparator.comparingInt(PlayerStatSnapshot::totalCaught).reversed();
                 case RARE_CAUGHT -> Comparator.comparingInt(PlayerStatSnapshot::rareCaught).reversed();
                 case LEGENDARY_CAUGHT -> Comparator.comparingInt(PlayerStatSnapshot::legendaryCaught).reversed();
                 case LAST_FISHED -> Comparator.comparing(PlayerStatSnapshot::lastFished).reversed();
             };
+            Comparator<PlayerStatSnapshot> stableTiebreaker = primary
+                    .thenComparing(Comparator.comparingInt(PlayerStatSnapshot::totalCaught).reversed())
+                    .thenComparing(Comparator.comparing(PlayerStatSnapshot::lastFished).reversed())
+                    .thenComparing(s -> s.playerUuid().toString());
             return snapshots.stream()
-                    .sorted(comparator)
+                    .sorted(stableTiebreaker)
                     .limit(clampedLimit)
                     .toList();
         });
