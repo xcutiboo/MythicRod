@@ -1509,7 +1509,7 @@ public class BrigadierCommandManager {
                 int tierCount = tier.getValue();
                 double pct = totalHits == 0 ? 0.0D : (tierCount * 100.0D / totalHits);
                 String color = tierColor(tier.getKey());
-                sendMessage(sender, color + tier.getKey() + "</color>: <white>" + tierCount
+                sendMessage(sender, color + tier.getKey() + "<reset><gray>: <white>" + tierCount
                     + "</white> <gray>(" + String.format(Locale.ROOT, "%.1f", pct) + "%)");
             }
 
