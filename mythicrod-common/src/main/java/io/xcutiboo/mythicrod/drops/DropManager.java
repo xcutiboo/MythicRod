@@ -333,42 +333,49 @@ public class DropManager implements DropCatalog {
         String category,
         DropLoadReport report
     ) {
-        List<CustomDrop> drops = new ArrayList<>();
-
         List<Map<?, ?>> mappedDrops = dropsSection.getMapList(category);
         if (!mappedDrops.isEmpty()) {
-            for (Map<?, ?> mappedDrop : mappedDrops) {
-                CustomDrop drop = parseMappedDrop(mappedDrop, category, report);
-                if (drop != null) {
-                    drops.add(drop);
-                }
-            }
-            return drops;
+            return loadMappedDrops(mappedDrops, category, report);
         }
 
         List<String> simpleDrops = dropsSection.getStringList(category);
         if (!simpleDrops.isEmpty()) {
-            for (String simpleDrop : simpleDrops) {
-                CustomDrop drop = parseSimpleDrop(simpleDrop);
-                if (drop != null) {
-                    drops.add(drop);
-                }
-            }
-            return drops;
+            return loadSimpleDrops(simpleDrops);
         }
 
         PlatformConfiguration categorySection = dropsSection.getSection(category);
-        if (categorySection == null) return drops;
+        if (categorySection == null) return new ArrayList<>();
 
         if (debugMode) {
             info(() -> "Loading category: " + category);
         }
+        return loadComplexDrops(categorySection, report);
+    }
 
+    private List<CustomDrop> loadMappedDrops(List<Map<?, ?>> mappedDrops, String category, DropLoadReport report) {
+        List<CustomDrop> drops = new ArrayList<>(mappedDrops.size());
+        for (Map<?, ?> mappedDrop : mappedDrops) {
+            CustomDrop drop = parseMappedDrop(mappedDrop, category, report);
+            if (drop != null) drops.add(drop);
+        }
+        return drops;
+    }
+
+    private List<CustomDrop> loadSimpleDrops(List<String> simpleDrops) {
+        List<CustomDrop> drops = new ArrayList<>(simpleDrops.size());
+        for (String simpleDrop : simpleDrops) {
+            CustomDrop drop = parseSimpleDrop(simpleDrop);
+            if (drop != null) drops.add(drop);
+        }
+        return drops;
+    }
+
+    private List<CustomDrop> loadComplexDrops(PlatformConfiguration categorySection, DropLoadReport report) {
+        List<CustomDrop> drops = new ArrayList<>();
         for (String key : categorySection.getKeys(false)) {
             CustomDrop drop = parseComplexDrop(categorySection, key, report);
             if (drop != null) drops.add(drop);
         }
-
         return drops;
     }
 

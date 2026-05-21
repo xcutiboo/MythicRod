@@ -84,99 +84,124 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
         prettyLogger.startup("MythicRod-Paper loading (Brigadier-enabled)...");
     }
 
+    private record DropsBootstrap(PlatformConfiguration dropsConfig, File dropsFile) {}
+
     @Override
     public void onEnable() {
         long start = System.nanoTime();
         try {
-            this.platformServer = new PaperServer(super.getServer(), this);
-            this.platformScheduler = platformServer.getScheduler();
-
-            File configFile = new File(getDataFolder(), FILE_CONFIG);
-            if (!configFile.exists()) {
-                saveDefaultConfig();
-            }
-            PlatformConfiguration platformConfig = platformServer.loadConfiguration(configFile);
-
-            File dropsFile = new File(getDataFolder(), FILE_DROPS);
-            if (!dropsFile.exists()) {
-                saveResource(FILE_DROPS, false);
-            }
-            PlatformConfiguration dropsConfig = platformServer.loadConfiguration(dropsFile);
-
-            this.configManager = new ConfigManager(this, platformConfig);
-            this.configManager.setConfigFile(configFile);
-            validateConfiguredParticles();
-
-            this.languageManager = new LanguageManager(this, configManager);
-            this.languageFileLoader = new LanguageFileLoader(this, logger, prettyLogger, languageManager);
-            languageFileLoader.loadLanguageFiles();
-
-            this.dropManager = new DropManager(getLogger());
-            applyDropRuntimeSettings();
-            dropManager.loadDrops(dropsConfig, dropsFile);
-
-            this.statisticsManager = new StatisticsManager(this);
-
-            File statsFile = new File(getDataFolder(), FILE_STATS);
-            PlatformConfiguration statsConfig = platformServer.loadConfiguration(statsFile);
-            configManager.setStatsConfig(statsFile, statsConfig);
-            statisticsManager.initialize();
-            scheduleStatisticsSaveTask();
-            this.statisticsPlayerListener = new StatisticsPlayerListener(this);
-            super.getServer().getPluginManager().registerEvents(statisticsPlayerListener, this);
-            statisticsPlayerListener.preloadOnlinePlayers();
-
-            this.commandManager = new BrigadierCommandManager(this);
-            commandManager.initialize();
-
-            this.fishingListener = new FishingListener(this);
-
-            this.guiManager = new GUIManager(this, platformScheduler);
-            guiManager.initialize();
-            this.playerDataService = new PlayerDataService(this);
-            super.getServer().getPluginManager().registerEvents(playerDataService, this);
-            this.api = new PaperMythicRodAPI(
-                getPluginMeta().getVersion(),
-                getLogger(),
-                dropManager,
-                statisticsManager,
-                platformScheduler,
-                platformServer.getItemFactory()
-            );
-            // Register in Bukkit ServicesManager so external plugins can retrieve
-            // the API without depending on MythicRod's internal class hierarchy.
-            super.getServer().getServicesManager().register(
-                MythicRodAPI.class, api, this, ServicePriority.Normal);
-
-            super.getServer().getPluginManager().registerEvents(fishingListener, this);
-
-            guiManager.registerMenu("main",     MainHubMenu::new);
-            guiManager.registerMenu("config",   ConfigMenu::new);
-            guiManager.registerMenu("drops",    DropsMenu::new);
-            guiManager.registerMenu("editdrop", EditDropMenu::new);
-            guiManager.registerMenu("stats",    StatsMenu::new);
-            guiManager.registerMenu("language", LanguageSwitchMenu::new);
-            guiManager.registerMenu("rod",      RodMenu::new);
-
+            bootstrapPlatform();
+            DropsBootstrap drops = bootstrapConfiguration();
+            bootstrapLanguages();
+            bootstrapDrops(drops);
+            bootstrapStatistics();
+            bootstrapCommandsAndListeners();
+            bootstrapGuiAndApi();
             initializeMetrics();
-
-            long ms = (System.nanoTime() - start) / 1_000_000;
-            String serverVersion = super.getServer().getName() + " " + super.getServer().getMinecraftVersion();
-            Component banner = Component.text()
-                .append(Component.text("MythicRod-Paper ", NamedTextColor.AQUA, TextDecoration.BOLD))
-                .append(Component.text("v" + getPluginMeta().getVersion(), NamedTextColor.GREEN))
-                .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
-                .append(Component.text(serverVersion, NamedTextColor.YELLOW))
-                .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
-                .append(Component.text("Brigadier ✓", NamedTextColor.GREEN))
-                .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
-                .append(Component.text(ms + "ms", NamedTextColor.YELLOW))
-                .build();
-            super.getServer().getConsoleSender().sendMessage(banner);
+            announceStartup(start);
         } catch (Exception e) {
             logger.error("Failed to enable MythicRod", e);
             super.getServer().getPluginManager().disablePlugin(this);
         }
+    }
+
+    private void bootstrapPlatform() {
+        this.platformServer = new PaperServer(super.getServer(), this);
+        this.platformScheduler = platformServer.getScheduler();
+    }
+
+    private DropsBootstrap bootstrapConfiguration() {
+        File configFile = new File(getDataFolder(), FILE_CONFIG);
+        if (!configFile.exists()) {
+            saveDefaultConfig();
+        }
+        PlatformConfiguration platformConfig = platformServer.loadConfiguration(configFile);
+
+        File dropsFile = new File(getDataFolder(), FILE_DROPS);
+        if (!dropsFile.exists()) {
+            saveResource(FILE_DROPS, false);
+        }
+        PlatformConfiguration dropsConfig = platformServer.loadConfiguration(dropsFile);
+
+        this.configManager = new ConfigManager(this, platformConfig);
+        this.configManager.setConfigFile(configFile);
+        validateConfiguredParticles();
+        return new DropsBootstrap(dropsConfig, dropsFile);
+    }
+
+    private void bootstrapLanguages() {
+        this.languageManager = new LanguageManager(this, configManager);
+        this.languageFileLoader = new LanguageFileLoader(this, logger, prettyLogger, languageManager);
+        languageFileLoader.loadLanguageFiles();
+    }
+
+    private void bootstrapDrops(DropsBootstrap drops) {
+        this.dropManager = new DropManager(getLogger());
+        applyDropRuntimeSettings();
+        dropManager.loadDrops(drops.dropsConfig(), drops.dropsFile());
+    }
+
+    private void bootstrapStatistics() {
+        this.statisticsManager = new StatisticsManager(this);
+        File statsFile = new File(getDataFolder(), FILE_STATS);
+        PlatformConfiguration statsConfig = platformServer.loadConfiguration(statsFile);
+        configManager.setStatsConfig(statsFile, statsConfig);
+        statisticsManager.initialize();
+        scheduleStatisticsSaveTask();
+        this.statisticsPlayerListener = new StatisticsPlayerListener(this);
+        super.getServer().getPluginManager().registerEvents(statisticsPlayerListener, this);
+        statisticsPlayerListener.preloadOnlinePlayers();
+    }
+
+    private void bootstrapCommandsAndListeners() {
+        this.commandManager = new BrigadierCommandManager(this);
+        commandManager.initialize();
+        this.fishingListener = new FishingListener(this);
+    }
+
+    private void bootstrapGuiAndApi() {
+        this.guiManager = new GUIManager(this, platformScheduler);
+        guiManager.initialize();
+        this.playerDataService = new PlayerDataService(this);
+        super.getServer().getPluginManager().registerEvents(playerDataService, this);
+        this.api = new PaperMythicRodAPI(
+            getPluginMeta().getVersion(),
+            getLogger(),
+            dropManager,
+            statisticsManager,
+            platformScheduler,
+            platformServer.getItemFactory()
+        );
+        // Bukkit ServicesManager registration lets third-party plugins resolve
+        // the API without compile-time dependency on our internal classes.
+        super.getServer().getServicesManager().register(
+            MythicRodAPI.class, api, this, ServicePriority.Normal);
+
+        super.getServer().getPluginManager().registerEvents(fishingListener, this);
+
+        guiManager.registerMenu("main",     MainHubMenu::new);
+        guiManager.registerMenu("config",   ConfigMenu::new);
+        guiManager.registerMenu("drops",    DropsMenu::new);
+        guiManager.registerMenu("editdrop", EditDropMenu::new);
+        guiManager.registerMenu("stats",    StatsMenu::new);
+        guiManager.registerMenu("language", LanguageSwitchMenu::new);
+        guiManager.registerMenu("rod",      RodMenu::new);
+    }
+
+    private void announceStartup(long startNanos) {
+        long ms = (System.nanoTime() - startNanos) / 1_000_000;
+        String serverVersion = super.getServer().getName() + " " + super.getServer().getMinecraftVersion();
+        Component banner = Component.text()
+            .append(Component.text("MythicRod-Paper ", NamedTextColor.AQUA, TextDecoration.BOLD))
+            .append(Component.text("v" + getPluginMeta().getVersion(), NamedTextColor.GREEN))
+            .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
+            .append(Component.text(serverVersion, NamedTextColor.YELLOW))
+            .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
+            .append(Component.text("Brigadier ✓", NamedTextColor.GREEN))
+            .append(Component.text(" | ", NamedTextColor.DARK_GRAY))
+            .append(Component.text(ms + "ms", NamedTextColor.YELLOW))
+            .build();
+        super.getServer().getConsoleSender().sendMessage(banner);
     }
 
     @Override

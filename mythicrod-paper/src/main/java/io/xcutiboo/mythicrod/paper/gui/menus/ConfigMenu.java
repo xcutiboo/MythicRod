@@ -91,27 +91,46 @@ public class ConfigMenu extends BaseMenu {
         ConfigManager config = plugin.getConfigManager();
         fillBorder(Material.BLACK_STAINED_GLASS_PANE);
 
-        boolean useSounds = draftSoundsEnabled;
-        ItemStack soundsItem = createToggleItem(
-            useSounds,
+        placeSoundsToggle();
+        placeParticlesToggle();
+        placeParticleSettings();
+        placeStatsToggle();
+        placeBiomeToggle();
+        placeDeliveryMode();
+        placePermissionsToggle();
+        placeStatsSaveInterval();
+        placeDebugToggle();
+        placeLanguageButton();
+        placeInfoItem();
+        placeBackButton();
+        placeSaveButton(config);
+        placeCloseButton();
+    }
+
+    private void placeSoundsToggle() {
+        ItemStack item = createToggleItem(
+            draftSoundsEnabled,
             tr("gui.config.sounds"),
             tr("gui.config.sounds_lore"),
             Material.NOTE_BLOCK,
             Material.GRAY_STAINED_GLASS
         );
-        setConfigurableToggle(10, soundsItem, () -> draftSoundsEnabled = !draftSoundsEnabled);
+        setConfigurableToggle(10, item, () -> draftSoundsEnabled = !draftSoundsEnabled);
+    }
 
-        boolean useParticles = draftParticlesEnabled;
-        ItemStack particlesItem = createToggleItem(
-            useParticles,
+    private void placeParticlesToggle() {
+        ItemStack item = createToggleItem(
+            draftParticlesEnabled,
             tr("gui.config.particles"),
             tr("gui.config.particles_lore"),
             Material.FIREWORK_STAR,
             Material.GRAY_DYE
         );
-        setConfigurableToggle(11, particlesItem, () -> draftParticlesEnabled = !draftParticlesEnabled);
+        setConfigurableToggle(11, item, () -> draftParticlesEnabled = !draftParticlesEnabled);
+    }
 
-        ItemStack particleSettingsItem = new ItemBuilder(Material.FIREWORK_ROCKET)
+    private void placeParticleSettings() {
+        ItemStack item = new ItemBuilder(Material.FIREWORK_ROCKET)
                 .name(tr("gui.config.particles_settings.name"))
                 .lore(
                         tr("gui.config.particles_settings.lore1"),
@@ -131,56 +150,67 @@ public class ConfigMenu extends BaseMenu {
                 )
                 .glow(draftParticlesEnabled)
                 .build();
-        setItem(12, particleSettingsItem, event -> {
+        setItem(12, item, event -> {
             if (!requirePermission()) return;
             playClickSound();
-            if (event.isShiftClick() && event.isLeftClick()) {
-                draftSuccessParticle = cycleParticle(draftSuccessParticle);
-            } else if (event.isShiftClick() && event.isRightClick()) {
-                draftXpParticle = cycleParticle(draftXpParticle);
-            } else if (event.isRightClick()) {
-                draftBubbleParticle = cycleParticle(draftBubbleParticle);
-            } else {
-                draftCatchParticle = cycleParticle(draftCatchParticle);
-            }
+            cycleParticleForEvent(event);
             refresh();
         });
-        boolean trackStats = draftStatisticsEnabled;
-        ItemStack statsItem = createToggleItem(
-            trackStats,
+    }
+
+    private void cycleParticleForEvent(org.bukkit.event.inventory.InventoryClickEvent event) {
+        boolean shift = event.isShiftClick();
+        boolean right = event.isRightClick();
+        if (shift && !right) {
+            draftSuccessParticle = cycleParticle(draftSuccessParticle);
+        } else if (shift) {
+            draftXpParticle = cycleParticle(draftXpParticle);
+        } else if (right) {
+            draftBubbleParticle = cycleParticle(draftBubbleParticle);
+        } else {
+            draftCatchParticle = cycleParticle(draftCatchParticle);
+        }
+    }
+
+    private void placeStatsToggle() {
+        ItemStack item = createToggleItem(
+            draftStatisticsEnabled,
             tr("gui.config.stats"),
             tr("gui.config.stats_lore"),
             Material.FILLED_MAP,
             Material.MAP
         );
-        setConfigurableToggle(14, statsItem, () -> draftStatisticsEnabled = !draftStatisticsEnabled);
+        setConfigurableToggle(14, item, () -> draftStatisticsEnabled = !draftStatisticsEnabled);
+    }
 
-        boolean biomeDrops = draftBiomeDropsEnabled;
-        ItemStack biomeItem = createToggleItem(
-            biomeDrops,
+    private void placeBiomeToggle() {
+        ItemStack item = createToggleItem(
+            draftBiomeDropsEnabled,
             tr("gui.config.biome_drops"),
             tr("gui.config.biome_drops_lore"),
             Material.GRASS_BLOCK,
             Material.COARSE_DIRT
         );
-        setConfigurableToggle(15, biomeItem, () -> draftBiomeDropsEnabled = !draftBiomeDropsEnabled);
+        setConfigurableToggle(15, item, () -> draftBiomeDropsEnabled = !draftBiomeDropsEnabled);
+    }
 
-        RewardDeliveryMode rewardDeliveryMode = draftRewardDeliveryMode;
-        ItemStack deliveryModeItem = new ItemBuilder(getRewardDeliveryModeMaterial(rewardDeliveryMode))
+    private void placeDeliveryMode() {
+        RewardDeliveryMode mode = draftRewardDeliveryMode;
+        ItemStack item = new ItemBuilder(getRewardDeliveryModeMaterial(mode))
                 .name(tr("gui.config.delivery_mode.name"))
                 .lore(
                         tr("gui.config.delivery_mode.lore1"),
                         tr("gui.config.delivery_mode.lore2"),
                         "",
-                        tr("gui.config.delivery_mode.current", Map.of("mode", tr(getRewardDeliveryModeKey(rewardDeliveryMode)))),
-                        tr(getRewardDeliveryModeDescriptionKey(rewardDeliveryMode)),
+                        tr("gui.config.delivery_mode.current", Map.of("mode", tr(getRewardDeliveryModeKey(mode)))),
+                        tr(getRewardDeliveryModeDescriptionKey(mode)),
                         "",
                         tr("gui.config.delivery_mode.left_click"),
                         tr("gui.config.delivery_mode.right_click")
                 )
-                .glow(rewardDeliveryMode != RewardDeliveryMode.VANILLA_RETRIEVE)
+                .glow(mode != RewardDeliveryMode.VANILLA_RETRIEVE)
                 .build();
-        setItem(16, deliveryModeItem, event -> {
+        setItem(16, item, event -> {
             if (!requirePermission()) return;
             draftRewardDeliveryMode = event.isRightClick()
                 ? draftRewardDeliveryMode.previous()
@@ -188,9 +218,11 @@ public class ConfigMenu extends BaseMenu {
             playClickSound();
             refresh();
         });
+    }
 
+    private void placePermissionsToggle() {
         boolean usePerms = draftPermissionsEnabled;
-        ItemStack permsItem = new ItemBuilder(usePerms ? Material.DIAMOND : Material.COAL)
+        ItemStack item = new ItemBuilder(usePerms ? Material.DIAMOND : Material.COAL)
                 .name(tr("gui.config.perms.name", Map.of(CTX_STATUS, usePerms ? "<green>✓" : "<red>✗")))
                 .lore(
                         tr("gui.config.perms.lore1"),
@@ -206,23 +238,25 @@ public class ConfigMenu extends BaseMenu {
                 )
                 .glow(usePerms)
                 .build();
-        setItem(20, permsItem, () -> {
+        setItem(20, item, () -> {
             if (!requirePermission()) return;
             draftPermissionsEnabled = !draftPermissionsEnabled;
             playClickSound();
             refresh();
         });
+    }
 
-        int statsSaveInterval = draftStatsSaveInterval;
-        ItemStack saveIntervalItem = new ItemBuilder(Material.CLOCK)
+    private void placeStatsSaveInterval() {
+        int interval = draftStatsSaveInterval;
+        ItemStack item = new ItemBuilder(Material.CLOCK)
                 .name(tr("gui.config.save_interval.name"))
                 .lore(
                         tr("gui.config.save_interval.lore1"),
                         tr("gui.config.save_interval.lore2"),
                         "",
-                        tr("gui.config.save_interval.current", Map.of("time", StringFormatting.formatTime(statsSaveInterval), "seconds", String.valueOf(statsSaveInterval))),
+                        tr("gui.config.save_interval.current", Map.of("time", StringFormatting.formatTime(interval), "seconds", String.valueOf(interval))),
                         "",
-                        statsSaveInterval <= 300 ? tr("gui.config.save_interval.frequent") : statsSaveInterval <= 600 ? tr("gui.config.save_interval.balanced") : tr("gui.config.save_interval.infrequent"),
+                        intervalCadenceLine(interval),
                         "",
                         tr("gui.config.save_interval.controls"),
                         tr("gui.config.save_interval.left_click"),
@@ -233,47 +267,55 @@ public class ConfigMenu extends BaseMenu {
                         tr("gui.config.save_interval.minimum")
                 )
                 .build();
-        setItem(22, saveIntervalItem, event -> {
+        setItem(22, item, event -> {
             if (!requirePermission()) return;
-            int change = 60;
-            if (event.isShiftClick()) {
-                change = 300;
-            }
-            int newValue = statsSaveInterval;
-            if (event.isLeftClick()) {
-                newValue = Math.min(3600, newValue + change);
-            } else if (event.isRightClick()) {
-                newValue = Math.max(60, newValue - change);
-            }
-            draftStatsSaveInterval = newValue;
+            draftStatsSaveInterval = nextStatsInterval(interval, event);
             playClickSound();
             refresh();
         });
+    }
 
-        boolean debugMode = draftDebugEnabled;
-        ItemStack debugItem = new ItemBuilder(debugMode ? Material.REDSTONE_TORCH : Material.TORCH)
-                .name(tr("gui.config.debug.name", Map.of(CTX_STATUS, debugMode ? "<green>✓" : "<red>✗")))
+    private String intervalCadenceLine(int seconds) {
+        if (seconds <= 300) return tr("gui.config.save_interval.frequent");
+        if (seconds <= 600) return tr("gui.config.save_interval.balanced");
+        return tr("gui.config.save_interval.infrequent");
+    }
+
+    private int nextStatsInterval(int current, org.bukkit.event.inventory.InventoryClickEvent event) {
+        int change = event.isShiftClick() ? 300 : 60;
+        if (event.isLeftClick()) return Math.min(3600, current + change);
+        if (event.isRightClick()) return Math.max(60, current - change);
+        return current;
+    }
+
+    private void placeDebugToggle() {
+        boolean debug = draftDebugEnabled;
+        ItemStack item = new ItemBuilder(debug ? Material.REDSTONE_TORCH : Material.TORCH)
+                .name(tr("gui.config.debug.name", Map.of(CTX_STATUS, debug ? "<green>✓" : "<red>✗")))
                 .lore(
                         tr("gui.config.debug.lore1"),
                         tr("gui.config.debug.lore2"),
                         "",
-                        tr("gui.config.debug.status", Map.of("color", getStatusColor(debugMode), CTX_STATUS, debugMode ? tr(TR_ENABLED) : tr(TR_DISABLED))),
+                        tr("gui.config.debug.status", Map.of("color", getStatusColor(debug), CTX_STATUS, debug ? tr(TR_ENABLED) : tr(TR_DISABLED))),
                         "",
-                        debugMode ? tr("gui.config.debug.active") : tr("gui.config.debug.inactive"),
+                        debug ? tr("gui.config.debug.active") : tr("gui.config.debug.inactive"),
                         "",
                         tr("gui.config.debug.warning"),
                         "",
-                        tr("gui.config.debug.click", Map.of(CTX_ACTION, debugMode ? tr(TR_DISABLE) : tr(TR_ENABLE)))
+                        tr("gui.config.debug.click", Map.of(CTX_ACTION, debug ? tr(TR_DISABLE) : tr(TR_ENABLE)))
                 )
-                .glow(debugMode)
+                .glow(debug)
                 .build();
-        setItem(24, debugItem, () -> {
+        setItem(24, item, () -> {
             if (!requirePermission()) return;
             draftDebugEnabled = !draftDebugEnabled;
             playClickSound();
             refresh();
         });
-        ItemStack languageItem = new ItemBuilder(Material.REPEATER)
+    }
+
+    private void placeLanguageButton() {
+        ItemStack item = new ItemBuilder(Material.REPEATER)
                 .name(tr("gui.config.language.name"))
                 .lore(
                         tr("gui.config.language.lore1"),
@@ -289,11 +331,14 @@ public class ConfigMenu extends BaseMenu {
                 )
                 .glow(true)
                 .build();
-        setItem(38, languageItem, () -> {
+        setItem(38, item, () -> {
             playClickSound();
             plugin.getGUIManager().openMenu(getPlayer(), "language");
         });
-        ItemStack infoItem = new ItemBuilder(Material.BOOK)
+    }
+
+    private void placeInfoItem() {
+        ItemStack item = new ItemBuilder(Material.BOOK)
                 .name(tr("gui.config.info.name"))
                 .lore(
                         tr("gui.config.info.lore1"),
@@ -305,16 +350,22 @@ public class ConfigMenu extends BaseMenu {
                         tr("gui.config.info.lore5")
                 )
                 .build();
-        setItem(40, infoItem);
-        ItemStack backItem = new ItemBuilder(Material.ARROW)
+        setItem(40, item);
+    }
+
+    private void placeBackButton() {
+        ItemStack item = new ItemBuilder(Material.ARROW)
                 .name(tr("gui.config.back.name"))
                 .lore(tr("gui.config.back.lore"))
                 .build();
-        setItem(45, backItem, () -> {
+        setItem(45, item, () -> {
             playClickSound();
             plugin.getGUIManager().openMainHub(getPlayer());
         });
-        ItemStack saveItem = new ItemBuilder(Material.EMERALD)
+    }
+
+    private void placeSaveButton(ConfigManager config) {
+        ItemStack item = new ItemBuilder(Material.EMERALD)
                 .name(tr("gui.config.save.name"))
                 .lore(
                         tr("gui.config.save.lore1"),
@@ -327,28 +378,33 @@ public class ConfigMenu extends BaseMenu {
                 )
                 .glow(true)
                 .build();
-        setItem(49, saveItem, () -> {
-            if (!requirePermission()) return;
-            ConfigSnapshot snapshot = snapshotConfig(config);
-            try {
-                applyDraft(config);
-                config.saveConfig();
-                plugin.refreshStatisticsAutosaveSchedule();
-                sendMessage(tr("gui.config.save.success"));
-                sendMessage(tr("gui.config.save.success_info"));
-                playSuccessSound();
-            } catch (IOException | RuntimeException e) {
-                restoreSnapshot(config, snapshot);
-                this.plugin.getLogger().log(Level.WARNING, "Failed to save configuration", e);
-                sendMessage(tr("gui.config.save.failed"));
-                playErrorSound();
-            }
-        });
-        ItemStack closeItem = new ItemBuilder(Material.BARRIER)
+        setItem(49, item, () -> commitDraft(config));
+    }
+
+    private void commitDraft(ConfigManager config) {
+        if (!requirePermission()) return;
+        ConfigSnapshot snapshot = snapshotConfig(config);
+        try {
+            applyDraft(config);
+            config.saveConfig();
+            plugin.refreshStatisticsAutosaveSchedule();
+            sendMessage(tr("gui.config.save.success"));
+            sendMessage(tr("gui.config.save.success_info"));
+            playSuccessSound();
+        } catch (IOException | RuntimeException e) {
+            restoreSnapshot(config, snapshot);
+            this.plugin.getLogger().log(Level.WARNING, "Failed to save configuration", e);
+            sendMessage(tr("gui.config.save.failed"));
+            playErrorSound();
+        }
+    }
+
+    private void placeCloseButton() {
+        ItemStack item = new ItemBuilder(Material.BARRIER)
                 .name(tr("gui.config.close.name"))
                 .lore(tr("gui.config.close.lore"))
                 .build();
-        setItem(53, closeItem, () -> {
+        setItem(53, item, () -> {
             playClickSound();
             getPlayer().closeInventory();
         });
