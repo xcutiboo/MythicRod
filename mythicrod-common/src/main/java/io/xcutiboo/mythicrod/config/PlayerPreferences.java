@@ -72,7 +72,7 @@ public class PlayerPreferences {
             if (!saveExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
                 saveExecutor.shutdownNow();
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
             Thread.currentThread().interrupt();
             saveExecutor.shutdownNow();
         }
@@ -115,7 +115,7 @@ public class PlayerPreferences {
 
         try {
             saveExecutor.execute(this::runSaveWorker);
-        } catch (RejectedExecutionException e) {
+        } catch (RejectedExecutionException _) {
             saveWorkerScheduled.set(false);
             flushPendingSaves();
         }

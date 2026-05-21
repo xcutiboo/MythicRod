@@ -399,7 +399,7 @@ public class PaperMythicRodAPI implements MythicRodAPI {
             if (key != null && !key.isBlank()) {
                 return key;
             }
-        } catch (Exception ignored) {
+        } catch (Exception _) {
             // Fall through to a generic identifier.
         }
         return provider.getClass().getName();

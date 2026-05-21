@@ -12,6 +12,13 @@ import io.xcutiboo.mythicrod.constants.PermissionNodes;
 import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
 
 public class RodMenu extends BaseMenu {
+    private static final String TIER_BASIC = "basic";
+    private static final String TIER_ADVANCED = "advanced";
+    private static final String TIER_LEGENDARY = "legendary";
+    private static final String CTX_MULTIPLIER = "multiplier";
+    private static final String TR_MULTIPLIER = "gui.rod.multiplier";
+    private static final String TR_ALREADY_SELECTED = "gui.rod.already_selected";
+
 
     public RodMenu(MythicRod plugin, Player player) {
         super(plugin, player);
@@ -42,21 +49,21 @@ public class RodMenu extends BaseMenu {
                         tr("gui.rod.basic.lore1"),
                         "",
                         tr("gui.rod.basic.lore2"),
-                        tr("gui.rod.multiplier", Map.of("multiplier", formatMultiplier("basic"))),
+                        tr(TR_MULTIPLIER, Map.of(CTX_MULTIPLIER, formatMultiplier(TIER_BASIC))),
                         tr("gui.rod.basic.lore3"),
                         "",
-                        currentTier.equals("basic") ? tr("gui.rod.basic.equipped") : tr("gui.rod.basic.click")
+                        currentTier.equals(TIER_BASIC) ? tr("gui.rod.basic.equipped") : tr("gui.rod.basic.click")
                 )
-                .glow(currentTier.equals("basic"))
+                .glow(currentTier.equals(TIER_BASIC))
                 .build();
         setItem(10, basicRod, () -> {
-            if (currentTier.equals("basic")) {
+            if (currentTier.equals(TIER_BASIC)) {
                 playClickSound();
-                sendMessage(tr("gui.rod.already_selected", Map.of("tier", tr("gui.rod.basic.label"))));
+                sendMessage(tr(TR_ALREADY_SELECTED, Map.of("tier", tr("gui.rod.basic.label"))));
                 return;
             }
             playClickSound();
-            setRodTier(player, "basic");
+            setRodTier(player, TIER_BASIC);
             playSuccessSound();
             sendMessage(tr("gui.rod.basic.selected"));
             refresh();
@@ -64,27 +71,27 @@ public class RodMenu extends BaseMenu {
 
         ItemStack advancedRod = new ItemBuilder(Material.FISHING_ROD)
                 .name(tr("gui.rod.advanced.name"))
-                .glow(currentTier.equals("advanced"))
+                .glow(currentTier.equals(TIER_ADVANCED))
                 .lore(
                         tr("gui.rod.advanced.lore1"),
                         "",
                         tr("gui.rod.advanced.lore2"),
-                        tr("gui.rod.multiplier", Map.of("multiplier", formatMultiplier("advanced"))),
+                        tr(TR_MULTIPLIER, Map.of(CTX_MULTIPLIER, formatMultiplier(TIER_ADVANCED))),
                         tr("gui.rod.advanced.lore3"),
                         tr("gui.rod.advanced.lore4"),
                         "",
-                        currentTier.equals("advanced") ? tr("gui.rod.advanced.equipped") : tr("gui.rod.advanced.click")
+                        currentTier.equals(TIER_ADVANCED) ? tr("gui.rod.advanced.equipped") : tr("gui.rod.advanced.click")
                 )
                 .build();
         setItem(12, advancedRod, () -> {
-            if (currentTier.equals("advanced")) {
+            if (currentTier.equals(TIER_ADVANCED)) {
                 playClickSound();
-                sendMessage(tr("gui.rod.already_selected", Map.of("tier", tr("gui.rod.advanced.label"))));
+                sendMessage(tr(TR_ALREADY_SELECTED, Map.of("tier", tr("gui.rod.advanced.label"))));
                 return;
             }
             if (player.hasPermission(PermissionNodes.ROD_ADVANCED)) {
                 playClickSound();
-                setRodTier(player, "advanced");
+                setRodTier(player, TIER_ADVANCED);
                 playSuccessSound();
                 sendMessage(tr("gui.rod.advanced.selected"));
                 refresh();
@@ -96,28 +103,28 @@ public class RodMenu extends BaseMenu {
 
         ItemStack legendaryRod = new ItemBuilder(Material.FISHING_ROD)
                 .name(tr("gui.rod.legendary.name"))
-                .glow(currentTier.equals("legendary"))
+                .glow(currentTier.equals(TIER_LEGENDARY))
                 .lore(
                         tr("gui.rod.legendary.lore1"),
                         "",
                         tr("gui.rod.legendary.lore2"),
-                        tr("gui.rod.multiplier", Map.of("multiplier", formatMultiplier("legendary"))),
+                        tr(TR_MULTIPLIER, Map.of(CTX_MULTIPLIER, formatMultiplier(TIER_LEGENDARY))),
                         tr("gui.rod.legendary.lore3"),
                         tr("gui.rod.legendary.lore4"),
                         tr("gui.rod.legendary.lore5"),
                         "",
-                        currentTier.equals("legendary") ? tr("gui.rod.legendary.equipped") : tr("gui.rod.legendary.click")
+                        currentTier.equals(TIER_LEGENDARY) ? tr("gui.rod.legendary.equipped") : tr("gui.rod.legendary.click")
                 )
                 .build();
         setItem(14, legendaryRod, () -> {
-            if (currentTier.equals("legendary")) {
+            if (currentTier.equals(TIER_LEGENDARY)) {
                 playClickSound();
-                sendMessage(tr("gui.rod.already_selected", Map.of("tier", tr("gui.rod.legendary.label"))));
+                sendMessage(tr(TR_ALREADY_SELECTED, Map.of("tier", tr("gui.rod.legendary.label"))));
                 return;
             }
             if (player.hasPermission(PermissionNodes.ROD_LEGENDARY)) {
                 playClickSound();
-                setRodTier(player, "legendary");
+                setRodTier(player, TIER_LEGENDARY);
                 playSuccessSound();
                 sendMessage(tr("gui.rod.legendary.selected"));
                 refresh();

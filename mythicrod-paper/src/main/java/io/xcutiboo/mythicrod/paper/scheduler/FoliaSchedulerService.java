@@ -37,7 +37,7 @@ public class FoliaSchedulerService implements PlatformScheduler {
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
             return true;
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException _) {
             return false;
         }
     }

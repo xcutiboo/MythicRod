@@ -58,6 +58,10 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
  * mutation on the owning scheduler path.
  */
 public class FishingListener implements Listener {
+    private static final String TIER_BASIC = "basic";
+    private static final String TIER_ADVANCED = "advanced";
+    private static final String TIER_LEGENDARY = "legendary";
+
     private final MythicRod plugin;
     private final RodFactory rodFactory;
 
@@ -201,9 +205,9 @@ public class FishingListener implements Listener {
 
     private boolean isAllowedRodTier(Player player, String tier) {
         return switch (normalizeRodTier(tier)) {
-            case "advanced" -> player != null && player.hasPermission(PermissionNodes.ROD_ADVANCED);
-            case "legendary" -> player != null && player.hasPermission(PermissionNodes.ROD_LEGENDARY);
-            case "basic" -> true;
+            case TIER_ADVANCED -> player != null && player.hasPermission(PermissionNodes.ROD_ADVANCED);
+            case TIER_LEGENDARY -> player != null && player.hasPermission(PermissionNodes.ROD_LEGENDARY);
+            case TIER_BASIC -> true;
             default -> false;
         };
     }
@@ -214,8 +218,8 @@ public class FishingListener implements Listener {
         }
 
         return switch (tier.trim().toLowerCase(Locale.ROOT)) {
-            case "advanced" -> "advanced";
-            case "legendary" -> "legendary";
+            case TIER_ADVANCED -> TIER_ADVANCED;
+            case TIER_LEGENDARY -> TIER_LEGENDARY;
             default -> MythicRodKeys.DEFAULT_ROD_TIER;
         };
     }
@@ -223,7 +227,7 @@ public class FishingListener implements Listener {
     private double combineLuckMultipliers(double rodMultiplier, double eventMultiplier) {
         double safeRodMultiplier = Double.isFinite(rodMultiplier) ? rodMultiplier : 1.0D;
         double safeEventMultiplier = Double.isFinite(eventMultiplier) ? eventMultiplier : 1.0D;
-        return Math.max(0.01D, Math.min(10.0D, safeRodMultiplier * safeEventMultiplier));
+        return Math.clamp(safeRodMultiplier * safeEventMultiplier, 0.01D, 10.0D);
     }
 
     private void dispatchCustomDrop(Player player, Item caughtItem, ItemStack customItem, CustomDrop drop, Location hookLoc) {
@@ -534,7 +538,7 @@ public class FishingListener implements Listener {
         ItemStack sanitized = rewardItem.clone();
         int maxStackSize = Math.max(1, sanitized.getMaxStackSize());
         int amount = sanitized.getAmount();
-        int safeAmount = Math.max(1, Math.min(maxStackSize, amount));
+        int safeAmount = Math.clamp(amount, 1, maxStackSize);
         if (safeAmount != amount) {
             warning(() -> "Reward item amount " + amount
                 + " out of bounds for '" + rewardId + "', clamped to " + safeAmount);
@@ -563,7 +567,7 @@ public class FishingListener implements Listener {
         ItemStack baseItem = createBaseItem(identifier);
         int maxStackSize = Math.max(1, baseItem.getMaxStackSize());
         int dropAmount = drop.getAmount();
-        int validAmount = Math.max(1, Math.min(maxStackSize, dropAmount));
+        int validAmount = Math.clamp(dropAmount, 1, maxStackSize);
         if (dropAmount != validAmount) {
             warning(() -> "Drop amount " + dropAmount
                 + " out of bounds for " + identifier + ", clamped to " + validAmount);
@@ -652,7 +656,7 @@ public class FishingListener implements Listener {
 
                 try {
                     meta.addItemFlags(ItemFlag.valueOf(flagName.trim().toUpperCase(Locale.ROOT)));
-                } catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException _) {
                     warning(() -> "Unknown item flag '" + flagName
                         + "' for drop '" + identifier + "'");
                 }
@@ -870,7 +874,7 @@ public class FishingListener implements Listener {
         try {
             String migratedName = MiniMessageMigrator.migrateWithSerializer(customName);
             return MiniMessage.miniMessage().deserialize(migratedName);
-        } catch (Exception e) {
+        } catch (Exception _) {
             return Component.text(stripMiniMessageTags(customName));
         }
     }

@@ -46,6 +46,8 @@ import io.xcutiboo.mythicrod.paper.util.StringFormatting;
  * }</pre>
  */
 public class EditDropMenu extends BaseMenu {
+    private static final String CTX_AMOUNT = "amount";
+
 
     private static final String ADMIN_PERMISSION = PermissionNodes.ADMIN_CONFIG;
     private static final String CTX_DROP = "drop";
@@ -178,7 +180,7 @@ public class EditDropMenu extends BaseMenu {
         preview.addLore(tr("gui.edit_drop.preview.stats_header"))
                .addLore(tr("gui.edit_drop.preview.item", Map.of(CTX_IDENTIFIER, currentIdentifier)))
                .addLore(tr("gui.edit_drop.preview.weight", Map.of(CTX_WEIGHT, String.valueOf(currentWeight))))
-               .addLore(tr("gui.edit_drop.preview.amount", Map.of("amount", String.valueOf(currentAmount))))
+               .addLore(tr("gui.edit_drop.preview.amount", Map.of(CTX_AMOUNT, String.valueOf(currentAmount))))
                .addLore(tr("gui.edit_drop.preview.glow",
                            Map.of("status", currentGlow ? tr("gui.edit_drop.enabled") : tr("gui.edit_drop.disabled"))));
         if (currentCustomModelData > 0) {
@@ -250,7 +252,7 @@ public class EditDropMenu extends BaseMenu {
         setItem(21,
                 ItemBuilder.of(Material.CHEST)
                         .name(tr("gui.edit_drop.amount.name"))
-                        .addLore(tr("gui.edit_drop.amount.current", Map.of("amount", String.valueOf(currentAmount))))
+                        .addLore(tr("gui.edit_drop.amount.current", Map.of(CTX_AMOUNT, String.valueOf(currentAmount))))
                         .addLore("")
                         .addLore(tr("gui.edit_drop.amount.left_click"))
                         .addLore(tr("gui.edit_drop.amount.right_click"))
@@ -516,7 +518,7 @@ public class EditDropMenu extends BaseMenu {
                         .addLore(tr("gui.edit_drop.save.lore2"))
                         .addLore(tr("gui.edit_drop.save.item", Map.of(CTX_IDENTIFIER, currentIdentifier)))
                         .addLore(tr("gui.edit_drop.save.weight", Map.of(CTX_WEIGHT, String.valueOf(currentWeight))))
-                        .addLore(tr("gui.edit_drop.save.amount", Map.of("amount", String.valueOf(currentAmount))))
+                        .addLore(tr("gui.edit_drop.save.amount", Map.of(CTX_AMOUNT, String.valueOf(currentAmount))))
                         .addLore(tr("gui.edit_drop.save.glow",
                                     Map.of("status", currentGlow
                                         ? tr("gui.edit_drop.status_yes")
@@ -770,7 +772,7 @@ public class EditDropMenu extends BaseMenu {
 
         currentAmount = value;
         sendMessage(tr("gui.edit_drop.messages.amount-updated",
-            Map.of("amount", String.valueOf(currentAmount))));
+            Map.of(CTX_AMOUNT, String.valueOf(currentAmount))));
         playSuccessSound();
         open();
     }
@@ -1043,7 +1045,7 @@ public class EditDropMenu extends BaseMenu {
                 return null;
             }
             return parsed;
-        } catch (NumberFormatException ignored) {
+        } catch (NumberFormatException _) {
             return null;
         }
     }
@@ -1153,7 +1155,7 @@ public class EditDropMenu extends BaseMenu {
                 return null;
             }
             return new ParsedPair(name, level);
-        } catch (NumberFormatException ignored) {
+        } catch (NumberFormatException _) {
             return null;
         }
     }
@@ -1201,7 +1203,7 @@ public class EditDropMenu extends BaseMenu {
             try {
                 ItemFlag flag = ItemFlag.valueOf(value.toUpperCase(Locale.ROOT));
                 parsed.add(flag.name());
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException _) {
                 sendMessage(tr("gui.edit_drop.messages.item-flag-invalid",
                     Map.of("flag", safeMessageInput(part))));
                 return null;

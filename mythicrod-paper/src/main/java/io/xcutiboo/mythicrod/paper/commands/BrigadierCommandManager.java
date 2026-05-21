@@ -59,6 +59,21 @@ import io.xcutiboo.mythicrod.text.ConfiguredText;
 import net.kyori.adventure.text.Component;
 
 public class BrigadierCommandManager {
+    private static final String KEY_ENABLED = "enabled";
+    private static final String KEY_SECONDS = "seconds";
+    private static final String KEY_COUNT = "count";
+    private static final String TR_GENERAL_ERROR = "general.error";
+    private static final String TR_PLAYER_ONLY = "general.player_only";
+    private static final String KEY_ERROR = "error";
+    private static final String TIER_LEGENDARY = "legendary";
+    private static final String TR_CONFIG_SAVE_FAILED = "command.config.save-failed";
+    private static final String BIOME_PREFIX = "biome_";
+    private static final String CLOSE_WHITE = "</white>";
+    private static final String ERR_PREFIX = "<red>✗ <white>";
+    private static final String PATH_SEP_WHITE = "</white>/<white>";
+    private static final String WARN_PREFIX = "<yellow>⚠ <white>";
+    private static final String GRAY_PREFIX = "<gray>";
+
     private final MythicRod plugin;
     private final RodFactory rodFactory;
 
@@ -114,7 +129,7 @@ public class BrigadierCommandManager {
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
                 .executes(this::executeConfigOverview)
                 .then(Commands.literal("sounds")
-                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
                         .executes(context -> executeBooleanConfig(
                             context,
                             "command.config.settings.sounds",
@@ -123,7 +138,7 @@ public class BrigadierCommandManager {
                             null
                         ))))
                 .then(Commands.literal("particles")
-                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
                         .executes(context -> executeBooleanConfig(
                             context,
                             "command.config.settings.particles",
@@ -132,7 +147,7 @@ public class BrigadierCommandManager {
                             null
                         ))))
                 .then(Commands.literal("statistics")
-                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
                         .executes(context -> executeBooleanConfig(
                             context,
                             "command.config.settings.statistics",
@@ -141,7 +156,7 @@ public class BrigadierCommandManager {
                             null
                         ))))
                 .then(Commands.literal("biome-drops")
-                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
                         .executes(context -> executeBooleanConfig(
                             context,
                             "command.config.settings.biome-drops",
@@ -150,7 +165,7 @@ public class BrigadierCommandManager {
                             plugin::applyDropRuntimeSettings
                         ))))
                 .then(Commands.literal("permissions")
-                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
                         .executes(context -> executeBooleanConfig(
                             context,
                             "command.config.settings.permissions",
@@ -159,7 +174,7 @@ public class BrigadierCommandManager {
                             plugin::applyDropRuntimeSettings
                         ))))
                 .then(Commands.literal("debug")
-                    .then(Commands.argument("enabled", BoolArgumentType.bool())
+                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
                         .executes(context -> executeBooleanConfig(
                             context,
                             "command.config.settings.debug",
@@ -172,7 +187,7 @@ public class BrigadierCommandManager {
                         .suggests(this::suggestRewardDeliveryModes)
                         .executes(this::executeDeliveryModeConfig)))
                 .then(Commands.literal("stats-save-interval")
-                    .then(Commands.argument("seconds", IntegerArgumentType.integer(60, 3600))
+                    .then(Commands.argument(KEY_SECONDS, IntegerArgumentType.integer(60, 3600))
                         .executes(this::executeStatsSaveIntervalConfig))))
             .then(Commands.literal("stats")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.STATS_VIEW))
@@ -217,7 +232,7 @@ public class BrigadierCommandManager {
                 .then(Commands.argument("biome", StringArgumentType.string())
                     .suggests(this::suggestBiomes)
                     .executes(this::executeTestRoll)
-                    .then(Commands.argument("count", IntegerArgumentType.integer(1, 10000))
+                    .then(Commands.argument(KEY_COUNT, IntegerArgumentType.integer(1, 10000))
                         .executes(this::executeTestRoll))))
             .then(Commands.literal("particle")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
@@ -252,7 +267,7 @@ public class BrigadierCommandManager {
             }
             return executeHelp(context);
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), TR_GENERAL_ERROR));
             playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing default command", e);
             return 0;
@@ -274,11 +289,11 @@ public class BrigadierCommandManager {
                 playSuccessSound(player);
                 return Command.SINGLE_SUCCESS;
             }
-            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.player_only"));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), TR_PLAYER_ONLY));
             playErrorSound(context.getSource().getSender());
             return 0;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), TR_GENERAL_ERROR));
             playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, e, () -> "Error executing menu command for " + menuId);
             return 0;
@@ -322,7 +337,7 @@ public class BrigadierCommandManager {
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
             sendMessage(sender, tr(sender, "command.give.give-failed",
-                Map.of("error", e.getMessage())));
+                Map.of(KEY_ERROR, e.getMessage())));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Error executing give command", e);
             return 0;
@@ -333,7 +348,7 @@ public class BrigadierCommandManager {
         return switch (tier.toLowerCase(Locale.ROOT)) {
             case "basic" -> rodFactory.createBasicRod();
             case "advanced" -> rodFactory.createAdvancedRod();
-            case "legendary" -> rodFactory.createLegendaryRod();
+            case TIER_LEGENDARY -> rodFactory.createLegendaryRod();
             default -> null;
         };
     }
@@ -363,7 +378,7 @@ public class BrigadierCommandManager {
             } catch (RuntimeException e) {
                 plugin.getLogger().log(Level.WARNING, "Failed to add rod to inventory", e);
                 sendMessage(sender, tr(sender, "command.give.give-failed",
-                    Map.of("error", e.getMessage())));
+                    Map.of(KEY_ERROR, e.getMessage())));
                 playErrorSound(sender);
                 return;
             }
@@ -393,7 +408,7 @@ public class BrigadierCommandManager {
                 }
 
                 sendMessage(sender, tr(sender, "command.reload.failed",
-                    Map.of("error", "See server log for details")));
+                    Map.of(KEY_ERROR, "See server log for details")));
                 playErrorSound(sender);
                 plugin.getLogger().log(Level.SEVERE, "Reload command reported failure");
                 return 0;
@@ -404,7 +419,7 @@ public class BrigadierCommandManager {
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
             sendMessage(sender, tr(sender, "command.reload.failed",
-                Map.of("error", e.getMessage())));
+                Map.of(KEY_ERROR, e.getMessage())));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Unexpected error while executing reload command", e);
             return 0;
@@ -424,11 +439,11 @@ public class BrigadierCommandManager {
             sendConfigLine(sender, "command.config.settings.debug", configStatus(sender, config.isDebugMode()));
             sendConfigLine(sender, "command.config.settings.delivery-mode", config.getRewardDeliveryMode().getConfigValue());
             sendConfigLine(sender, "command.config.settings.stats-save-interval",
-                tr(sender, "command.config.seconds", Map.of("seconds", String.valueOf(config.getStatsSaveInterval()))));
+                tr(sender, "command.config.seconds", Map.of(KEY_SECONDS, String.valueOf(config.getStatsSaveInterval()))));
             sendMessage(sender, tr(sender, "command.config.usage"));
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
-            sendMessage(sender, tr(sender, "general.error"));
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Error executing config overview command", e);
             return 0;
@@ -456,7 +471,7 @@ public class BrigadierCommandManager {
     ) {
         CommandSender sender = context.getSource().getSender();
         boolean previousValue = currentValue.getAsBoolean();
-        boolean newValue = BoolArgumentType.getBool(context, "enabled");
+        boolean newValue = BoolArgumentType.getBool(context, KEY_ENABLED);
         try {
             setter.accept(newValue);
             if (afterChange != null) {
@@ -475,8 +490,8 @@ public class BrigadierCommandManager {
             if (afterChange != null) {
                 afterChange.run();
             }
-            sendMessage(sender, tr(sender, "command.config.save-failed",
-                Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
+            sendMessage(sender, tr(sender, TR_CONFIG_SAVE_FAILED,
+                Map.of(KEY_ERROR, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, e, () -> "Failed to update config setting " + settingKey);
             return 0;
@@ -508,8 +523,8 @@ public class BrigadierCommandManager {
             return Command.SINGLE_SUCCESS;
         } catch (IOException | RuntimeException e) {
             config.setRewardDeliveryMode(previousMode);
-            sendMessage(sender, tr(sender, "command.config.save-failed",
-                Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
+            sendMessage(sender, tr(sender, TR_CONFIG_SAVE_FAILED,
+                Map.of(KEY_ERROR, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Failed to update reward delivery mode", e);
             return 0;
@@ -520,20 +535,20 @@ public class BrigadierCommandManager {
         CommandSender sender = context.getSource().getSender();
         ConfigManager config = plugin.getConfigManager();
         int previousInterval = config.getStatsSaveInterval();
-        int newInterval = IntegerArgumentType.getInteger(context, "seconds");
+        int newInterval = IntegerArgumentType.getInteger(context, KEY_SECONDS);
         try {
             config.setStatsSaveInterval(newInterval);
             config.saveConfig();
             plugin.refreshStatisticsAutosaveSchedule();
             sendMessage(sender, tr(sender, "command.config.interval-set",
-                Map.of("seconds", String.valueOf(config.getStatsSaveInterval()))));
+                Map.of(KEY_SECONDS, String.valueOf(config.getStatsSaveInterval()))));
             playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
         } catch (IOException | RuntimeException e) {
             config.setStatsSaveInterval(previousInterval);
             plugin.refreshStatisticsAutosaveSchedule();
-            sendMessage(sender, tr(sender, "command.config.save-failed",
-                Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
+            sendMessage(sender, tr(sender, TR_CONFIG_SAVE_FAILED,
+                Map.of(KEY_ERROR, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Failed to update stats save interval", e);
             return 0;
@@ -589,7 +604,7 @@ public class BrigadierCommandManager {
             handleStats(sender, new String[0]);
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), TR_GENERAL_ERROR));
             playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing stats command", e);
             return 0;
@@ -602,7 +617,7 @@ public class BrigadierCommandManager {
             handleStats(context.getSource().getSender(), new String[]{"stats", playerName});
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), TR_GENERAL_ERROR));
             playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing stats command", e);
             return 0;
@@ -651,7 +666,7 @@ public class BrigadierCommandManager {
                     .limit(5)
                     .forEach(entry -> sendMessage(sender, tr(sender, "stats.tier-count",
                         Map.of("tier", StringFormatting.formatMaterialName(entry.getKey()),
-                            "count", String.valueOf(entry.getValue())))));
+                            KEY_COUNT, String.valueOf(entry.getValue())))));
         }
     }
 
@@ -717,7 +732,7 @@ public class BrigadierCommandManager {
             playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
-            sendMessage(sender, tr(sender, "general.error"));
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Error executing stats reset command", e);
             return 0;
@@ -747,7 +762,7 @@ public class BrigadierCommandManager {
                 topFishers = plugin.getStatisticsManager().getTopFishers(limit);
             } catch (RuntimeException statsError) {
                 sendMessage(source.getSender(), tr(source.getSender(), "stats.retrieve-failed",
-                    Map.of("error", statsError.getMessage())));
+                    Map.of(KEY_ERROR, statsError.getMessage())));
                 playErrorSound(source.getSender());
                 plugin.getLogger().log(Level.WARNING, "Failed to read top fishers", statsError);
                 return 0;
@@ -787,7 +802,7 @@ public class BrigadierCommandManager {
             }
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
-            sendMessage(source.getSender(), tr(source.getSender(), "general.error"));
+            sendMessage(source.getSender(), tr(source.getSender(), TR_GENERAL_ERROR));
             plugin.getLogger().log(Level.SEVERE, "Error executing top command", e);
             return 0;
         }
@@ -801,7 +816,7 @@ public class BrigadierCommandManager {
             handleDrops(context.getSource().getSender(), new String[0]);
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), TR_GENERAL_ERROR));
             playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing drops command", e);
             return 0;
@@ -829,7 +844,7 @@ public class BrigadierCommandManager {
             displayDropCategory(sender, category);
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), TR_GENERAL_ERROR));
             playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing drops command", e);
             return 0;
@@ -852,7 +867,7 @@ public class BrigadierCommandManager {
                     Map.of(
                         "category", category,
                         "label", StringFormatting.formatCategoryName(category),
-                        "count", String.valueOf(categories.get(category).size())
+                        KEY_COUNT, String.valueOf(categories.get(category).size())
                     )));
             }
             sendMessage(sender, tr(sender, "drops.usage-hint"));
@@ -870,7 +885,7 @@ public class BrigadierCommandManager {
             return normalizedCategory;
         }
 
-        String biomeCategory = "biome_" + normalizedCategory;
+        String biomeCategory = BIOME_PREFIX + normalizedCategory;
         if (categories.get(biomeCategory) != null) {
             return biomeCategory;
         }
@@ -917,8 +932,8 @@ public class BrigadierCommandManager {
         String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
         for (String category : sortedDropCategoryIds()) {
             suggestIfMatching(builder, remaining, category);
-            if (category.startsWith("biome_")) {
-                suggestIfMatching(builder, remaining, category.substring("biome_".length()));
+            if (category.startsWith(BIOME_PREFIX)) {
+                suggestIfMatching(builder, remaining, category.substring(BIOME_PREFIX.length()));
             }
         }
         return builder.buildFuture();
@@ -946,7 +961,7 @@ public class BrigadierCommandManager {
     ) {
         builder.suggest("basic");
         builder.suggest("advanced");
-        builder.suggest("legendary");
+        builder.suggest(TIER_LEGENDARY);
         return builder.buildFuture();
     }
 
@@ -980,8 +995,8 @@ public class BrigadierCommandManager {
         return switch (normalizedCategory) {
             case "global" -> 0;
             case "rare" -> 1;
-            case "legendary" -> 2;
-            default -> normalizedCategory.startsWith("biome_") ? 3 : 4;
+            case TIER_LEGENDARY -> 2;
+            default -> normalizedCategory.startsWith(BIOME_PREFIX) ? 3 : 4;
         };
     }
 
@@ -990,7 +1005,7 @@ public class BrigadierCommandManager {
             sendHelpMessage(context.getSource().getSender());
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
-            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), TR_GENERAL_ERROR));
             playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing help command", e);
             return 0;
@@ -1097,8 +1112,8 @@ public class BrigadierCommandManager {
             sendMessage(sender, tr(sender, "command.particle.usage-success"));
             sendMessage(sender, tr(sender, "command.particle.usage-xp"));
             return Command.SINGLE_SUCCESS;
-        } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+        } catch (Exception _) {
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), TR_GENERAL_ERROR));
             playErrorSound(context.getSource().getSender());
             return 0;
         }
@@ -1173,7 +1188,7 @@ public class BrigadierCommandManager {
             return Command.SINGLE_SUCCESS;
         } catch (IOException | RuntimeException e) {
             setter.accept(previousValue);
-            sendMessage(sender, tr(sender, "general.error"));
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, e, () -> "Failed to update " + settingName + " particle setting");
             return 0;
@@ -1215,7 +1230,7 @@ public class BrigadierCommandManager {
                         duplicateIds++;
                         sendMessage(sender, "<yellow>⚠ Duplicate identifier <white>" + idCount.getKey()
                             + "</white> appears " + idCount.getValue() + " times in category <white>"
-                            + categoryKey + "</white>");
+                            + categoryKey + CLOSE_WHITE);
                     }
                 }
             }
@@ -1234,7 +1249,7 @@ public class BrigadierCommandManager {
             }
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
-            sendMessage(sender, tr(sender, "general.error"));
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Error executing validate command", e);
             return 0;
@@ -1246,36 +1261,36 @@ public class BrigadierCommandManager {
         String identifier = drop.getIdentifier();
 
         if (identifier == null || identifier.isBlank()) {
-            sendMessage(sender, "<red>✗ <white>" + category + "</white>: drop has no identifier");
+            sendMessage(sender, ERR_PREFIX + category + "</white>: drop has no identifier");
             return 1;
         }
 
         if (drop.getWeight() <= 0) {
-            sendMessage(sender, "<red>✗ <white>" + category + "</white>/<white>" + identifier
+            sendMessage(sender, ERR_PREFIX + category + PATH_SEP_WHITE + identifier
                 + "</white>: weight must be >= 1 (was " + drop.getWeight() + ")");
             problems++;
         }
 
         if (drop.getAmount() <= 0) {
-            sendMessage(sender, "<red>✗ <white>" + category + "</white>/<white>" + identifier
+            sendMessage(sender, ERR_PREFIX + category + PATH_SEP_WHITE + identifier
                 + "</white>: amount must be >= 1 (was " + drop.getAmount() + ")");
             problems++;
         }
 
         if (drop.isNexoItem()) {
             if (!nexoAvailable) {
-                sendMessage(sender, "<yellow>⚠ <white>" + category + "</white>/<white>" + identifier
+                sendMessage(sender, WARN_PREFIX + category + PATH_SEP_WHITE + identifier
                     + "</white>: Nexo item but Nexo plugin is not enabled");
                 problems++;
             }
         } else {
             Material material = Material.matchMaterial(identifier);
             if (material == null) {
-                sendMessage(sender, "<red>✗ <white>" + category + "</white>/<white>" + identifier
+                sendMessage(sender, ERR_PREFIX + category + PATH_SEP_WHITE + identifier
                     + "</white>: unknown material");
                 problems++;
             } else if (!material.isItem()) {
-                sendMessage(sender, "<red>✗ <white>" + category + "</white>/<white>" + identifier
+                sendMessage(sender, ERR_PREFIX + category + PATH_SEP_WHITE + identifier
                     + "</white>: material is not an obtainable item");
                 problems++;
             }
@@ -1283,7 +1298,7 @@ public class BrigadierCommandManager {
 
         for (Map.Entry<String, Integer> enchant : drop.getEnchantments().entrySet()) {
             if (enchant.getValue() == null || enchant.getValue() < 1) {
-                sendMessage(sender, "<yellow>⚠ <white>" + identifier + "</white>: enchantment '"
+                sendMessage(sender, WARN_PREFIX + identifier + "</white>: enchantment '"
                     + enchant.getKey() + "' has invalid level " + enchant.getValue());
                 problems++;
                 continue;
@@ -1291,7 +1306,7 @@ public class BrigadierCommandManager {
             NamespacedKey enchantKey = parseRegistryKey(enchant.getKey());
             if (enchantKey == null
                     || RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(enchantKey) == null) {
-                sendMessage(sender, "<yellow>⚠ <white>" + identifier + "</white>: unknown enchantment '"
+                sendMessage(sender, WARN_PREFIX + identifier + "</white>: unknown enchantment '"
                     + enchant.getKey() + "'");
                 problems++;
             }
@@ -1304,7 +1319,7 @@ public class BrigadierCommandManager {
             NamespacedKey biomeKey = parseRegistryKey(biome);
             if (biomeKey == null
                     || RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME).get(biomeKey) == null) {
-                sendMessage(sender, "<yellow>⚠ <white>" + identifier + "</white>: unknown biome '"
+                sendMessage(sender, WARN_PREFIX + identifier + "</white>: unknown biome '"
                     + biome + "'");
                 problems++;
             }
@@ -1312,7 +1327,7 @@ public class BrigadierCommandManager {
 
         String permission = drop.getPermission();
         if (permission != null && !permission.isBlank() && !permission.startsWith("mythicrod.")) {
-            sendMessage(sender, "<yellow>⚠ <white>" + identifier
+            sendMessage(sender, WARN_PREFIX + identifier
                 + "</white>: permission '" + permission + "' is outside the mythicrod.* namespace");
             problems++;
         }
@@ -1330,7 +1345,7 @@ public class BrigadierCommandManager {
                 return NamespacedKey.fromString(trimmed);
             }
             return NamespacedKey.minecraft(trimmed);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             return null;
         }
     }
@@ -1339,7 +1354,7 @@ public class BrigadierCommandManager {
         CommandSender sender = context.getSource().getSender();
         try {
             if (!(sender instanceof Player player)) {
-                sendMessage(sender, tr(sender, "general.player_only"));
+                sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
                 playErrorSound(sender);
                 return 0;
             }
@@ -1347,15 +1362,15 @@ public class BrigadierCommandManager {
             String biomeArg = null;
             try {
                 biomeArg = StringArgumentType.getString(context, "biome");
-            } catch (IllegalArgumentException ignored) {
+            } catch (IllegalArgumentException _) {
             }
             int count;
             try {
-                count = IntegerArgumentType.getInteger(context, "count");
-            } catch (IllegalArgumentException ignored) {
+                count = IntegerArgumentType.getInteger(context, KEY_COUNT);
+            } catch (IllegalArgumentException _) {
                 count = 100;
             }
-            count = Math.max(1, Math.min(10000, count));
+            count = Math.clamp(count, 1, 10000);
 
             String biome = biomeArg;
             if (biome == null || biome.isBlank()) {
@@ -1373,7 +1388,7 @@ public class BrigadierCommandManager {
 
             PaperPlayer platformPlayer = new PaperPlayer(player);
             Map<String, Integer> tierCounts = new LinkedHashMap<>();
-            tierCounts.put("legendary", 0);
+            tierCounts.put(TIER_LEGENDARY, 0);
             tierCounts.put("rare", 0);
             tierCounts.put("uncommon", 0);
             tierCounts.put("common", 0);
@@ -1392,7 +1407,7 @@ public class BrigadierCommandManager {
 
             sendMessage(sender, "<gold><st>            </st> <bold>Test Roll</bold> <st>            </st>");
             sendMessage(sender, "<gray>Biome: <white>" + biome + "</white> · Rolls: <white>"
-                + count + "</white> · No-eligible: <white>" + nullRolls + "</white>");
+                + count + "</white> · No-eligible: <white>" + nullRolls + CLOSE_WHITE);
 
             int totalHits = count - nullRolls;
             for (Map.Entry<String, Integer> tier : tierCounts.entrySet()) {
@@ -1417,7 +1432,7 @@ public class BrigadierCommandManager {
             playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
-            sendMessage(sender, tr(sender, "general.error"));
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Error executing testroll command", e);
             return 0;
@@ -1426,10 +1441,10 @@ public class BrigadierCommandManager {
 
     private String tierColor(String tier) {
         return switch (tier) {
-            case "legendary" -> "<gold>";
+            case TIER_LEGENDARY -> "<gold>";
             case "rare" -> "<aqua>";
             case "uncommon" -> "<green>";
-            default -> "<gray>";
+            default -> GRAY_PREFIX;
         };
     }
 
@@ -1437,7 +1452,7 @@ public class BrigadierCommandManager {
         CommandSender sender = context.getSource().getSender();
         try {
             if (!(sender instanceof Player player)) {
-                sendMessage(sender, tr(sender, "general.player_only"));
+                sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
                 playErrorSound(sender);
                 return 0;
             }
@@ -1447,7 +1462,7 @@ public class BrigadierCommandManager {
             inspectRodSlot(sender, player, EquipmentSlot.OFF_HAND, "Off hand");
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
-            sendMessage(sender, tr(sender, "general.error"));
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Error executing rod inspect command", e);
             return 0;
@@ -1462,16 +1477,16 @@ public class BrigadierCommandManager {
         };
 
         if (item == null || item.getType().isAir()) {
-            sendMessage(sender, "<gray>" + label + ": <dark_gray>empty");
+            sendMessage(sender, GRAY_PREFIX + label + ": <dark_gray>empty");
             return;
         }
         if (item.getType() != Material.FISHING_ROD) {
-            sendMessage(sender, "<gray>" + label + ": <yellow>not a fishing rod (<white>"
+            sendMessage(sender, GRAY_PREFIX + label + ": <yellow>not a fishing rod (<white>"
                 + item.getType().name() + "</white>)");
             return;
         }
         if (!rodFactory.isCustomRod(item)) {
-            sendMessage(sender, "<gray>" + label + ": <yellow>vanilla fishing rod");
+            sendMessage(sender, GRAY_PREFIX + label + ": <yellow>vanilla fishing rod");
             return;
         }
 
@@ -1480,9 +1495,9 @@ public class BrigadierCommandManager {
             tier = MythicRodKeys.DEFAULT_ROD_TIER;
         }
         double multiplier = plugin.getConfigManager().getRodLuckMultiplier(tier);
-        sendMessage(sender, "<gray>" + label + ": <green>MythicRod</green> <gray>· tier=<white>"
+        sendMessage(sender, GRAY_PREFIX + label + ": <green>MythicRod</green> <gray>· tier=<white>"
             + tier + "</white> · rare-luck=<white>" + String.format(Locale.ROOT, "%.2fx", multiplier)
-            + "</white>");
+            + CLOSE_WHITE);
     }
 
     private CompletableFuture<Suggestions> suggestBiomes(
@@ -1529,7 +1544,7 @@ public class BrigadierCommandManager {
 
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
+            sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), TR_GENERAL_ERROR));
             playErrorSound(context.getSource().getSender());
             plugin.getLogger().log(Level.SEVERE, "Error executing debug command", e);
             return 0;

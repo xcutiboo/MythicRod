@@ -1188,7 +1188,7 @@ public class DropManager implements DropCatalog {
         }
         try {
             return Integer.parseInt(String.valueOf(value));
-        } catch (NumberFormatException ignored) {
+        } catch (NumberFormatException _) {
             return defaultValue;
         }
     }
