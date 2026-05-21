@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 36" width="1200" height="36" role="img" aria-labelledby="mr-div-title">
+  <title id="mr-div-title">MythicRod section divider</title>
+  <rect x="300" y="16" width="280" height="3" rx="1.5" fill="#DCA13A" opacity=".55"/>
+  <rect x="620" y="16" width="280" height="3" rx="1.5" fill="#DCA13A" opacity=".55"/>
+  <g transform="translate(600 18)">
+    <rect x="-7" y="-7" width="14" height="14" transform="rotate(45)" fill="#F0C75A"/>
+    <rect x="-3" y="-3" width="6" height="6" transform="rotate(45)" fill="#FFF1A6"/>
+  </g>
+</svg>
