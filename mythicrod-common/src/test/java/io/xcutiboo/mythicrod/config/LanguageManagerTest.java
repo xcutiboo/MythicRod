@@ -60,7 +60,7 @@ class LanguageManagerTest {
     void placeholdersAreReplacedInBothCurlyAndPercentForms() {
         LanguageManager lang = newManager();
         lang.loadTranslations("en_US", Map.of(
-            "catch", "Caught {item} x{amount} — {percent}%"));
+            "catch", "Caught {item} x{amount}, {percent}%"));
         lang.setLanguage("en_US");
 
         Map<String, String> values = new HashMap<>();
@@ -68,7 +68,7 @@ class LanguageManagerTest {
         values.put("amount", "3");
         values.put("percent", "12");
 
-        assertEquals("Caught Pearl x3 — 12%", lang.tr("catch", values));
+        assertEquals("Caught Pearl x3, 12%", lang.tr("catch", values));
     }
 
     @Test

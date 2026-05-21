@@ -47,7 +47,7 @@ dependencies {
 
 ```kotlin
 dependencies {
-    compileOnly(files("libs/MythicRod-Paper-26.5.0.jar"))
+    compileOnly(files("libs/MythicRod-Paper-2026.1.0.jar"))
 }
 ```
 

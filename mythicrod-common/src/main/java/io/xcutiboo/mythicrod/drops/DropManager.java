@@ -68,7 +68,7 @@ public class DropManager implements DropCatalog {
     private volatile boolean debugMode = false;
     private volatile int pendingAsyncPersistenceOperations = 0;
     // Reload swaps these references whole. Readers see either the old or new
-    // PlatformConfiguration, never a half-built one — atomic publication is the
+    // PlatformConfiguration, never a half-built one, atomic publication is the
     // intended invariant. Using AtomicReference adds no value here.
     @SuppressWarnings("java:S3077")
     private volatile PlatformConfiguration dropsConfig;

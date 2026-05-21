@@ -80,7 +80,9 @@ command:
     boolean-set: '<green>✓ <gray>%setting% を %value%<gray> に設定しました。'
     delivery-set: '<green>✓ <gray>報酬の受け渡し方式を <white>%mode%<gray> に設定しました。'
     interval-set: '<green>✓ <gray>統計の保存間隔を <white>%seconds%秒<gray> に設定しました。'
+    language-set: '<green>✓ <gray>サーバー言語を <white>%locale%<gray> に設定しました。'
     invalid-delivery-mode: '<red>✗ <dark_red>不明な受け渡し方式 <yellow>%mode%<dark_red> です。使用可能: <yellow>%modes%'
+    invalid-language: '<red>✗ <dark_red>未対応のロケール <yellow>%locale%<dark_red>。使用可能: <yellow>%available%'
     save-failed: '<red>✗ <dark_red>設定を保存できませんでした: <yellow>%error%'
     seconds: '<white>%seconds%秒'
     settings:

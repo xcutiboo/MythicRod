@@ -326,6 +326,14 @@ public class ConfigManager {
         this.statsSaveInterval = clampInterval(seconds, MIN_STATS_INTERVAL, MAX_STATS_INTERVAL);
         if (config != null) config.set("timers.stats-save-interval-seconds", statsSaveInterval);
     }
+    public boolean setLanguage(String requested) {
+        if (!isValidLanguage(requested)) {
+            return false;
+        }
+        this.language = requested;
+        if (config != null) config.set("language.default", requested);
+        return true;
+    }
 
     private File configFile;
 

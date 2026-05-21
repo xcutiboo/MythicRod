@@ -50,7 +50,7 @@ Shaded jar lands at `mythicrod-paper/build/libs/MythicRod-Paper-<version>.jar`.
 Tagged releases ship `MythicRod-Paper-<version>.jar.sha256` next to the jar:
 
 ```bash
-sha256sum -c MythicRod-Paper-26.5.0.jar.sha256
+sha256sum -c MythicRod-Paper-2026.1.0.jar.sha256
 ```
 
 `v*-rc*`, `v*-beta*`, `v*-alpha*`, `v*-snapshot*` tags publish as

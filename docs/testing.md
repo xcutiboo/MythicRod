@@ -23,7 +23,7 @@ cp mythicrod-paper/build/libs/MythicRod-Paper-*.jar /path/to/server/plugins/
 Start the server. Look for the green banner in console:
 
 ```
-MythicRod-Paper v26.5.0 | Paper 1.21.x | Brigadier ✓ | <Nms>ms
+MythicRod-Paper v2026.1.0 | Paper 1.21.x | Brigadier ✓ | <Nms>ms
 ```
 
 If the plugin disabled itself, copy the stack trace and head to
@@ -48,11 +48,11 @@ view, and leaderboard entries should appear.
 
 ## 2. Drop tables
 
-1. `/mythicrod drops` — verify every category from `drops.yml` is listed.
-2. `/mythicrod drops global` — confirm the first page of `global` drops.
-3. `/mythicrod testroll 1000` — should print a tier histogram with five
+1. `/mythicrod drops`, verify every category from `drops.yml` is listed.
+2. `/mythicrod drops global`, confirm the first page of `global` drops.
+3. `/mythicrod testroll 1000`, should print a tier histogram with five
    most-frequent identifiers and a "No-eligible" count.
-4. `/mythicrod validate` — config health check; investigate every red ✗.
+4. `/mythicrod validate`, config health check; investigate every red ✗.
 5. Cast a rod and catch fish 20+ times. Watch for varied catches, including
    tiered messages (common / uncommon / rare / legendary).
 
@@ -61,7 +61,7 @@ view, and leaderboard entries should appear.
 ## 3. Biome filters
 
 1. Stand in `minecraft:ocean`.
-2. `/mythicrod testroll 500` — biome auto-detects from your location.
+2. `/mythicrod testroll 500`, biome auto-detects from your location.
 3. Catch a few fish; expect biome-scoped drops to surface (Nautilus Shell,
    Heart of the Sea, etc.).
 4. Move to `minecraft:plains` and repeat. Ocean-only drops should drop out
@@ -73,16 +73,16 @@ view, and leaderboard entries should appear.
 
 1. Set `features.permissions.enabled: true` in `config.yml`, reload.
 2. Revoke `mythicrod.drops.legendary` on the test user.
-3. `/mythicrod testroll 5000` — `legendary` count should hit zero.
-4. Grant the node, repeat — legendary catches return.
+3. `/mythicrod testroll 5000`, `legendary` count should hit zero.
+4. Grant the node, repeat, legendary catches return.
 
 ![divider]({{ site.baseurl }}/assets/divider.svg)
 
 ## 5. Custom rods
 
-1. `/mythicrod rod` — visual + tier picker GUI opens.
-2. `/mythicrod give <player> legendary` — target receives a Legendary rod.
-3. `/mythicrod rod inspect` while holding it — console prints PDC keys
+1. `/mythicrod rod`, visual + tier picker GUI opens.
+2. `/mythicrod give <player> legendary`, target receives a Legendary rod.
+3. `/mythicrod rod inspect` while holding it, console prints PDC keys
    (`mythicrod:rod_tier`, `mythicrod:rod_id`).
 4. Catch with the legendary rod; rare/legendary tier rates should rise.
 
@@ -90,14 +90,14 @@ view, and leaderboard entries should appear.
 
 ## 6. Stats + leaderboard
 
-1. `/mythicrod stats` — own snapshot opens.
-2. `/mythicrod stats <other>` — admin can view (`stats.view.others` node).
-3. `/mythicrod top 10` — leaderboard sorted by total catches.
-4. `/mythicrod stats reset <player>` — wipes a row; rerun `/top` to confirm.
+1. `/mythicrod stats`, own snapshot opens.
+2. `/mythicrod stats <other>`, admin can view (`stats.view.others` node).
+3. `/mythicrod top 10`, leaderboard sorted by total catches.
+4. `/mythicrod stats reset <player>`, wipes a row; rerun `/top` to confirm.
 
 The default save cadence is 600 s; bump
 `timers.stats-save-interval-seconds` to 30 in `config.yml`, reload, catch a
-fish, wait, then check `plugins/MythicRod/statistics.yml` — your UUID block
+fish, wait, then check `plugins/MythicRod/statistics.yml`, your UUID block
 should have a fresh `last_fished`.
 
 ![divider]({{ site.baseurl }}/assets/divider.svg)
@@ -105,7 +105,7 @@ should have a fresh `last_fished`.
 ## 7. In-game drop editor
 
 1. Open `/mythicrod drops <category>` while OP.
-2. Click any drop — `EditDropMenu` opens.
+2. Click any drop, `EditDropMenu` opens.
 3. Edit weight, amount, name, lore, glow, biomes, enchantments, flags,
    permission. Save. Confirm `drops.yml` reflects the change.
 4. Add a new drop in the menu, save, restart the server, confirm it
@@ -117,7 +117,7 @@ should have a fresh `last_fished`.
 
 1. `/mythicrod gui` → Config.
 2. Toggle Sounds / Particles / Statistics / Biome drops / Permissions /
-   Debug — save and confirm `config.yml` updates.
+   Debug, save and confirm `config.yml` updates.
 3. Cycle `delivery_mode` between `vanilla_retrieve`, `inventory`, and
    `drop_at_player`. Re-cast; reward delivery should respect the new mode.
 
@@ -126,8 +126,8 @@ should have a fresh `last_fished`.
 ## 9. Localization
 
 1. `config.yml`: `language.default: ja_JP`. `/mythicrod reload`.
-2. `/mr help` — entries render in Japanese.
-3. `/mythicrod gui` → Language menu — per-player override picker opens.
+2. `/mr help`, entries render in Japanese.
+3. `/mythicrod gui` → Language menu, per-player override picker opens.
 
 ![divider]({{ site.baseurl }}/assets/divider.svg)
 
@@ -163,7 +163,7 @@ public void onEnable() {
 }
 ```
 
-Catch a few fish — `demo:gold` should appear in catches.
+Catch a few fish, `demo:gold` should appear in catches.
 
 Listen for `MythicRodRewardRollEvent` / `MythicRodFishCatchEvent` /
 `MythicRodStatsUpdateEvent` to confirm the event pipeline fires.

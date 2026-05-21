@@ -80,7 +80,9 @@ command:
     boolean-set: '<green>✓ <gray>%setting% set to %value%<gray>.'
     delivery-set: '<green>✓ <gray>Reward delivery mode set to <white>%mode%<gray>.'
     interval-set: '<green>✓ <gray>Statistics save interval set to <white>%seconds%s<gray>.'
+    language-set: '<green>✓ <gray>Server language set to <white>%locale%<gray>.'
     invalid-delivery-mode: '<red>✗ <dark_red>Unknown delivery mode <yellow>%mode%<dark_red>. Use: <yellow>%modes%'
+    invalid-language: '<red>✗ <dark_red>Unknown locale <yellow>%locale%<dark_red>. Available: <yellow>%available%'
     save-failed: '<red>✗ <dark_red>Could not save config: <yellow>%error%'
     seconds: '<white>%seconds%s'
     settings:

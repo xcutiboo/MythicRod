@@ -41,7 +41,7 @@ statistics, and a small public API.
 
 | Item | Value |
 | --- | --- |
-| Plugin | `26.5.0` (CalVer) |
+| Plugin | `2026.1.0` (CalVer, year.release.patch) |
 | API | Paper `26.1.2` |
 | Java | 25+ |
 | Optional integration | Nexo (`nexo:*` identifiers) |

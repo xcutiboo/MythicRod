@@ -43,7 +43,7 @@ No extra runtime dependencies. Nexo is optional and only kicks in if you use
 
 ## Version targets
 
-- Plugin: `26.5.0` (CalVer, year.month.patch).
+- Plugin: `2026.1.0` (CalVer, year.release.patch).
 - API: Paper `26.1.2` (`api-version: 26.1.2`).
 - Java: 25+.
 - Bundled languages: `en_US` (source) and `ja_JP`. The rest land through Crowdin.
@@ -335,7 +335,7 @@ mythicrod-paper/    Paper runtime, GUI, commands, events, adapters
 Tagged releases ship a SHA-256 file alongside each jar:
 
 ```bash
-sha256sum -c MythicRod-Paper-26.5.0.jar.sha256
+sha256sum -c MythicRod-Paper-2026.1.0.jar.sha256
 ```
 
 `v*-rc*`, `v*-beta*`, `v*-alpha*`, and `v*-snapshot*` tags publish as

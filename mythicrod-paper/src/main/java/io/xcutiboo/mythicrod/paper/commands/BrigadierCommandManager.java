@@ -31,6 +31,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -130,70 +131,8 @@ public class BrigadierCommandManager {
             .then(Commands.literal("reload")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_RELOAD))
                 .executes(this::executeReload))
-            .then(Commands.literal("config")
-                .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
-                .executes(this::executeConfigOverview)
-                .then(Commands.literal("sounds")
-                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
-                        .executes(context -> executeBooleanConfig(
-                            context,
-                            "command.config.settings.sounds",
-                            plugin.getConfigManager()::useSounds,
-                            plugin.getConfigManager()::setSoundsEnabled,
-                            null
-                        ))))
-                .then(Commands.literal("particles")
-                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
-                        .executes(context -> executeBooleanConfig(
-                            context,
-                            "command.config.settings.particles",
-                            plugin.getConfigManager()::useParticles,
-                            plugin.getConfigManager()::setParticlesEnabled,
-                            null
-                        ))))
-                .then(Commands.literal("statistics")
-                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
-                        .executes(context -> executeBooleanConfig(
-                            context,
-                            "command.config.settings.statistics",
-                            plugin.getConfigManager()::trackStatistics,
-                            plugin.getConfigManager()::setStatisticsEnabled,
-                            null
-                        ))))
-                .then(Commands.literal("biome-drops")
-                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
-                        .executes(context -> executeBooleanConfig(
-                            context,
-                            "command.config.settings.biome-drops",
-                            plugin.getConfigManager()::enableBiomeSpecificDrops,
-                            plugin.getConfigManager()::setBiomeDropsEnabled,
-                            plugin::applyDropRuntimeSettings
-                        ))))
-                .then(Commands.literal("permissions")
-                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
-                        .executes(context -> executeBooleanConfig(
-                            context,
-                            "command.config.settings.permissions",
-                            plugin.getConfigManager()::usePermissions,
-                            plugin.getConfigManager()::setPermissionsEnabled,
-                            plugin::applyDropRuntimeSettings
-                        ))))
-                .then(Commands.literal("debug")
-                    .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
-                        .executes(context -> executeBooleanConfig(
-                            context,
-                            "command.config.settings.debug",
-                            plugin.getConfigManager()::isDebugMode,
-                            plugin.getConfigManager()::setDebugEnabled,
-                            plugin::applyDropRuntimeSettings
-                        ))))
-                .then(Commands.literal("delivery-mode")
-                    .then(Commands.argument("mode", StringArgumentType.word())
-                        .suggests(this::suggestRewardDeliveryModes)
-                        .executes(this::executeDeliveryModeConfig)))
-                .then(Commands.literal("stats-save-interval")
-                    .then(Commands.argument(KEY_SECONDS, IntegerArgumentType.integer(60, 3600))
-                        .executes(this::executeStatsSaveIntervalConfig))))
+            .then(buildConfigSubtree("config"))
+            .then(buildConfigSubtree("settings"))
             .then(Commands.literal("stats")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.STATS_VIEW))
                 .executes(this::executeStatsOwnPlayer)
@@ -261,6 +200,77 @@ public class BrigadierCommandManager {
             .then(Commands.literal("help")
                 .executes(this::executeHelp))
             .build();
+    }
+
+    private LiteralArgumentBuilder<CommandSourceStack> buildConfigSubtree(String literal) {
+        return Commands.literal(literal)
+            .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
+            .executes(this::executeConfigOverview)
+            .then(Commands.literal("sounds")
+                .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
+                    .executes(context -> executeBooleanConfig(
+                        context,
+                        "command.config.settings.sounds",
+                        plugin.getConfigManager()::useSounds,
+                        plugin.getConfigManager()::setSoundsEnabled,
+                        null
+                    ))))
+            .then(Commands.literal("particles")
+                .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
+                    .executes(context -> executeBooleanConfig(
+                        context,
+                        "command.config.settings.particles",
+                        plugin.getConfigManager()::useParticles,
+                        plugin.getConfigManager()::setParticlesEnabled,
+                        null
+                    ))))
+            .then(Commands.literal("statistics")
+                .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
+                    .executes(context -> executeBooleanConfig(
+                        context,
+                        "command.config.settings.statistics",
+                        plugin.getConfigManager()::trackStatistics,
+                        plugin.getConfigManager()::setStatisticsEnabled,
+                        null
+                    ))))
+            .then(Commands.literal("biome-drops")
+                .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
+                    .executes(context -> executeBooleanConfig(
+                        context,
+                        "command.config.settings.biome-drops",
+                        plugin.getConfigManager()::enableBiomeSpecificDrops,
+                        plugin.getConfigManager()::setBiomeDropsEnabled,
+                        plugin::applyDropRuntimeSettings
+                    ))))
+            .then(Commands.literal("permissions")
+                .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
+                    .executes(context -> executeBooleanConfig(
+                        context,
+                        "command.config.settings.permissions",
+                        plugin.getConfigManager()::usePermissions,
+                        plugin.getConfigManager()::setPermissionsEnabled,
+                        plugin::applyDropRuntimeSettings
+                    ))))
+            .then(Commands.literal("debug")
+                .then(Commands.argument(KEY_ENABLED, BoolArgumentType.bool())
+                    .executes(context -> executeBooleanConfig(
+                        context,
+                        "command.config.settings.debug",
+                        plugin.getConfigManager()::isDebugMode,
+                        plugin.getConfigManager()::setDebugEnabled,
+                        plugin::applyDropRuntimeSettings
+                    ))))
+            .then(Commands.literal("delivery-mode")
+                .then(Commands.argument("mode", StringArgumentType.word())
+                    .suggests(this::suggestRewardDeliveryModes)
+                    .executes(this::executeDeliveryModeConfig)))
+            .then(Commands.literal("language")
+                .then(Commands.argument("locale", StringArgumentType.word())
+                    .suggests(this::suggestAvailableLanguages)
+                    .executes(this::executeLanguageConfig)))
+            .then(Commands.literal("stats-save-interval")
+                .then(Commands.argument(KEY_SECONDS, IntegerArgumentType.integer(60, 3600))
+                    .executes(this::executeStatsSaveIntervalConfig)));
     }
 
     private int executeDefault(CommandContext<CommandSourceStack> context) {
@@ -533,6 +543,53 @@ public class BrigadierCommandManager {
             plugin.getLogger().log(Level.SEVERE, "Failed to update reward delivery mode", e);
             return 0;
         }
+    }
+
+    private int executeLanguageConfig(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        ConfigManager config = plugin.getConfigManager();
+        String previousLocale = config.getLanguage();
+        String requested = StringArgumentType.getString(context, "locale");
+        List<String> available = plugin.getLanguageManager().getAvailableLanguages();
+
+        if (!available.contains(requested) || !config.setLanguage(requested)) {
+            sendMessage(sender, tr(sender, "command.config.invalid-language",
+                Map.of(
+                    "locale", requested,
+                    "available", String.join(", ", available)
+                )));
+            playErrorSound(sender);
+            return 0;
+        }
+
+        try {
+            config.saveConfig();
+            plugin.getLanguageManager().setLanguage(requested);
+            sendMessage(sender, tr(sender, "command.config.language-set",
+                Map.of("locale", requested)));
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (IOException | RuntimeException e) {
+            config.setLanguage(previousLocale);
+            sendMessage(sender, tr(sender, "command.config.save-failed",
+                Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Failed to update language", e);
+            return 0;
+        }
+    }
+
+    private CompletableFuture<Suggestions> suggestAvailableLanguages(
+        @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
+        SuggestionsBuilder builder
+    ) {
+        String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+        for (String locale : plugin.getLanguageManager().getAvailableLanguages()) {
+            if (locale.toLowerCase(Locale.ROOT).startsWith(remaining)) {
+                builder.suggest(locale);
+            }
+        }
+        return builder.buildFuture();
     }
 
     private int executeStatsSaveIntervalConfig(CommandContext<CommandSourceStack> context) {
