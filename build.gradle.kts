@@ -1,6 +1,20 @@
 plugins {
     `java-library`
     alias(libs.plugins.shadow) apply false
+    alias(libs.plugins.sonarqube)
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "xcutiboo_MythicRod")
+        property("sonar.organization", "xcutiboo")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.projectName", "MythicRod")
+        property("sonar.sources", "mythicrod-api/src/main/java,mythicrod-common/src/main/java,mythicrod-paper/src/main/java,mythicrod-spigot/src/main/java")
+        property("sonar.tests", "mythicrod-common/src/test/java,mythicrod-paper/src/test/java")
+        property("sonar.java.binaries", "mythicrod-api/build/classes/java/main,mythicrod-common/build/classes/java/main,mythicrod-paper/build/classes/java/main,mythicrod-spigot/build/classes/java/main")
+        property("sonar.exclusions", "**/build/**,**/.gradle/**,**/generated/**,graphify-out/**")
+    }
 }
 
 group = "io.xcutiboo"
