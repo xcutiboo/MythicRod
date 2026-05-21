@@ -71,6 +71,7 @@ public class BrigadierCommandManager {
     private static final String TR_GENERAL_ERROR = "general.error";
     private static final String TR_PLAYER_ONLY = "general.player_only";
     private static final String KEY_ERROR = "error";
+    private static final String TIER_BASIC = "basic";
     private static final String TIER_LEGENDARY = "legendary";
     private static final String TR_CONFIG_SAVE_FAILED = "command.config.save-failed";
     private static final String BIOME_PREFIX = "biome_";
@@ -125,6 +126,10 @@ public class BrigadierCommandManager {
             .then(Commands.literal("rod")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.GUI))
                 .executes(context -> executeMenu(context, "rod", "command.rod.opened"))
+                .then(Commands.literal("select")
+                    .then(Commands.argument("tier", StringArgumentType.word())
+                        .suggests(this::suggestRodTiers)
+                        .executes(this::executeRodSelect)))
                 .then(Commands.literal("inspect")
                     .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
                     .executes(this::executeRodInspect)))
@@ -1541,6 +1546,46 @@ public class BrigadierCommandManager {
             case "uncommon" -> "<green>";
             default -> GRAY_PREFIX;
         };
+    }
+
+    private int executeRodSelect(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = context.getSource().getSender();
+        try {
+            if (!(sender instanceof Player player)) {
+                sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
+                playErrorSound(sender);
+                return 0;
+            }
+            String tier = StringArgumentType.getString(context, "tier").toLowerCase(Locale.ROOT);
+            String permission = switch (tier) {
+                case TIER_BASIC -> PermissionNodes.GUI;
+                case "advanced" -> PermissionNodes.ROD_ADVANCED;
+                case TIER_LEGENDARY -> PermissionNodes.ROD_LEGENDARY;
+                default -> null;
+            };
+            if (permission == null) {
+                sendMessage(sender, tr(sender, "command.give.invalid-tier",
+                    Map.of("tier", tier)));
+                playErrorSound(sender);
+                return 0;
+            }
+            if (!player.hasPermission(permission)) {
+                sendMessage(sender, tr(sender, "command.rod.locked",
+                    Map.of("tier", tier)));
+                playErrorSound(sender);
+                return 0;
+            }
+            plugin.getPlayerDataService().setRodTier(player, tier);
+            sendMessage(sender, tr(sender, "command.rod.selected",
+                Map.of("tier", tier)));
+            playSuccessSound(sender);
+            return Command.SINGLE_SUCCESS;
+        } catch (RuntimeException e) {
+            sendMessage(sender, tr(sender, TR_GENERAL_ERROR));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.SEVERE, "Error executing rod select command", e);
+            return 0;
+        }
     }
 
     private int executeRodInspect(CommandContext<CommandSourceStack> context) {

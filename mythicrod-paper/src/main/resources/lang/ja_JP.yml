@@ -43,6 +43,8 @@ command:
     opened-hint: '<dark_gray>ヒント: <yellow>/mythicrod help<dark_gray> で使用可能なコマンド一覧を表示できます。'
   rod:
     opened: '<green>✓ <gray>ロッド設定を開きました。'
+    selected: '<green>✓ <gray>ロッド階級を <white>%tier%<gray> に設定しました。'
+    locked: '<red>✗ <dark_red>階級 <yellow>%tier%<dark_red> を使用する権限がありません。'
   give:
     tier-missing: '<red>✗ <dark_red>ティアを空にはできません。'
     invalid-tier: '<red>✗ <dark_red>無効なティア <yellow>%tier%<dark_red> です。<yellow>basic<dark_red>、<yellow>advanced<dark_red>、<yellow>legendary<dark_red> を使用してください。'
