@@ -21,13 +21,30 @@ jobs:
             echo "MODRINTH_TOKEN is not configured"; exit 1
           fi
           body_file=".modrinth-body.md"
-          if [[ ! -f "$body_file" ]]; then
-            echo "missing $body_file"; exit 1
+          [[ -f "$body_file" ]] || { echo "missing $body_file"; exit 1; }
+
+          tok="${MODRINTH_TOKEN}"
+          tok="${tok//[$'\t\r\n ']}"
+          tok="${tok#\"}"; tok="${tok%\"}"
+          tok="${tok#\'}"; tok="${tok%\'}"
+          echo "token_length=${#tok}  prefix=${tok:0:4}"
+
+          who=$(curl -sS -o /tmp/whoami -w '%{http_code}' \
+            -H "Authorization: ${tok}" https://api.modrinth.com/v2/user)
+          echo "whoami(bare)=$who"; cat /tmp/whoami; echo
+
+          auth_header="Authorization: ${tok}"
+          if [[ "$who" != "200" ]]; then
+            who=$(curl -sS -o /tmp/whoami -w '%{http_code}' \
+              -H "Authorization: Bearer ${tok}" https://api.modrinth.com/v2/user)
+            echo "whoami(bearer)=$who"; cat /tmp/whoami; echo
+            auth_header="Authorization: Bearer ${tok}"
           fi
+
           payload=$(python3 -c "import json,sys; print(json.dumps({'body': open(sys.argv[1]).read()}))" "$body_file")
           status=$(curl -sS -o /tmp/out -w '%{http_code}' \
             -X PATCH \
-            -H "Authorization: ${MODRINTH_TOKEN}" \
+            -H "$auth_header" \
             -H "Content-Type: application/json" \
             --data-raw "$payload" \
             https://api.modrinth.com/v2/project/mythicrod)
