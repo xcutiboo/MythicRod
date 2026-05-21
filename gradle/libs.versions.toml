@@ -1,5 +1,6 @@
 [versions]
 paper = "26.1.2.build.64-stable"
+spigot = "1.21.11-R0.1-SNAPSHOT"
 jetbrains-annotations = "26.1.0"
 junit = "6.0.3"
 junit-platform = "6.0.3"
@@ -8,6 +9,7 @@ junit-platform = "6.0.3"
 shadow = "9.4.1"
 run-paper = "3.0.2"
 hangar-publish = "0.1.2"
+sonarqube = "5.1.0.4882"
 
 # Dependencies
 lombok = "1.18.46"
@@ -22,6 +24,9 @@ java = "25"
 [libraries]
 # Paper Platform
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+
+# Spigot Platform (skeleton module; integration TBD)
+spigot-api = { module = "org.spigotmc:spigot-api", version.ref = "spigot" }
 
 # Code Generation
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
@@ -41,3 +46,4 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
 hangar-publish = { id = "io.papermc.hangar-publish-plugin", version.ref = "hangar-publish" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
