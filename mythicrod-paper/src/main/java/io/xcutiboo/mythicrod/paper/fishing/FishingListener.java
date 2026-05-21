@@ -490,11 +490,20 @@ public class FishingListener implements Listener {
         }
         try {
             plugin.getStatisticsManager().recordCatch(player.getUniqueId(), drop.getTier());
+            plugin.getStatisticsManager().recordRodUse(player.getUniqueId(), resolveRodTierForStats(player));
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to record catch statistics", e);
             return;
         }
         fireStatsUpdateEvent(player, drop);
+    }
+
+    private String resolveRodTierForStats(Player player) {
+        String mainHandTier = resolveEffectiveRodTier(player, EquipmentSlot.HAND);
+        if (mainHandTier != null && !mainHandTier.isBlank()) {
+            return mainHandTier;
+        }
+        return MythicRodKeys.DEFAULT_ROD_TIER;
     }
 
     private void fireStatsUpdateEvent(Player player, CustomDrop drop) {
