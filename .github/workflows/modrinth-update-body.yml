@@ -1,0 +1,36 @@
+name: Modrinth - update description
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: PATCH project body
+        run: |
+          set -euo pipefail
+          if [[ -z "${MODRINTH_TOKEN:-}" ]]; then
+            echo "MODRINTH_TOKEN is not configured"; exit 1
+          fi
+          body_file=".modrinth-body.md"
+          if [[ ! -f "$body_file" ]]; then
+            echo "missing $body_file"; exit 1
+          fi
+          payload=$(python3 -c "import json,sys; print(json.dumps({'body': open(sys.argv[1]).read()}))" "$body_file")
+          status=$(curl -sS -o /tmp/out -w '%{http_code}' \
+            -X PATCH \
+            -H "Authorization: ${MODRINTH_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data-raw "$payload" \
+            https://api.modrinth.com/v2/project/mythicrod)
+          echo "HTTP $status"
+          cat /tmp/out; echo
+          [[ "$status" == "204" ]]
