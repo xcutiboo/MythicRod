@@ -5,36 +5,37 @@ nav_order: 3
 
 # Commands
 
-Aliases: `/mr`, `/mrod`.
+Aliases: `/mr`, `/mrod`. Brigadier-registered, so tab completion hides
+branches the sender can't run.
 
-| Command                                | Description                                       | Permission                          |
-| -------------------------------------- | ------------------------------------------------- | ----------------------------------- |
-| `/mythicrod`                           | Open the main GUI                                 | `mythicrod.command`                 |
-| `/mythicrod gui`                       | Open the main GUI directly                        | `mythicrod.gui`                     |
-| `/mythicrod rod`                       | Open rod and visual settings                      | `mythicrod.gui`                     |
-| `/mythicrod rod inspect`               | Dump MythicRod metadata for the held rod          | `mythicrod.admin.debug`             |
-| `/mythicrod reload`                    | Reload config, drops, players, and language files | `mythicrod.admin.reload`            |
-| `/mythicrod stats [player]`            | View fishing statistics                           | `mythicrod.stats.view` (+ `.others`)|
-| `/mythicrod stats reset <player>`      | Wipe a player's stats and persist the reset       | `mythicrod.admin.config`            |
-| `/mythicrod top [limit]`               | View the leaderboard                              | `mythicrod.stats.leaderboard`       |
-| `/mythicrod drops [category]`          | Browse drop tables or open a category directly    | `mythicrod.drops.view`              |
-| `/mythicrod give <player> <tier>`      | Give a MythicRod item                             | `mythicrod.admin.give`              |
-| `/mythicrod config [setting] [value]`  | View or edit core settings                        | `mythicrod.admin.config`            |
-| `/mythicrod particle [channel] <type>` | Configure fishing particles                       | `mythicrod.admin.config`            |
-| `/mythicrod validate`                  | Run a health check on loaded drops                | `mythicrod.admin.config`            |
-| `/mythicrod testroll [biome] [count]`  | Simulate loot rolls and print a tier histogram    | `mythicrod.admin.debug`             |
-| `/mythicrod debug`                     | Print debug info to console                       | `mythicrod.admin.debug`             |
-| `/mythicrod help`                      | Show the command reference                        | `mythicrod.command`                 |
+| Command | What it does | Permission |
+|---|---|---|
+| `/mythicrod` / `/mythicrod gui` | Main GUI hub | `mythicrod.command` / `.gui` |
+| `/mythicrod rod` | Visual + rod-tier settings | `mythicrod.gui` |
+| `/mythicrod rod inspect` | Dump PDC for the held rod | `mythicrod.admin.debug` |
+| `/mythicrod drops [category]` | Drop browser, category view | `mythicrod.drops.view` |
+| `/mythicrod stats [player]` | View stats | `mythicrod.stats.view` (+ `.others`) |
+| `/mythicrod stats reset <player>` | Wipe a player's stats | `mythicrod.admin.config` |
+| `/mythicrod top [limit]` | Leaderboard | `mythicrod.stats.leaderboard` |
+| `/mythicrod give <player> <tier>` | Give a MythicRod | `mythicrod.admin.give` |
+| `/mythicrod config [setting] [value]` | Runtime toggles | `mythicrod.admin.config` |
+| `/mythicrod particle [channel] <type>` | Particle config | `mythicrod.admin.config` |
+| `/mythicrod validate` | Drop-config health check | `mythicrod.admin.config` |
+| `/mythicrod testroll [biome] [count]` | Roll simulator + tier histogram | `mythicrod.admin.debug` |
+| `/mythicrod reload` | Reload data atomically | `mythicrod.admin.reload` |
+| `/mythicrod debug` | Console debug dump | `mythicrod.admin.debug` |
+| `/mythicrod help` | Reference | `mythicrod.command` |
 
-## Notes
+## Behaviour worth knowing
 
-- All subcommands are registered through Paper's Brigadier lifecycle, so tab
-  completion automatically hides branches the sender cannot use.
-- `/mythicrod give` dispatches inventory insertion on the target's owner
-  scheduler. The command works correctly on both Paper and Folia.
-- `/mythicrod validate` reports unknown materials, invalid weights and
-  amounts, Nexo identifiers when Nexo is not enabled, malformed or unknown
-  enchantments, unknown biome keys, permissions outside `mythicrod.*`, and
-  duplicate identifiers within a category.
+- `/mythicrod give` runs the inventory insertion on the target's owner
+  scheduler, so it's safe on Folia.
+- `/mythicrod validate` flags unknown materials, weights or amounts out of
+  range, `nexo:*` identifiers when Nexo isn't enabled, malformed or unknown
+  enchantments, unknown biome keys, permissions outside the `mythicrod.*`
+  namespace, and duplicate identifiers within a category.
 - `/mythicrod testroll` clamps `count` to `1..10000` and prints a tier
-  histogram plus the top-five identifiers by frequency.
+  histogram plus the five most-frequent identifiers.
+- `/mythicrod reload` parses the new files into a temporary state and only
+  swaps the live drop table after the parse succeeds. A bad file leaves the
+  previous state in place and prints the parse error to console.

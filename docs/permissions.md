@@ -5,30 +5,31 @@ nav_order: 4
 
 # Permissions
 
-| Permission                    | Default | Purpose                                             |
-| ----------------------------- | ------- | --------------------------------------------------- |
-| `mythicrod.command`           | `true`  | Base command access                                 |
-| `mythicrod.gui`               | `true`  | Open the main GUI                                   |
-| `mythicrod.stats.view`        | `true`  | View your own stats                                 |
-| `mythicrod.stats.view.others` | `op`    | View another player's stats                         |
-| `mythicrod.stats.leaderboard` | `true`  | View the leaderboard                                |
-| `mythicrod.drops.view`        | `true`  | Browse drop tables                                  |
-| `mythicrod.drops.global`      | `true`  | Receive drops from the default `global` category    |
-| `mythicrod.drops.rare`        | `op`    | Receive drops from the default `rare` category      |
-| `mythicrod.drops.legendary`   | `op`    | Receive drops from the default `legendary` category |
-| `mythicrod.rod.advanced`      | `op`    | Use the Advanced rod tier                           |
-| `mythicrod.rod.legendary`     | `op`    | Use the Legendary rod tier                          |
-| `mythicrod.admin.reload`      | `op`    | Reload runtime data                                 |
-| `mythicrod.admin.give`        | `op`    | Give MythicRod items                                |
-| `mythicrod.admin.config`      | `op`    | Edit drops and config (incl. `stats reset`)         |
-| `mythicrod.admin.debug`       | `op`    | Print debug information, run validate / testroll    |
+| Node | Default | Purpose |
+|---|---|---|
+| `mythicrod.command` | `true` | Base command access |
+| `mythicrod.gui` | `true` | Open the main GUI |
+| `mythicrod.stats.view` | `true` | View your own stats |
+| `mythicrod.stats.view.others` | `op` | View someone else's stats |
+| `mythicrod.stats.leaderboard` | `true` | View the leaderboard |
+| `mythicrod.drops.view` | `true` | Browse drop tables |
+| `mythicrod.drops.global` | `true` | Receive `global` drops |
+| `mythicrod.drops.rare` | `op` | Receive `rare` drops |
+| `mythicrod.drops.legendary` | `op` | Receive `legendary` drops |
+| `mythicrod.rod.advanced` | `op` | Use the advanced rod tier |
+| `mythicrod.rod.legendary` | `op` | Use the legendary rod tier |
+| `mythicrod.admin.reload` | `op` | Reload runtime data |
+| `mythicrod.admin.give` | `op` | Give MythicRod items |
+| `mythicrod.admin.config` | `op` | Edit drops, config, run `stats reset` |
+| `mythicrod.admin.debug` | `op` | Run `validate` / `testroll` / `rod inspect` / `debug` |
 
-Grouped trees: `mythicrod.*`, `mythicrod.admin.*`, `mythicrod.stats.*`,
-`mythicrod.drops.*`, `mythicrod.rod.*` (all declared in `paper-plugin.yml`).
+Grouped parents (`mythicrod.*`, `mythicrod.admin.*`, `mythicrod.stats.*`,
+`mythicrod.drops.*`, `mythicrod.rod.*`) are declared in `paper-plugin.yml`,
+so giving an op the parent grants the whole tree.
 
-## Drop-level permission gates
+## Drop-level gates
 
-Each individual drop entry under `drops.yml` may declare a `permission:`
-field. When set, that drop only rolls for players who hold the permission
-node. Use this to restrict cosmetic, event, or rank-locked rewards without
-splitting them into their own category.
+Each entry in `drops.yml` can declare its own `permission:` field. When set,
+that single drop only rolls for players holding the node. Handy for
+event-only or rank-locked rewards without splitting them out into their own
+category.

@@ -5,37 +5,36 @@ nav_order: 7
 
 # Custom rods
 
-MythicRod ships three rod tiers: `basic`, `advanced`, and `legendary`. Each is
-a regular fishing rod marked with two PersistentDataContainer keys:
+Three tiers ship in the box: `basic`, `advanced`, `legendary`. Each is a
+plain fishing rod with two PersistentDataContainer keys:
 
-- `mythicrod:custom_rod` - byte marker (`1`) that identifies the item as a
-  MythicRod rod.
-- `mythicrod:rod_tier` - string with the tier name.
+- `mythicrod:custom_rod` (`byte`, value `1`): marks the item as a MythicRod
+  rod.
+- `mythicrod:rod_tier` (`string`): tier name.
 
-Players cannot fabricate these markers in survival; admins distribute rods
-through `/mythicrod give <player> <tier>`.
+Survival players can't fabricate these markers. Admins hand them out with
+`/mythicrod give <player> <tier>`.
 
-## Tier behaviour
+## Tier table
 
-| Tier        | Required permission         | Rare-luck multiplier |
-| ----------- | --------------------------- | -------------------- |
-| `basic`     | (none)                      | configurable, default `1.00x` |
-| `advanced`  | `mythicrod.rod.advanced`    | configurable, default `1.25x` |
-| `legendary` | `mythicrod.rod.legendary`   | configurable, default `1.50x` |
+| Tier | Permission | Rare-luck multiplier |
+|---|---|---|
+| `basic` | (none) | default `1.00x`, configurable |
+| `advanced` | `mythicrod.rod.advanced` | default `1.25x`, configurable |
+| `legendary` | `mythicrod.rod.legendary` | default `1.50x`, configurable |
 
-Multipliers apply only to drops with `weight <= 5` - that is the rare and
-legendary tiers. Common/uncommon catches are unaffected.
+Multipliers only apply to drops with `weight <= 5` (rare and legendary
+tiers). Common and uncommon catches stay unaffected.
 
-## Inspecting metadata
+## Inspecting a rod
 
-`/mythicrod rod inspect` dumps the metadata for whichever rod the sender is
-holding (main hand and off hand). Output covers:
+`/mythicrod rod inspect` reads both hands and reports:
 
-- Vanilla rod vs. MythicRod marker.
+- Vanilla rod vs MythicRod marker.
 - Tier stored in PDC.
-- Configured rare-luck multiplier for that tier.
+- Rare-luck multiplier for that tier.
 
-## Giving rods
+## Handing rods out
 
 ```
 /mythicrod give <player> basic
@@ -43,6 +42,6 @@ holding (main hand and off hand). Output covers:
 /mythicrod give <player> legendary
 ```
 
-On Folia, the actual `Inventory#addItem` runs on the target's owner thread.
-If the target's inventory is full, the rod is reported back to the sender
-without dropping the item.
+On Folia, the actual `Inventory#addItem` runs on the target's owner
+scheduler. If the target's inventory is full, the sender gets a clean
+"inventory full" reply and no rod gets dropped on the ground.

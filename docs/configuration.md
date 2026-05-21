@@ -5,20 +5,20 @@ nav_order: 5
 
 # Configuration
 
-MythicRod ships with three runtime files inside `plugins/MythicRod/`:
+Four runtime files live in `plugins/MythicRod/`:
 
-| File              | What it holds                                                          |
-| ----------------- | ---------------------------------------------------------------------- |
-| `config.yml`      | Feature toggles, particle names, language, rod multipliers, intervals |
-| `drops.yml`       | Drop categories, biome tables, custom names, enchantments, permissions |
-| `statistics.yml`  | Persisted per-player counters (managed by the plugin; do not hand-edit)|
-| `lang/*.yml`      | Translation files. Disk overrides merge over bundled defaults.         |
+| File | Holds |
+|---|---|
+| `config.yml` | Feature toggles, particles, language, rod multipliers, intervals |
+| `drops.yml` | Drop categories, biome tables, names, enchantments, permissions |
+| `statistics.yml` | Persisted per-player counters. Don't hand-edit. |
+| `lang/*.yml` | Translations. Disk overrides merge over bundled defaults. |
 
-## `config.yml`
+## `config.yml` defaults
 
 ```yaml
 language:
-  default: en_US # en_US | ja_JP
+  default: en_US   # en_US | ja_JP
 
 features:
   sounds:
@@ -37,7 +37,7 @@ features:
   drops:
     biome-specific:
       enabled: true
-    delivery-mode: vanilla_retrieve # vanilla_retrieve | inventory | drop_at_player
+    delivery-mode: vanilla_retrieve   # vanilla_retrieve | inventory | drop_at_player
 
   rods:
     luck-multipliers:
@@ -68,15 +68,19 @@ messages:
       <yellow>You caught <gold><bold>{amount}x {item}</bold></gold>!
 ```
 
-### Notes
+## Behaviour notes
 
 - `weight` is a relative roll weight, not a percentage.
-- Rod luck multipliers affect only weights `<= 5` (rare and legendary tiers).
-- Invalid particle names are corrected to safe defaults at startup or reload.
-- Negative or zero `weight` and out-of-range `amount` values are clamped at
-  load with a console warning that names the offending drop.
-- `delivery-mode`:
-  - `vanilla_retrieve` (default) - replaces the caught entity in-flight so
-    the reward arcs back to the player like a vanilla catch.
-  - `inventory` - inserts directly into the player's inventory.
-  - `drop_at_player` - drops the reward at the player's feet.
+- Rod luck multipliers only affect drops with `weight <= 5` (rare and
+  legendary tiers).
+- Invalid particle names fall back to safe defaults at startup or reload
+  with a console warning.
+- Negative or zero `weight` and out-of-range `amount` get clamped at load
+  with a console warning that names the offending entry.
+
+## `delivery-mode`
+
+- `vanilla_retrieve` (default): replaces the caught entity in-flight so the
+  reward arcs back to the player like a vanilla catch.
+- `inventory`: inserts directly into the player's inventory.
+- `drop_at_player`: drops the reward at the player's feet.

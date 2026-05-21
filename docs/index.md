@@ -6,32 +6,32 @@ permalink: /
 
 # MythicRod
 
-Custom fishing progression for modern Paper servers. Weighted loot tables,
-biome-aware drops, permission-gated rarities, statistics, in-game editing,
-and a small public API.
+Paper fishing plugin. Weighted drop tables, biome filters, permission gates,
+stats, in-game drop editor, small public API.
 
-## Quick links
+## Pages
 
 - [Installation](installation.md)
 - [Commands](commands.md)
 - [Permissions](permissions.md)
-- [Configuration reference](configuration.md)
+- [Configuration](configuration.md)
 - [Loot tables](loot-tables.md)
 - [Custom rods](rods.md)
-- [Developer API guide](developer-api.md)
+- [Developer API](developer-api.md)
 - [Troubleshooting](troubleshooting.md)
 
-## At a glance
+## Version targets
 
-| Topic                | Details                                       |
-| -------------------- | --------------------------------------------- |
-| Plugin version       | `26.5.0`                                       |
-| Target platform      | Paper `26.1.2` (`api-version: 26.1.2`)        |
-| Java runtime         | Java `25+`                                    |
-| Optional integration | Nexo (`nexo:*` identifiers)                   |
-| Bundled languages    | `en_US`, `ja_JP`                              |
-| Scheduler model      | Paper-first with Folia-aware owner scheduling |
+| Item | Value |
+|---|---|
+| Plugin | `26.5.0` (CalVer) |
+| API | Paper `26.1.2` |
+| Java | 25+ |
+| Optional integration | Nexo (`nexo:*` identifiers) |
+| Bundled languages | `en_US`, `ja_JP` (rest sync from Crowdin) |
+| Scheduler | Paper-first, Folia owner-thread handoffs in place |
 
-Folia owner handoffs are implemented but have not been smoke-tested against a
-live Folia build. Validate on your target server before relying on Folia in
-production.
+Folia hasn't been smoke-tested on a live build yet. The handoffs are written
+into the listener / command / scheduler paths but treat the
+`folia-supported: true` flag in the descriptor as a target until you've
+exercised it on your own server.
