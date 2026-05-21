@@ -186,86 +186,105 @@ public class DropsMenu extends BaseMenu {
         fillBorder(Material.BLACK_STAINED_GLASS_PANE);
         clampPage(drops.size());
 
-        boolean canEditDrops = false;
-        Player currentPlayer = getPlayer();
-        if (currentPlayer != null) {
-            canEditDrops = currentPlayer.hasPermission(PermissionNodes.ADMIN_CONFIG);
+        boolean canEditDrops = playerCanEditDrops();
+        renderDropPage(drops, canEditDrops);
+        renderCategoryInfo(drops.size());
+        addPaginationControls(drops.size());
+        if (canEditDrops) {
+            buildAddDropButton();
         }
+        renderBackButton();
+        renderCloseButton();
+    }
 
+    private boolean playerCanEditDrops() {
+        Player currentPlayer = getPlayer();
+        return currentPlayer != null && currentPlayer.hasPermission(PermissionNodes.ADMIN_CONFIG);
+    }
+
+    private void renderDropPage(List<CustomDrop> drops, boolean canEditDrops) {
         int startIndex = page * CONTENT_SLOTS.length;
         int endIndex = Math.min(drops.size(), startIndex + CONTENT_SLOTS.length);
         for (int index = startIndex; index < endIndex; index++) {
             CustomDrop drop = drops.get(index);
             int slot = CONTENT_SLOTS[index - startIndex];
-            List<String> lore = new ArrayList<>();
-            lore.add(tr("gui.drops.material_label", Map.of("material", displayItemName(drop))));
-            lore.add(tr("gui.drops.amount_label", Map.of("amount", String.valueOf(drop.getAmount()))));
-            lore.add(tr("gui.drops.weight_label", Map.of("weight", String.valueOf(drop.getWeight()))));
-            lore.add("");
-            if (drop.getCustomName() != null) {
-                lore.add(tr("gui.drops.custom_name_label", Map.of("name", drop.getCustomName())));
-            }
-            if (!drop.getBiomes().isEmpty()) {
-                lore.add(tr("gui.drops.biomes_label", Map.of("biomes", String.join(", ", drop.getBiomes()))));
-            }
-            if (drop.getPermission() != null) {
-                lore.add(tr("gui.drops.permission_label", Map.of("permission", drop.getPermission())));
-            }
-            if (!drop.getEnchantments().isEmpty()) {
-                lore.add("");
-                lore.add(tr("gui.drops.enchantments_header"));
-                drop.getEnchantments().forEach((enchant, level) ->
-                    lore.add(tr("gui.drops.enchantment_entry", Map.of(
-                            "name", StringFormatting.formatEnchantName(enchant),
-                            "level", String.valueOf(level)
-                    ))));
-            }
-            if (drop.getLore() != null && !drop.getLore().isEmpty()) {
-                lore.add("");
-                lore.add(tr("gui.drops.custom_lore_header"));
-                drop.getLore().forEach(line -> lore.add(tr("gui.drops.lore_entry", Map.of("line", line))));
-            }
-            lore.add("");
-            lore.add(canEditDrops ? tr("gui.drops.edit_hint") : tr("gui.drops.view_only_hint"));
-            Material material = displayMaterial(drop);
-            String displayName = drop.getCustomName() != null
-                ? drop.getCustomName()
-                : displayItemName(drop);
-            ItemStack dropItem = new ItemBuilder(material)
-                    .name(tr("gui.drops.drop_name", Map.of("name", displayName)))
-                    .lore(lore)
+            ItemStack dropItem = new ItemBuilder(displayMaterial(drop))
+                    .name(tr("gui.drops.drop_name", Map.of("name", drop.getCustomName() != null ? drop.getCustomName() : displayItemName(drop))))
+                    .lore(buildDropLore(drop, canEditDrops))
                     .glow(drop.isGlowing())
                     .build();
-            final CustomDrop dropFinal = drop;
-            setItem(slot, dropItem, () -> {
-                Player p = getPlayer();
-                if (p != null && p.hasPermission(PermissionNodes.ADMIN_CONFIG)) {
-                    playClickSound();
-                    plugin.getGUIManager().openMenu(p, "editdrop",
-                        Map.of(CTX_DROP, dropFinal, "category", selectedCategory, CTX_PAGE, page));
-                } else {
-                    playErrorSound();
-                    sendMessage(tr("gui.drops.edit_locked"));
-                }
-            });
+            setItem(slot, dropItem, () -> handleDropClick(drop));
         }
+    }
 
+    private List<String> buildDropLore(CustomDrop drop, boolean canEditDrops) {
+        List<String> lore = new ArrayList<>();
+        lore.add(tr("gui.drops.material_label", Map.of("material", displayItemName(drop))));
+        lore.add(tr("gui.drops.amount_label", Map.of("amount", String.valueOf(drop.getAmount()))));
+        lore.add(tr("gui.drops.weight_label", Map.of("weight", String.valueOf(drop.getWeight()))));
+        lore.add("");
+        if (drop.getCustomName() != null) {
+            lore.add(tr("gui.drops.custom_name_label", Map.of("name", drop.getCustomName())));
+        }
+        if (!drop.getBiomes().isEmpty()) {
+            lore.add(tr("gui.drops.biomes_label", Map.of("biomes", String.join(", ", drop.getBiomes()))));
+        }
+        if (drop.getPermission() != null) {
+            lore.add(tr("gui.drops.permission_label", Map.of("permission", drop.getPermission())));
+        }
+        appendEnchantmentLore(lore, drop);
+        appendCustomLore(lore, drop);
+        lore.add("");
+        lore.add(canEditDrops ? tr("gui.drops.edit_hint") : tr("gui.drops.view_only_hint"));
+        return lore;
+    }
+
+    private void appendEnchantmentLore(List<String> lore, CustomDrop drop) {
+        if (drop.getEnchantments().isEmpty()) return;
+        lore.add("");
+        lore.add(tr("gui.drops.enchantments_header"));
+        drop.getEnchantments().forEach((enchant, level) ->
+            lore.add(tr("gui.drops.enchantment_entry", Map.of(
+                "name", StringFormatting.formatEnchantName(enchant),
+                "level", String.valueOf(level)
+            ))));
+    }
+
+    private void appendCustomLore(List<String> lore, CustomDrop drop) {
+        List<String> customLore = drop.getLore();
+        if (customLore == null || customLore.isEmpty()) return;
+        lore.add("");
+        lore.add(tr("gui.drops.custom_lore_header"));
+        customLore.forEach(line -> lore.add(tr("gui.drops.lore_entry", Map.of("line", line))));
+    }
+
+    private void handleDropClick(CustomDrop drop) {
+        Player p = getPlayer();
+        if (p != null && p.hasPermission(PermissionNodes.ADMIN_CONFIG)) {
+            playClickSound();
+            plugin.getGUIManager().openMenu(p, "editdrop",
+                Map.of(CTX_DROP, drop, "category", selectedCategory, CTX_PAGE, page));
+        } else {
+            playErrorSound();
+            sendMessage(tr("gui.drops.edit_locked"));
+        }
+    }
+
+    private void renderCategoryInfo(int dropCount) {
         ItemStack infoItem = new ItemBuilder(Material.BOOK)
             .name(tr("gui.drops.category_info_name",
                 Map.of(CTX_CATEGORY, StringFormatting.formatCategoryName(selectedCategory))))
             .lore(
-                tr("gui.drops.category_info_count", Map.of(CTX_COUNT, String.valueOf(drops.size()))),
+                tr("gui.drops.category_info_count", Map.of(CTX_COUNT, String.valueOf(dropCount))),
                 "",
                 tr("gui.drops.category_info_lore1"),
                 tr("gui.drops.category_info_lore2")
             )
             .build();
         setItem(49, infoItem);
-        addPaginationControls(drops.size());
-        if (canEditDrops) {
-            buildAddDropButton();
-        }
+    }
 
+    private void renderBackButton() {
         ItemStack backItem = new ItemBuilder(Material.ARROW)
             .name(tr("gui.drops.back_categories_name"))
             .build();
@@ -276,7 +295,9 @@ public class DropsMenu extends BaseMenu {
             page = 0;
             refresh();
         });
+    }
 
+    private void renderCloseButton() {
         ItemStack closeItem = new ItemBuilder(Material.BARRIER)
             .name(tr("gui.drops.close_name"))
             .build();

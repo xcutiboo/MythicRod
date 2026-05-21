@@ -65,98 +65,111 @@ public class StatsMenu extends BaseMenu {
         if (stats == null) {
             stats = new PlayerStats(getPlayer().getUniqueId(), getPlayer().getName());
         }
+        int total = stats.getTotalCaught();
+        int rarePlus = stats.getRareCaught() + stats.getLegendaryCaught();
+        double rareRate = total > 0 ? (rarePlus * 100.0 / total) : 0.0;
 
-        ItemStack totalItem = new ItemBuilder(Material.FISHING_ROD)
+        renderTotalsCard(total);
+        renderRareCard(rarePlus);
+        renderRateCard(rareRate);
+        renderTierBreakdown(stats.getTierCounts(), total);
+        renderLeaderboardButton();
+        renderPersonalBackButton();
+        renderPersonalCloseButton();
+    }
+
+    private void renderTotalsCard(int total) {
+        ItemStack item = new ItemBuilder(Material.FISHING_ROD)
                 .name(tr("gui.stats.total_catches"))
                 .lore(
                         tr("gui.stats.total_catches_lore1"),
                         "",
-                        tr("gui.stats.total_catches_lore2",
-                                Map.of(CTX_COUNT, String.valueOf(stats.getTotalCaught()))),
+                        tr("gui.stats.total_catches_lore2", Map.of(CTX_COUNT, String.valueOf(total))),
                         "",
                         tr("gui.stats.total_catches_lore3")
                 )
                 .glow(true)
                 .build();
-        setItem(11, totalItem);
+        setItem(11, item);
+    }
 
-        int rarePlus = stats.getRareCaught() + stats.getLegendaryCaught();
-        ItemStack rareItem = new ItemBuilder(Material.DIAMOND)
+    private void renderRareCard(int rarePlus) {
+        ItemStack item = new ItemBuilder(Material.DIAMOND)
                 .name(tr("gui.stats.rare_catches"))
                 .lore(
                         tr("gui.stats.rare_catches_lore1"),
                         tr("gui.stats.rare_catches_lore2"),
                         "",
-                        tr("gui.stats.rare_catches_lore3",
-                                Map.of(CTX_COUNT, String.valueOf(rarePlus))),
+                        tr("gui.stats.rare_catches_lore3", Map.of(CTX_COUNT, String.valueOf(rarePlus))),
                         "",
                         tr("gui.stats.rare_catches_lore4")
                 )
                 .glow(true)
                 .build();
-        setItem(13, rareItem);
+        setItem(13, item);
+    }
 
-        int total = stats.getTotalCaught();
-        double rareRate = total > 0
-                ? (rarePlus * 100.0 / total)
-                : 0.0;
-        ItemStack rateItem = new ItemBuilder(Material.CLOCK)
+    private void renderRateCard(double rareRate) {
+        ItemStack item = new ItemBuilder(Material.CLOCK)
                 .name(tr("gui.stats.drop_rate"))
                 .lore(
                         tr("gui.stats.drop_rate_lore1"),
                         tr("gui.stats.drop_rate_lore2"),
                         "",
-                        tr("gui.stats.drop_rate_lore3",
-                                Map.of("rate", String.format("%.2f%%", rareRate))),
+                        tr("gui.stats.drop_rate_lore3", Map.of("rate", String.format("%.2f%%", rareRate))),
                         "",
                         tr("gui.stats.drop_rate_lore4")
                 )
                 .build();
-        setItem(15, rateItem);
+        setItem(15, item);
+    }
 
-        Map<String, Integer> tierCounts = stats.getTierCounts();
-        if (!tierCounts.isEmpty()) {
-            List<Map.Entry<String, Integer>> topTiers = tierCounts.entrySet().stream()
-                    .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                    .limit(5)
-                    .collect(Collectors.toList());
-
-            ItemStack tierBreakdownTitle = new ItemBuilder(Material.EXPERIENCE_BOTTLE)
-                    .name(tr("gui.stats.tier_breakdown"))
-                    .lore(tr("gui.stats.tier_breakdown_lore"))
-                    .build();
-            setItem(29, tierBreakdownTitle);
-
-            int slot = 30;
-            for (Map.Entry<String, Integer> entry : topTiers) {
-                double pct = entry.getValue() * 100.0 / Math.max(1, total);
-                ItemStack tierItem = new ItemBuilder(iconForTier(entry.getKey()))
-                        .name(tr("gui.stats.tier_name",
-                                Map.of("tier", StringFormatting.formatMaterialName(entry.getKey()))))
-                        .lore(
-                                tr("gui.stats.tier_caught",
-                                        Map.of(CTX_COUNT, String.valueOf(entry.getValue()))),
-                                "",
-                                tr("gui.stats.tier_percentage",
-                                        Map.of("percent", String.format("%.1f%%", pct)))
-                        )
-                        .build();
-                setItem(slot, tierItem);
-                slot++;
-                if (slot >= 35) break;
-            }
-        } else {
-            ItemStack noDataItem = new ItemBuilder(Material.BARRIER)
-                    .name(tr("gui.stats.no_data"))
-                    .lore(
-                            tr("gui.stats.no_data_lore1"),
-                            tr("gui.stats.no_data_lore2")
-                    )
-                    .build();
-            setItem(31, noDataItem);
+    private void renderTierBreakdown(Map<String, Integer> tierCounts, int total) {
+        if (tierCounts.isEmpty()) {
+            renderNoTierData();
+            return;
         }
+        List<Map.Entry<String, Integer>> topTiers = tierCounts.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(5)
+                .collect(Collectors.toList());
 
-        ItemStack leaderboardItem = new ItemBuilder(Material.GOLDEN_APPLE)
+        ItemStack title = new ItemBuilder(Material.EXPERIENCE_BOTTLE)
+                .name(tr("gui.stats.tier_breakdown"))
+                .lore(tr("gui.stats.tier_breakdown_lore"))
+                .build();
+        setItem(29, title);
+
+        int slot = 30;
+        for (Map.Entry<String, Integer> entry : topTiers) {
+            if (slot >= 35) break;
+            setItem(slot, buildTierItem(entry, total));
+            slot++;
+        }
+    }
+
+    private ItemStack buildTierItem(Map.Entry<String, Integer> entry, int total) {
+        double pct = entry.getValue() * 100.0 / Math.max(1, total);
+        return new ItemBuilder(iconForTier(entry.getKey()))
+                .name(tr("gui.stats.tier_name", Map.of("tier", StringFormatting.formatMaterialName(entry.getKey()))))
+                .lore(
+                        tr("gui.stats.tier_caught", Map.of(CTX_COUNT, String.valueOf(entry.getValue()))),
+                        "",
+                        tr("gui.stats.tier_percentage", Map.of("percent", String.format("%.1f%%", pct)))
+                )
+                .build();
+    }
+
+    private void renderNoTierData() {
+        ItemStack item = new ItemBuilder(Material.BARRIER)
+                .name(tr("gui.stats.no_data"))
+                .lore(tr("gui.stats.no_data_lore1"), tr("gui.stats.no_data_lore2"))
+                .build();
+        setItem(31, item);
+    }
+
+    private void renderLeaderboardButton() {
+        ItemStack item = new ItemBuilder(Material.GOLDEN_APPLE)
                 .name(tr("gui.stats.view_leaderboard"))
                 .lore(
                         tr("gui.stats.view_leaderboard_lore1"),
@@ -165,24 +178,28 @@ public class StatsMenu extends BaseMenu {
                 )
                 .glow(true)
                 .build();
-                setItem(49, leaderboardItem, () -> {
+        setItem(49, item, () -> {
             playClickSound();
             viewingLeaderboard = true;
             refresh();
         });
+    }
 
-        ItemStack backItem = new ItemBuilder(Material.ARROW)
+    private void renderPersonalBackButton() {
+        ItemStack item = new ItemBuilder(Material.ARROW)
                 .name(tr("gui.stats.back_main"))
                 .build();
-                setItem(45, backItem, () -> {
+        setItem(45, item, () -> {
             playClickSound();
             plugin.getGUIManager().openMainHub(getPlayer());
         });
+    }
 
-        ItemStack closeItem = new ItemBuilder(Material.BARRIER)
+    private void renderPersonalCloseButton() {
+        ItemStack item = new ItemBuilder(Material.BARRIER)
                 .name(tr("gui.stats.close"))
                 .build();
-                setItem(53, closeItem, () -> {
+        setItem(53, item, () -> {
             playClickSound();
             getPlayer().closeInventory();
         });
@@ -192,72 +209,85 @@ public class StatsMenu extends BaseMenu {
         fillBorder(Material.PURPLE_STAINED_GLASS_PANE);
 
         List<PlayerStats> topFishers = plugin.getStatisticsManager().getTopFishers(10);
-
         if (topFishers.isEmpty()) {
-            ItemStack noDataItem = new ItemBuilder(Material.BARRIER)
-                    .name(tr("gui.stats.no_statistics"))
-                    .lore(
-                            tr("gui.stats.no_statistics_lore1"),
-                            tr("gui.stats.no_statistics_lore2")
-                    )
-                    .build();
-            setItem(22, noDataItem);
+            renderNoLeaderboardData();
         } else {
-            int displaySlot = 0;
-            final int contentStart   = 10;
-            final int contentPerRow  = 7; // slots 10-16, 19-25, 28-34, 37-43
+            renderLeaderboardEntries(topFishers);
+        }
+        renderLeaderboardInfo();
+        renderLeaderboardBackButton();
+        renderLeaderboardCloseButton();
+    }
 
-            for (PlayerStats topStats : topFishers) {
-                int row  = displaySlot / contentPerRow;
-                int col  = displaySlot % contentPerRow;
-                int slot = contentStart + (row * 9) + col;
-                if (row >= 4) break;
+    private void renderNoLeaderboardData() {
+        ItemStack item = new ItemBuilder(Material.BARRIER)
+                .name(tr("gui.stats.no_statistics"))
+                .lore(
+                        tr("gui.stats.no_statistics_lore1"),
+                        tr("gui.stats.no_statistics_lore2")
+                )
+                .build();
+        setItem(22, item);
+    }
 
-                UUID topUuid = topStats.getPlayerUuid();
+    private void renderLeaderboardEntries(List<PlayerStats> topFishers) {
+        final int contentStart = 10;
+        final int contentPerRow = 7; // slots 10-16, 19-25, 28-34, 37-43
+        int displaySlot = 0;
 
-                String playerName = topStats.getPlayerName();
-                                if (playerName.isEmpty()) {
-                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(topUuid);
-                    playerName = offlinePlayer.getName() != null
-                            ? offlinePlayer.getName()
-                            : "Unknown";
-                }
+        for (PlayerStats topStats : topFishers) {
+            int row = displaySlot / contentPerRow;
+            if (row >= 4) break;
+            int col = displaySlot % contentPerRow;
+            int slot = contentStart + (row * 9) + col;
+            int rank = displaySlot + 1;
+            setItem(slot, buildLeaderboardEntry(topStats, rank));
+            displaySlot++;
+        }
+    }
 
-                int catches          = Math.max(0, topStats.getTotalCaught());
-                int rank             = displaySlot + 1;
-                boolean isCurrentPlayer = topUuid.equals(getPlayer().getUniqueId());
+    private ItemStack buildLeaderboardEntry(PlayerStats topStats, int rank) {
+        UUID topUuid = topStats.getPlayerUuid();
+        String playerName = resolveLeaderboardName(topStats, topUuid);
+        int catches = Math.max(0, topStats.getTotalCaught());
+        boolean isCurrentPlayer = topUuid.equals(getPlayer().getUniqueId());
 
-                Material icon = switch (rank) {
-                    case 1  -> Material.GOLD_BLOCK;
-                    case 2  -> Material.IRON_BLOCK;
-                    case 3  -> Material.COPPER_BLOCK;
-                    default -> Material.PLAYER_HEAD;
-                };
+        Material icon = switch (rank) {
+            case 1 -> Material.GOLD_BLOCK;
+            case 2 -> Material.IRON_BLOCK;
+            case 3 -> Material.COPPER_BLOCK;
+            default -> Material.PLAYER_HEAD;
+        };
 
-                List<String> lore = new ArrayList<>();
-                lore.add(tr("gui.stats.player_label",   Map.of("name",  playerName)));
-                lore.add(tr("gui.stats.player_catches",  Map.of(CTX_COUNT, String.valueOf(catches))));
-                lore.add("");
-                if (isCurrentPlayer) {
-                    lore.add(tr("gui.stats.you_indicator"));
-                }
-                if (rank <= 3) {
-                    lore.add(tr("gui.stats.place_indicator",
-                            Map.of("ordinal", StringFormatting.getOrdinal(rank))));
-                }
-
-                ItemStack playerItem = new ItemBuilder(icon)
-                        .name(tr("gui.stats.player_entry",
-                                Map.of("rank", String.valueOf(rank), "name", playerName)))
-                        .lore(lore)
-                        .glow(isCurrentPlayer)
-                        .build();
-                setItem(slot, playerItem);
-                displaySlot++;
-            }
+        List<String> lore = new ArrayList<>();
+        lore.add(tr("gui.stats.player_label", Map.of("name", playerName)));
+        lore.add(tr("gui.stats.player_catches", Map.of(CTX_COUNT, String.valueOf(catches))));
+        lore.add("");
+        if (isCurrentPlayer) {
+            lore.add(tr("gui.stats.you_indicator"));
+        }
+        if (rank <= 3) {
+            lore.add(tr("gui.stats.place_indicator",
+                    Map.of("ordinal", StringFormatting.getOrdinal(rank))));
         }
 
-        ItemStack infoItem = new ItemBuilder(Material.BOOK)
+        return new ItemBuilder(icon)
+                .name(tr("gui.stats.player_entry",
+                        Map.of("rank", String.valueOf(rank), "name", playerName)))
+                .lore(lore)
+                .glow(isCurrentPlayer)
+                .build();
+    }
+
+    private String resolveLeaderboardName(PlayerStats topStats, UUID topUuid) {
+        String playerName = topStats.getPlayerName();
+        if (!playerName.isEmpty()) return playerName;
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(topUuid);
+        return offlinePlayer.getName() != null ? offlinePlayer.getName() : "Unknown";
+    }
+
+    private void renderLeaderboardInfo() {
+        ItemStack item = new ItemBuilder(Material.BOOK)
                 .name(tr("gui.stats.leaderboard_info"))
                 .lore(
                         tr("gui.stats.leaderboard_info_lore1"),
@@ -266,21 +296,25 @@ public class StatsMenu extends BaseMenu {
                         tr("gui.stats.leaderboard_info_lore3")
                 )
                 .build();
-        setItem(49, infoItem);
+        setItem(49, item);
+    }
 
-        ItemStack backItem = new ItemBuilder(Material.ARROW)
+    private void renderLeaderboardBackButton() {
+        ItemStack item = new ItemBuilder(Material.ARROW)
                 .name(tr("gui.stats.back_stats"))
                 .build();
-                setItem(45, backItem, () -> {
+        setItem(45, item, () -> {
             playClickSound();
             viewingLeaderboard = false;
             refresh();
         });
+    }
 
-        ItemStack closeItem = new ItemBuilder(Material.BARRIER)
+    private void renderLeaderboardCloseButton() {
+        ItemStack item = new ItemBuilder(Material.BARRIER)
                 .name(tr("gui.stats.close"))
                 .build();
-                setItem(53, closeItem, () -> {
+        setItem(53, item, () -> {
             playClickSound();
             getPlayer().closeInventory();
         });
