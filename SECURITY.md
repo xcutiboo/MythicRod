@@ -1,49 +1,43 @@
-# Security Policy
+# Security
 
-## Supported Versions
-
-Only the latest released `2.x` line of MythicRod receives security patches.
-Older releases are best-effort and may not receive backports.
+## Supported versions
 
 | Version | Supported |
-| ------- | --------- |
-| `2.x`   | Yes       |
-| `< 2.0` | No        |
+|---|---|
+| `26.x` (current CalVer line) | yes |
+| Older `2.x` and earlier | best effort, no backports |
 
-## Reporting a Vulnerability
+## Reporting
 
-Do **not** open a public GitHub issue for suspected security vulnerabilities.
+Please don't file security issues in the public tracker.
 
-Instead, report privately by either:
+Use the GitHub Security Advisory form instead:
+<https://github.com/xcutiboo/MythicRod/security/advisories/new>.
 
-- Opening a GitHub Security Advisory:
-  <https://github.com/xcutiboo/MythicRod/security/advisories/new>
-- Or contacting the maintainer through GitHub at
-  <https://github.com/xcutiboo>.
+If that doesn't work for you, ping <https://github.com/xcutiboo> directly.
 
-Please include:
+What helps in the report:
 
-- Affected MythicRod version and Paper build.
-- Reproduction steps or a minimal proof of concept.
-- The impact (e.g. crash, data loss, privilege escalation, RCE).
+- MythicRod version and Paper build.
+- Repro steps or a minimal proof of concept.
+- The impact (crash, data loss, privilege escalation, RCE, etc.).
 
-You should receive an initial response within 7 days. A fix or mitigation is
-typically prepared on a private branch and released alongside a coordinated
-disclosure.
+Expect a first response within 7 days. Fixes usually land on a private
+branch and get released alongside the public disclosure.
 
 ## Scope
 
 In scope:
 
-- The MythicRod plugin source in this repository.
-- The default configuration, drops, and language files shipped in the plugin jar.
-- The public API surface in the `mythicrod-api` module.
+- Plugin source in this repo.
+- Default config, drops, and language files shipped in the jar.
+- The public API surface (`mythicrod-api`).
 
 Out of scope:
 
-- Vulnerabilities in Paper, Folia, Adventure, or other upstream dependencies.
-  report those to their respective projects.
-- Issues that require an operator to grant `mythicrod.admin.*` to untrusted
-  players.
-- Server misconfiguration unrelated to MythicRod (e.g. open RCON, missing
-  firewall rules).
+- Vulnerabilities in Paper, Folia, Adventure, or any other upstream
+  dependency. Please report those to the upstream project.
+- Issues that require an operator to grant `mythicrod.admin.*` to
+  untrusted players.
+- Server misconfiguration unrelated to MythicRod (open RCON, missing
+  firewall rules, leaked op list, etc.).

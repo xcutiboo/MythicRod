@@ -1,99 +1,90 @@
-# Contributing to MythicRod
+# Contributing
 
-Thanks for taking the time to look at MythicRod. The notes below cover the
-parts that are easy to miss.
+## Setup
 
-## Prerequisites
+- JDK 25.
+- A Paper test server. The version we build against lives in
+  `gradle.properties` under `paperVersion`.
+- The Gradle wrapper is in the repo, so you don't need Gradle installed
+  globally.
 
-- JDK **25** (Temurin or any recent build with Java 25 support).
-- A Paper-compatible test server matching the version listed in
-  `gradle.properties` (`paperVersion`).
-- Git with line-ending settings appropriate for your platform.
+## Layout
 
-You do not need a global Gradle install - the wrapper (`./gradlew`) bundles the
-correct version.
+| Module | What's in it |
+|---|---|
+| `mythicrod-api` | Public API, service contracts, value objects. No Bukkit/Paper types. |
+| `mythicrod-common` | Drop logic, config, stats, text. Depends only on `mythicrod-api`. |
+| `mythicrod-paper` | Paper runtime: listeners, commands, GUIs, scheduler bridge, item factory. |
 
-## Module Layout
+If you find yourself pulling Bukkit/Paper types into `mythicrod-api` or
+`mythicrod-common`, that's a design break. Look for another seam.
 
-| Module             | Purpose                                                                                                                      |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `mythicrod-api`    | Public, stable integration surface. Avoid implementation classes here. Do not import Bukkit/Paper types directly.            |
-| `mythicrod-common` | Platform-neutral logic (drops, config, statistics, text). Depends only on `mythicrod-api`.                                   |
-| `mythicrod-paper`  | Paper-specific runtime: listeners, commands, GUIs, scheduler bridge, item factory. Depends on `mythicrod-common` and Paper. |
+A `mythicrod-spigot` module is not in the repo yet. The split is set up so
+adding it is straightforward, but a second runtime is real maintenance load
+and I'm not shipping a half-baked one. If you want it sooner,
+[Ko-fi](https://ko-fi.com/xcutiboo) is the fastest signal.
 
-If a change pulls Paper/Bukkit types into `mythicrod-api` or `mythicrod-common`,
-treat that as a design break and find another seam.
-
-A `mythicrod-spigot` module is intentionally not yet present. The module split
-is set up so adding it later is straightforward, but the maintenance load of a
-second runtime is meaningful and there's no point shipping a half-finished one.
-If you're interested in seeing a Spigot module land sooner, the easiest signal
-is sponsoring via [Ko-fi](https://ko-fi.com/xcutiboo); otherwise it stays on
-the back burner.
-
-## Build and Test
+## Build and test
 
 ```bash
-./gradlew build           # compiles all modules and runs unit tests
-./gradlew test            # tests only
-./gradlew :mythicrod-paper:shadowJar   # shaded plugin jar in mythicrod-paper/build/libs
+./gradlew build                          # compile + unit tests
+./gradlew test                           # tests only
+./gradlew :mythicrod-paper:shadowJar     # shaded plugin jar
 ```
 
-CI runs the same `./gradlew build` on every push and pull request.
+CI runs the same `./gradlew build` on every push and PR.
 
-## Style and Conventions
+## Style
 
-- Match the existing code: 4-space indentation, no wildcard imports, no
-  trailing whitespace.
-- Compilation is run with `-Werror` on `mythicrod-common`/`mythicrod-api`.
-  Treat new warnings as errors locally - do not suppress them blindly.
-- Do not introduce `System.out`, `System.err`, `printStackTrace`, or ad-hoc
-  debug prints. Use the plugin logger.
-- Keep `mythicrod-api` source-compatible across minor releases. Breaking
-  changes belong in a major version bump and must be documented in
-  `CHANGELOG.md`.
+- 4-space indents, no wildcard imports, no trailing whitespace.
+- `mythicrod-common` and `mythicrod-api` build with `-Werror`. Don't suppress
+  warnings to make it pass; fix them.
+- No `System.out`, `System.err`, `printStackTrace`, or stray debug prints.
+  Use the plugin logger.
+- `mythicrod-api` should stay source-compatible across minor releases.
+  Breaking changes go in a major version bump and get a CHANGELOG entry.
 
-## Folia Awareness
+## Folia notes
 
-MythicRod ships with `folia-supported: true`. When touching listeners, GUI
-code, entity mutations, or schedulers:
+`folia-supported: true` is in the descriptor. When you touch listeners,
+GUI code, entity mutations, or the scheduler:
 
-- Do not assume a single global main thread.
-- Use `FoliaSchedulerService` (`PlatformScheduler`) instead of `Bukkit
-  .getScheduler()` directly when interacting with entities or regions.
-- Async work must not mutate world, entity, or inventory state without
-  scheduling back to the owning region or entity thread.
+- Don't assume one global main thread.
+- Schedule entity/inventory work through `PlatformScheduler` (the Folia
+  bridge lives in `FoliaSchedulerService`), not `Bukkit.getScheduler()`.
+- Async callbacks must reschedule back to the right owner before touching
+  world state.
 
-## Pull Requests
+## PRs
 
-1. Open an issue first for non-trivial changes so the design can be discussed.
-2. Keep PRs focused - one logical change per PR.
-3. Update `CHANGELOG.md` under the `[Unreleased]` section.
-4. Run `./gradlew build` locally before pushing.
-5. Reference related issues in the PR description.
+1. For anything non-trivial, file an issue first so the design can be
+   talked through.
+2. One logical change per PR.
+3. Add a CHANGELOG entry under `[Unreleased]`.
+4. `./gradlew build` before pushing.
+5. Link the issue from the PR.
 
-## Reporting Bugs
+## Reporting bugs
 
-Use the issue templates under `.github/ISSUE_TEMPLATE/` so the maintainers have
-the information they need. Server logs, the MythicRod version, Paper build,
-and reproduction steps are the most useful.
+Please use the issue templates in `.github/ISSUE_TEMPLATE/`. The fields are
+there for a reason: server log, MythicRod version, Paper build, repro
+steps. Without those it's hard to act on the report.
 
 ## Translations
 
-In-game text lives in `mythicrod-paper/src/main/resources/lang/`. `en_US.yml`
-is the source of truth; all other locales mirror its key set.
+Source strings live in `mythicrod-paper/src/main/resources/lang/en_US.yml`.
+All other locales mirror its key layout.
 
-If you want to translate MythicRod, please use Crowdin rather than editing
-files directly: <https://crowdin.com/project/mythicrod>. The Crowdin GitHub
-action syncs `en_US.yml` upstream and opens an `l10n: sync Crowdin
-translations` pull request when translations land. Direct PRs against locale
-files are accepted as a fallback when Crowdin isn't an option for you, but
-they will be replaced the next time Crowdin syncs unless the same change is
-also entered on Crowdin.
+Use Crowdin if you can: <https://crowdin.com/project/mythicrod>. The
+GitHub action keeps source strings in sync and opens a PR when
+translations land. Direct file edits against locale yml files are accepted
+as a fallback but they get overwritten the next time Crowdin syncs unless
+the same change exists upstream.
 
-Keep keys and placeholders identical to `en_US.yml`. Translate values only.
+Keys and placeholders stay identical to `en_US.yml`. Translate values
+only.
 
-## Security Issues
+## Security
 
-See [`SECURITY.md`](SECURITY.md). Do not file security issues in the public
-tracker.
+Don't file security issues in the public tracker. See
+[SECURITY.md](SECURITY.md).
