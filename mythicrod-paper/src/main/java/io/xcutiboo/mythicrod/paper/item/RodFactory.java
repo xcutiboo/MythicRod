@@ -34,7 +34,9 @@ public class RodFactory {
                 "",
                 "<gold>Tier: <yellow>Basic</yellow>",
                 "<dark_gray>✦ " + formatMultiplier("basic") + LORE_RARE_LUCK_SUFFIX
-            }
+            },
+            false,
+            false
         );
     }
 
@@ -49,7 +51,9 @@ public class RodFactory {
                 "<gold>Tier: <light_purple>Advanced</light_purple>",
                 "<dark_gray>✦✦ " + formatMultiplier("advanced") + LORE_RARE_LUCK_SUFFIX,
                 "<dark_gray>✦✦ Requires advanced rod access"
-            }
+            },
+            true,
+            false
         );
     }
 
@@ -64,17 +68,29 @@ public class RodFactory {
                 "<gold>Tier: <gradient:#FFD700:#FFAA00>Legendary</gradient>",
                 "<dark_gray>✦✦✦ " + formatMultiplier("legendary") + LORE_RARE_LUCK_SUFFIX,
                 "<dark_gray>✦✦✦ Requires legendary rod access",
-                "<dark_gray>✦✦✦ Tuned for rare rewards"
-            }
+                "<dark_gray>✦✦✦ Tuned for rare rewards",
+                "<dark_gray>✦✦✦ Unbreakable"
+            },
+            true,
+            true
         );
     }
 
     /// Creates a rod item and stores the MythicRod marker plus tier in its PDC.
     public ItemStack createRod(String tier, String name, String[] lore) {
-        ItemStack rod = ItemBuilder.of(Material.FISHING_ROD)
+        return createRod(tier, name, lore, false, false);
+    }
+
+    /// Creates a rod item and stores the MythicRod marker plus tier in its PDC.
+    /// Advanced + legendary tiers light up the enchant glint; legendary is also
+    /// unbreakable so it can be a long-term reward.
+    public ItemStack createRod(String tier, String name, String[] lore, boolean glow, boolean unbreakable) {
+        ItemBuilder builder = ItemBuilder.of(Material.FISHING_ROD)
             .name(name)
-            .lore(Arrays.asList(lore))
-            .build();
+            .lore(Arrays.asList(lore));
+        if (glow) builder.glow();
+        if (unbreakable) builder.unbreakable();
+        ItemStack rod = builder.build();
 
         // ItemStack exposes a read-only PDC view; writes still go through ItemMeta.
         rod.editMeta(meta -> {

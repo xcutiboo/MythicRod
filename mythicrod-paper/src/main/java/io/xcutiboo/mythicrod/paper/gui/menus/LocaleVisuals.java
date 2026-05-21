@@ -21,6 +21,7 @@ final class LocaleVisuals {
     /// `gui.language.languages.<key>` in the language YAML files.
     static final Map<String, String> KNOWN_TEXTURES = Map.ofEntries(
         Map.entry("en_US", "http://textures.minecraft.net/texture/a9edcdd7b06173d7d221c7274c86cba35730170788bb6a1db09cc6810435b92c"),
+        Map.entry("en_GB", "http://textures.minecraft.net/texture/a9edcdd7b06173d7d221c7274c86cba35730170788bb6a1db09cc6810435b92c"),
         Map.entry("ja_JP", "http://textures.minecraft.net/texture/d6c2ca7238666ae1b9dd9daa3d4fc829db22609fb569312dec1fb0c8d6dd6c1d"),
         Map.entry("de_DE", "http://textures.minecraft.net/texture/cb6f9dd9707fbf8a02b2bd2e6432c91322a9c6ae45f48f78d8af5b66de9b62"),
         Map.entry("es_ES", "http://textures.minecraft.net/texture/9aa9b22fbdb39e5c8b75a4f3c2a4e9e8eaa1fbbe6f0e7d31a7c40b3a1fc5d2"),
