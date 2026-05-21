@@ -1,5 +1,6 @@
 ---
 title: Installation
+nav_order: 2
 ---
 
 # Installation
@@ -39,5 +40,5 @@ Tagged releases ship with `MythicRod-Paper-x.y.z.jar.sha256` alongside each
 jar. Verify before deploying to production:
 
 ```bash
-sha256sum -c MythicRod-Paper-2.0.0.jar.sha256
+sha256sum -c MythicRod-Paper-26.5.0.jar.sha256
 ```

@@ -1,3 +1,8 @@
+---
+title: Developer API
+nav_order: 8
+---
+
 # MythicRod Developer API Guide
 
 MythicRod exposes a runtime service, Paper-specific event hooks, and a compact
@@ -40,7 +45,7 @@ dependencies {
 
 ```kotlin
 dependencies {
-    compileOnly(files("libs/MythicRod-Paper-2.0.0.jar"))
+    compileOnly(files("libs/MythicRod-Paper-26.5.0.jar"))
 }
 ```
 

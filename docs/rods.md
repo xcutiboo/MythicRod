@@ -1,5 +1,6 @@
 ---
 title: Custom rods
+nav_order: 7
 ---
 
 # Custom rods

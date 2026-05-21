@@ -1,5 +1,7 @@
 ---
-title: MythicRod
+title: Home
+nav_order: 1
+permalink: /
 ---
 
 # MythicRod
@@ -23,7 +25,7 @@ and a small public API.
 
 | Topic                | Details                                       |
 | -------------------- | --------------------------------------------- |
-| Plugin version       | `2.0.0`                                       |
+| Plugin version       | `26.5.0`                                       |
 | Target platform      | Paper `26.1.2` (`api-version: 26.1.2`)        |
 | Java runtime         | Java `25+`                                    |
 | Optional integration | Nexo (`nexo:*` identifiers)                   |

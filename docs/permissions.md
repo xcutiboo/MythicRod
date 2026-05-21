@@ -1,5 +1,6 @@
 ---
 title: Permissions
+nav_order: 4
 ---
 
 # Permissions

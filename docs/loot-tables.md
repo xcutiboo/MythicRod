@@ -1,5 +1,6 @@
 ---
 title: Loot tables
+nav_order: 6
 ---
 
 # Loot tables
