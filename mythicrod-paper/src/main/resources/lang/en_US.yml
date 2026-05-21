@@ -28,7 +28,7 @@ command:
     drops: '<yellow>  /mythicrod drops <dark_gray>[<white>category<dark_gray>] → <gray>Browse drops'
     give: '<yellow>  /mythicrod give <dark_gray><white>player tier<dark_gray> → <gray>Give a MythicRod'
     debug: '<yellow>  /mythicrod debug <dark_gray>→ <gray>View debug information'
-    config: '<yellow>  /mythicrod config <dark_gray>→ <gray>View or edit core settings'
+    config: '<yellow>  /mythicrod config <dark_gray>→ <gray>View or edit core settings (alias: <yellow>settings<gray>)'
     particle: '<yellow>  /mythicrod particle <dark_gray>→ <gray>Configure fishing particles'
     help: '<yellow>  /mythicrod help <dark_gray>→ <gray>Show this help message'
     footer: '<dark_gray><st>                                            </st>'

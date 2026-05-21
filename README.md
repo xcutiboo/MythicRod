@@ -14,13 +14,25 @@ editor, statistics, and a small public API.
 [![Folia](https://img.shields.io/badge/Folia-region--ready-0b1320?style=flat-square&labelColor=0b1320&color=835516)](https://papermc.io/software/folia)
 [![Release](https://img.shields.io/github/v/release/xcutiboo/MythicRod?style=flat-square&labelColor=0b1320&color=dca13a&label=release)](https://github.com/xcutiboo/MythicRod/releases)
 [![License](https://img.shields.io/badge/License-MIT-0b1320?style=flat-square&labelColor=0b1320&color=b87924)](LICENSE)
+
 [![Docs](https://img.shields.io/badge/Docs-online-0b1320?style=flat-square&labelColor=0b1320&color=f0c75a)](https://xcutiboo.github.io/MythicRod/)
 [![Hangar](https://img.shields.io/badge/Hangar-listing-0b1320?style=flat-square&labelColor=0b1320&color=dca13a)](https://hangar.papermc.io/xcutiboo/MythicRod)
+[![Modrinth](https://img.shields.io/badge/Modrinth-listing-0b1320?style=flat-square&labelColor=0b1320&color=00AF5C)](https://modrinth.com/plugin/mythicrod)
+[![Crowdin](https://img.shields.io/badge/Crowdin-translate-0b1320?style=flat-square&labelColor=0b1320&color=263237)](https://crowdin.com/project/mythicrod)
+[![Discord](https://img.shields.io/badge/Discord-chat-0b1320?style=flat-square&labelColor=0b1320&color=5865F2)](https://discord.gg/MDwtUgxX9U)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-0b1320?style=flat-square&labelColor=0b1320&color=b87924)](https://ko-fi.com/xcutiboo)
+
+[![Build](https://img.shields.io/github/actions/workflow/status/xcutiboo/MythicRod/build.yml?branch=master&style=flat-square&labelColor=0b1320&color=dca13a&label=build)](https://github.com/xcutiboo/MythicRod/actions/workflows/build.yml)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/xcutiboo/MythicRod/codeql.yml?branch=master&style=flat-square&labelColor=0b1320&color=dca13a&label=codeql)](https://github.com/xcutiboo/MythicRod/actions/workflows/codeql.yml)
+[![SonarCloud](https://img.shields.io/sonar/quality_gate/xcutiboo_MythicRod?server=https%3A%2F%2Fsonarcloud.io&style=flat-square&labelColor=0b1320&color=dca13a&label=sonar)](https://sonarcloud.io/project/overview?id=xcutiboo_MythicRod)
 
 [Docs](https://xcutiboo.github.io/MythicRod/) ·
 [Developer API](docs/developer-api.md) ·
 [Changelog](CHANGELOG.md) ·
 [Hangar](https://hangar.papermc.io/xcutiboo/MythicRod) ·
+[Modrinth](https://modrinth.com/plugin/mythicrod) ·
+[Crowdin](https://crowdin.com/project/mythicrod) ·
+[Discord](https://discord.gg/MDwtUgxX9U) ·
 [Ko-fi](https://ko-fi.com/xcutiboo)
 
 </div>
@@ -53,10 +65,10 @@ command paths. I have not smoke-tested against a live Folia jar yet, so treat
 the `folia-supported: true` flag in `paper-plugin.yml` as a target rather than
 a guarantee until you boot it on your own server.
 
-Spigot is not supported. The module layout is set up so adding a
-`mythicrod-spigot` runtime would be straightforward, but a second runtime is
-real maintenance load and I'm holding off until there's sponsorship to
-justify it ([Ko-fi](https://ko-fi.com/xcutiboo) helps).
+Spigot has a compatibility stub jar in `mythicrod-spigot/`. It loads cleanly,
+logs that Paper is the supported runtime, and otherwise stays idle. The full
+feature surface (drops, GUI, public API, Folia handoffs) is Paper-only by
+design.
 
 
 ![divider](assets/divider.svg)

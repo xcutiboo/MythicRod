@@ -28,7 +28,7 @@ command:
     drops: '<yellow>  /mythicrod drops <dark_gray>[<white>カテゴリ<dark_gray>] → <gray>ドロップを閲覧'
     give: '<yellow>  /mythicrod give <dark_gray><white>プレイヤー ティア<dark_gray> → <gray>MythicRodを付与'
     debug: '<yellow>  /mythicrod debug <dark_gray>→ <gray>デバッグ情報を表示'
-    config: '<yellow>  /mythicrod config <dark_gray>→ <gray>主要設定を表示・編集'
+    config: '<yellow>  /mythicrod config <dark_gray>→ <gray>主要設定を表示・編集（別名: <yellow>settings<gray>）'
     particle: '<yellow>  /mythicrod particle <dark_gray>→ <gray>釣りパーティクルを設定'
     help: '<yellow>  /mythicrod help <dark_gray>→ <gray>このヘルプを表示'
     footer: '<dark_gray><st>                                            </st>'

@@ -40,7 +40,7 @@ import io.xcutiboo.mythicrod.api.platform.PlatformItemFactory;
 /// version break. Platform-specific implementation classes remain internal.
 public interface MythicRodAPI {
 
-    /// Returns the running plugin version string, such as `"1.2.0"`.
+    /// Returns the running plugin version string, such as `"2026.1.0"`.
     ///
     /// @return running MythicRod version string
     @NotNull
