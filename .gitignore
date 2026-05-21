@@ -161,3 +161,6 @@ graphify-out/
 
 # OS-level
 .DS_Store?
+
+# Playwright MCP snapshots
+.playwright-mcp/
