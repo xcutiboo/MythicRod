@@ -18,10 +18,10 @@ public class PrettyLogger {
     }
 
     public void info(String message) {
-        logger.info(BRIGHT_WHITE + message + RESET);
+        logger.info(() -> BRIGHT_WHITE + message + RESET);
     }
 
     public void startup(String message) {
-        logger.info(BOLD + BRIGHT_YELLOW + "▶ " + message + RESET);
+        logger.info(() -> BOLD + BRIGHT_YELLOW + "▶ " + message + RESET);
     }
 }

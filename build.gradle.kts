@@ -20,6 +20,10 @@ version = providers.gradleProperty("version").get()
 subprojects {
     apply(plugin = "java-library")
 
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+
     repositories {
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/") {

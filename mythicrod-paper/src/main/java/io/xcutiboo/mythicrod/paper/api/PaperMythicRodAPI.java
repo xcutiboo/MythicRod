@@ -111,7 +111,9 @@ public class PaperMythicRodAPI implements MythicRodAPI {
     }
 
     @Override
+    @SuppressWarnings("java:S2589")
     public void registerExternalDropProvider(@NotNull ExternalDropProvider provider) {
+        // Third-party plugins may return null from getKey() despite the @NotNull contract.
         String key = provider.getKey();
         if (key == null || key.isBlank()) {
             throw new IllegalArgumentException("ExternalDropProvider key must not be null or blank");
@@ -370,7 +372,9 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         ));
     }
 
+    @SuppressWarnings("java:S2589")
     private String safeDisplayName(@NotNull ExternalDropProvider provider, @NotNull PlatformItem externalItem) {
+        // Third-party providers may return null/blank from getDisplayName() despite the @NotNull contract.
         try {
             String providerName = provider.getDisplayName();
             if (providerName != null
@@ -393,7 +397,9 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         return safeProviderKey(provider);
     }
 
+    @SuppressWarnings("java:S2589")
     private String safeProviderKey(@NotNull ExternalDropProvider provider) {
+        // Third-party providers may return null/blank from getKey() despite the @NotNull contract.
         try {
             String key = provider.getKey();
             if (key != null && !key.isBlank()) {
@@ -429,11 +435,13 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         return stats == null ? null : toSnapshot(stats);
     }
 
+    @SuppressWarnings("java:S2589")
     private PlayerStatSnapshot toSnapshot(@NotNull PlayerStats stats) {
         long lastFishedMs = stats.getLastFished();
         Instant lastFished = lastFishedMs > 0
                 ? Instant.ofEpochMilli(lastFishedMs)
                 : Instant.EPOCH;
+        // Persisted entries from older versions can carry a null/empty playerName.
         String name = stats.getPlayerName();
         if (name == null || name.isEmpty()) name = "Unknown";
         return new PlayerStatSnapshot(
