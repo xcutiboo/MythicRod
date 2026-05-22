@@ -12,7 +12,6 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -73,97 +72,99 @@ public class FishingListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerFish(PlayerFishEvent event) {
         try {
-            if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) {
-                return;
-            }
-
-            Player player = event.getPlayer();
-            Entity caughtEntity = event.getCaught();
-
-            if (!(caughtEntity instanceof Item caughtItem)) {
-                return;
-            }
-
-            boolean debugMode = plugin.getConfigManager().isDebugMode();
-            if (debugMode) {
-                info(() -> "CAUGHT_FISH: " + player.getName() + " caught " + caughtItem.getItemStack().getType());
-            }
-
-            Location hookLoc;
-            String biomeName;
-            try {
-                hookLoc = event.getHook().getLocation();
-                if (hookLoc.getWorld() == null) {
-                    if (debugMode) {
-                        plugin.getLogger().warning("Fishing hook location was unavailable during custom catch handling");
-                    }
-                    return;
-                }
-                biomeName = hookLoc.getWorld().getComputedBiome(
-                    hookLoc.getBlockX(),
-                    hookLoc.getBlockY(),
-                    hookLoc.getBlockZ()
-                ).getKey().asString();
-            } catch (RuntimeException e) {
-                plugin.getLogger().log(Level.WARNING, "Failed to resolve fishing hook biome", e);
-                return;
-            }
-
-            PaperPlayer platformPlayer = new PaperPlayer(player);
-            double rodLuckMultiplier = resolveRodLuckMultiplier(player, event.getHand());
-            double baseWeight = plugin.getApiFacade().getBaseRewardWeight(platformPlayer, biomeName);
-            MythicRodRewardRollEvent rollEvent = new MythicRodRewardRollEvent(player, biomeName, baseWeight);
-            plugin.getServer().getPluginManager().callEvent(rollEvent);
-
-            final double luckMultiplier = combineLuckMultipliers(rodLuckMultiplier, rollEvent.getLuckMultiplier());
-            ItemStack customItem;
-            CustomDrop drop;
-            if (rollEvent.hasForcedDrop()) {
-                drop = rollEvent.getForcedDrop();
-                customItem = createItemStack(drop);
-                if (debugMode) {
-                    info(() -> "Drop forced by external plugin: "
-                        + (drop != null ? drop.getIdentifier() : "null"));
-                }
-            } else {
-                PaperMythicRodAPI.RewardResolution resolution = plugin.getApiFacade().resolveReward(
-                    platformPlayer,
-                    biomeName,
-                    luckMultiplier
-                );
-                if (resolution == null) {
-                    if (debugMode) {
-                        plugin.getLogger().info("No MythicRod reward selected; preserving vanilla catch");
-                    }
-                    return;
-                }
-
-                drop = resolution.drop();
-                customItem = resolution.isExternal()
-                    ? unwrapPlatformItem(resolution.externalItem(), drop.getIdentifier())
-                    : createItemStack(drop);
-            }
-
-            if (drop == null) {
-                if (debugMode) {
-                    plugin.getLogger().info("Reward roll did not return a drop; preserving vanilla catch");
-                }
-                return;
-            }
-
-            if (debugMode) {
-                info(() -> "Selected drop: " + drop.getIdentifier() + " x" + drop.getAmount());
-            }
-
-            if (customItem == null || customItem.getType().isAir()) {
-                warning(() -> "Resolved reward item was null or AIR for drop '" + drop.getIdentifier() + "'");
-                return;
-            }
-
-            dispatchCustomDrop(player, caughtItem, customItem, drop, hookLoc);
+            handlePlayerFish(event);
         } catch (RuntimeException e) {
             plugin.getLogger().log(Level.SEVERE, "Error processing fishing catch event", e);
         }
+    }
+
+    private void handlePlayerFish(PlayerFishEvent event) {
+        if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
+        Player player = event.getPlayer();
+        if (!(event.getCaught() instanceof Item caughtItem)) return;
+
+        boolean debugMode = plugin.getConfigManager().isDebugMode();
+        if (debugMode) {
+            info(() -> "CAUGHT_FISH: " + player.getName() + " caught " + caughtItem.getItemStack().getType());
+        }
+
+        HookContext hook = resolveHookContext(event, debugMode);
+        if (hook == null) return;
+
+        ResolvedReward reward = resolveReward(event, player, hook, debugMode);
+        if (reward == null) return;
+
+        if (debugMode) {
+            info(() -> "Selected drop: " + reward.drop().getIdentifier() + " x" + reward.drop().getAmount());
+        }
+        if (reward.item() == null || reward.item().getType().isAir()) {
+            warning(() -> "Resolved reward item was null or AIR for drop '" + reward.drop().getIdentifier() + "'");
+            return;
+        }
+        dispatchCustomDrop(player, caughtItem, reward.item(), reward.drop(), hook.location());
+    }
+
+    private record HookContext(Location location, String biomeName) {}
+
+    private record ResolvedReward(CustomDrop drop, ItemStack item) {}
+
+    private HookContext resolveHookContext(PlayerFishEvent event, boolean debugMode) {
+        try {
+            Location hookLoc = event.getHook().getLocation();
+            if (hookLoc.getWorld() == null) {
+                if (debugMode) {
+                    plugin.getLogger().warning("Fishing hook location was unavailable during custom catch handling");
+                }
+                return null;
+            }
+            String biomeName = hookLoc.getWorld().getComputedBiome(
+                hookLoc.getBlockX(),
+                hookLoc.getBlockY(),
+                hookLoc.getBlockZ()
+            ).getKey().asString();
+            return new HookContext(hookLoc, biomeName);
+        } catch (RuntimeException e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to resolve fishing hook biome", e);
+            return null;
+        }
+    }
+
+    private ResolvedReward resolveReward(PlayerFishEvent event, Player player, HookContext hook, boolean debugMode) {
+        PaperPlayer platformPlayer = new PaperPlayer(player);
+        double rodLuckMultiplier = resolveRodLuckMultiplier(player, event.getHand());
+        double baseWeight = plugin.getApiFacade().getBaseRewardWeight(platformPlayer, hook.biomeName());
+        MythicRodRewardRollEvent rollEvent = new MythicRodRewardRollEvent(player, hook.biomeName(), baseWeight);
+        plugin.getServer().getPluginManager().callEvent(rollEvent);
+
+        final double luckMultiplier = combineLuckMultipliers(rodLuckMultiplier, rollEvent.getLuckMultiplier());
+        if (rollEvent.hasForcedDrop()) {
+            CustomDrop drop = rollEvent.getForcedDrop();
+            if (debugMode) {
+                info(() -> "Drop forced by external plugin: " + (drop != null ? drop.getIdentifier() : "null"));
+            }
+            if (drop == null) return null;
+            return new ResolvedReward(drop, createItemStack(drop));
+        }
+
+        PaperMythicRodAPI.RewardResolution resolution = plugin.getApiFacade().resolveReward(
+            platformPlayer, hook.biomeName(), luckMultiplier);
+        if (resolution == null) {
+            if (debugMode) {
+                plugin.getLogger().info("No MythicRod reward selected; preserving vanilla catch");
+            }
+            return null;
+        }
+        CustomDrop drop = resolution.drop();
+        if (drop == null) {
+            if (debugMode) {
+                plugin.getLogger().info("Reward roll did not return a drop; preserving vanilla catch");
+            }
+            return null;
+        }
+        ItemStack item = resolution.isExternal()
+            ? unwrapPlatformItem(resolution.externalItem(), drop.getIdentifier())
+            : createItemStack(drop);
+        return new ResolvedReward(drop, item);
     }
 
     private double resolveRodLuckMultiplier(Player player, EquipmentSlot hand) {
