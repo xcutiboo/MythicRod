@@ -1113,7 +1113,7 @@ public class DropManager implements DropCatalog {
             return itemFlags;
         }
 
-        itemFlags = dropSection.getStringList("item_flags");
+        itemFlags = dropSection.getStringList(KEY_ITEM_FLAGS);
         if (!itemFlags.isEmpty()) {
             return itemFlags;
         }
@@ -1147,7 +1147,7 @@ public class DropManager implements DropCatalog {
             report.migratedWeightAliases++;
             return dropSection.getInt(KEY_CHANCE_LEGACY, defaultValue);
         }
-        warning(() -> "Drop '" + dropKey + "' is missing 'weight'; using " + defaultValue + ".");
+        warning(() -> DROP_LABEL + dropKey + "' is missing 'weight'; using " + defaultValue + ".");
         return defaultValue;
     }
 
@@ -1169,7 +1169,7 @@ public class DropManager implements DropCatalog {
             return asInt(migratedWeight, defaultValue);
         }
 
-        warning(() -> "Drop '" + identifier + "' in category '" + category
+        warning(() -> DROP_LABEL + identifier + "' in category '" + category
             + "' is missing 'weight'; using " + defaultValue + ".");
         return defaultValue;
     }

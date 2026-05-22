@@ -21,6 +21,14 @@ public class DropsMenu extends BaseMenu {
     private static final int MAX_IDENTIFIER_LENGTH = 96;
     private static final int DEFAULT_NEW_DROP_WEIGHT = 10;
     private static final int DEFAULT_NEW_DROP_AMOUNT = 1;
+    private static final String CTX_CATEGORY = "category";
+    private static final String CTX_COUNT = "count";
+    private static final String CTX_DROP = "drop";
+    private static final String CTX_PAGE = "page";
+    private static final String CATEGORY_GLOBAL = "global";
+    private static final String NEXO_PREFIX = "nexo:";
+    private static final String MINECRAFT_PREFIX = "minecraft:";
+    private static final String BIOME_PREFIX = "biome_";
     private static final int[] CONTENT_SLOTS = {
         10, 11, 12, 13, 14, 15, 16,
         19, 20, 21, 22, 23, 24, 25,
@@ -45,7 +53,7 @@ public class DropsMenu extends BaseMenu {
     @Override
     protected String getTitle() {
         if (viewingCategory && selectedCategory != null) {
-            return tr("gui.drops.category_title", Map.of("category", StringFormatting.formatCategoryName(selectedCategory)));
+            return tr("gui.drops.category_title", Map.of(CTX_CATEGORY, StringFormatting.formatCategoryName(selectedCategory)));
         }
         return tr("gui.drops.title");
     }
@@ -63,7 +71,7 @@ public class DropsMenu extends BaseMenu {
     private void applyViewContext() {
         Boolean requestedCategoryView = getContext("viewing_category", Boolean.class);
         String requestedCategory = getContext("category", String.class);
-        Integer requestedPage = getContext("page", Integer.class);
+        Integer requestedPage = getContext(CTX_PAGE, Integer.class);
         if (requestedPage != null) {
             page = Math.max(0, requestedPage);
         }
@@ -112,17 +120,17 @@ public class DropsMenu extends BaseMenu {
                     .mapToInt(CustomDrop::getWeight)
                     .sum();
             ItemStack categoryItem = new ItemBuilder(icon)
-                    .name(tr("gui.drops.category_name", Map.of("category", StringFormatting.formatCategoryName(category))))
+                    .name(tr("gui.drops.category_name", Map.of(CTX_CATEGORY, StringFormatting.formatCategoryName(category))))
                     .lore(
                             tr("gui.drops.category_lore1"),
                             tr("gui.drops.category_lore2"),
                             "",
-                            tr("gui.drops.category_count", Map.of("count", String.valueOf(drops.size()))),
+                            tr("gui.drops.category_count", Map.of(CTX_COUNT, String.valueOf(drops.size()))),
                             tr("gui.drops.category_weight", Map.of("weight", String.valueOf(totalWeight))),
                             "",
                             tr("gui.drops.category_click")
                     )
-                    .glow(category.equals("global"))
+                    .glow(category.equals(CATEGORY_GLOBAL))
                     .build();
             setItem(slot, categoryItem, () -> {
                 playClickSound();
@@ -136,7 +144,7 @@ public class DropsMenu extends BaseMenu {
         ItemStack infoItem = new ItemBuilder(Material.KNOWLEDGE_BOOK)
                 .name(tr("gui.drops.info_name"))
                 .lore(
-                        tr("gui.drops.info_lore1", Map.of("count", String.valueOf(categoryNames.size()))),
+                        tr("gui.drops.info_lore1", Map.of(CTX_COUNT, String.valueOf(categoryNames.size()))),
                         tr("gui.drops.info_lore2", Map.of("total", String.valueOf(plugin.getDropManager().getTotalDropCount()))),
                         "",
                         tr("gui.drops.info_lore3"),
@@ -234,7 +242,7 @@ public class DropsMenu extends BaseMenu {
                 if (p != null && p.hasPermission(PermissionNodes.ADMIN_CONFIG)) {
                     playClickSound();
                     plugin.getGUIManager().openMenu(p, "editdrop",
-                        Map.of("drop", dropFinal, "category", selectedCategory, "page", page));
+                        Map.of(CTX_DROP, dropFinal, "category", selectedCategory, CTX_PAGE, page));
                 } else {
                     playErrorSound();
                     sendMessage(tr("gui.drops.edit_locked"));
@@ -244,9 +252,9 @@ public class DropsMenu extends BaseMenu {
 
         ItemStack infoItem = new ItemBuilder(Material.BOOK)
             .name(tr("gui.drops.category_info_name",
-                Map.of("category", StringFormatting.formatCategoryName(selectedCategory))))
+                Map.of(CTX_CATEGORY, StringFormatting.formatCategoryName(selectedCategory))))
             .lore(
-                tr("gui.drops.category_info_count", Map.of("count", String.valueOf(drops.size()))),
+                tr("gui.drops.category_info_count", Map.of(CTX_COUNT, String.valueOf(drops.size()))),
                 "",
                 tr("gui.drops.category_info_lore1"),
                 tr("gui.drops.category_info_lore2")
@@ -390,7 +398,7 @@ public class DropsMenu extends BaseMenu {
                             Map.of("identifier", addedDrop.getIdentifier())));
                         playSuccessSound();
                         plugin.getGUIManager().openMenu(player, "editdrop",
-                            Map.of("drop", addedDrop, "category", category, "page", page));
+                            Map.of(CTX_DROP, addedDrop, "category", category, CTX_PAGE, page));
                     });
                 } catch (Exception e) {
                     plugin.getLogger().log(Level.WARNING, e,
@@ -420,11 +428,11 @@ public class DropsMenu extends BaseMenu {
         String identifier = drop.getIdentifier();
         Material material = Material.matchMaterial(identifier);
         if (material == null && identifier != null
-                && identifier.regionMatches(true, 0, "minecraft:", 0, "minecraft:".length())) {
-            material = Material.matchMaterial(identifier.substring("minecraft:".length()));
+                && identifier.regionMatches(true, 0, MINECRAFT_PREFIX, 0, MINECRAFT_PREFIX.length())) {
+            material = Material.matchMaterial(identifier.substring(MINECRAFT_PREFIX.length()));
         }
         if (material == null && identifier != null && !identifier.contains(":")) {
-            material = Material.matchMaterial("minecraft:" + identifier.toLowerCase(Locale.ROOT));
+            material = Material.matchMaterial(MINECRAFT_PREFIX + identifier.toLowerCase(Locale.ROOT));
         }
 
         return material != null && material.isItem() && !material.isAir()
@@ -438,12 +446,12 @@ public class DropsMenu extends BaseMenu {
             return null;
         }
 
-        if (trimmed.regionMatches(true, 0, "nexo:", 0, 5)) {
+        if (trimmed.regionMatches(true, 0, NEXO_PREFIX, 0, 5)) {
             String nexoId = trimmed.substring(5).trim();
             if (nexoId.isEmpty()) {
                 return null;
             }
-            String nexoIdentifier = "nexo:" + nexoId;
+            String nexoIdentifier = NEXO_PREFIX + nexoId;
             if (plugin.getPlatformServer() == null
                     || plugin.getPlatformServer().getItemFactory() == null
                     || !plugin.getPlatformServer().getItemFactory().canCreate(nexoIdentifier)) {
@@ -458,17 +466,17 @@ public class DropsMenu extends BaseMenu {
 
     private Material materialFromIdentifier(String identifier) {
         if (identifier == null || identifier.isBlank()
-                || identifier.regionMatches(true, 0, "nexo:", 0, 5)) {
+                || identifier.regionMatches(true, 0, NEXO_PREFIX, 0, 5)) {
             return null;
         }
 
         String trimmed = identifier.trim();
         Material material = Material.matchMaterial(trimmed);
-        if (material == null && trimmed.regionMatches(true, 0, "minecraft:", 0, "minecraft:".length())) {
-            material = Material.matchMaterial(trimmed.substring("minecraft:".length()));
+        if (material == null && trimmed.regionMatches(true, 0, MINECRAFT_PREFIX, 0, MINECRAFT_PREFIX.length())) {
+            material = Material.matchMaterial(trimmed.substring(MINECRAFT_PREFIX.length()));
         }
         if (material == null && !trimmed.contains(":")) {
-            material = Material.matchMaterial("minecraft:" + trimmed.toLowerCase(Locale.ROOT));
+            material = Material.matchMaterial(MINECRAFT_PREFIX + trimmed.toLowerCase(Locale.ROOT));
         }
 
         if (material == null || material.isAir() || !material.isItem()) {
@@ -522,7 +530,7 @@ public class DropsMenu extends BaseMenu {
             .name(tr("gui.drops.pagination.info_name"))
             .lore(
                 tr("gui.drops.pagination.page_status", Map.of(
-                    "page", String.valueOf(page + 1),
+                    CTX_PAGE, String.valueOf(page + 1),
                     "pages", String.valueOf(maxPage + 1)
                 )),
                 tr("gui.drops.pagination.item_status", Map.of(
@@ -590,12 +598,12 @@ public class DropsMenu extends BaseMenu {
     private Material getCategoryIcon(String category) {
         if (category == null) return Material.BUCKET;
         String normalizedCategory = category.toLowerCase(Locale.ROOT);
-        String biomeName = normalizedCategory.startsWith("biome_")
-            ? normalizedCategory.substring("biome_".length())
+        String biomeName = normalizedCategory.startsWith(BIOME_PREFIX)
+            ? normalizedCategory.substring(BIOME_PREFIX.length())
             : normalizedCategory;
 
         return switch (biomeName) {
-            case "global" -> Material.FISHING_ROD;
+            case CATEGORY_GLOBAL -> Material.FISHING_ROD;
             case "rare" -> Material.DIAMOND;
             case "legendary" -> Material.NETHER_STAR;
             case "common" -> Material.COD;
@@ -610,7 +618,7 @@ public class DropsMenu extends BaseMenu {
             case "mountains", "stony_peaks", "jagged_peaks" -> Material.STONE;
             case "snowy", "snowy_plains", "ice_spikes" -> Material.SNOW_BLOCK;
             case "nether", "crimson_forest", "warped_forest" -> Material.NETHERRACK;
-            default -> normalizedCategory.startsWith("biome_") ? Material.GRASS_BLOCK : Material.BUCKET;
+            default -> normalizedCategory.startsWith(BIOME_PREFIX) ? Material.GRASS_BLOCK : Material.BUCKET;
         };
     }
 
@@ -630,10 +638,10 @@ public class DropsMenu extends BaseMenu {
 
         String normalizedCategory = category.toLowerCase(Locale.ROOT);
         return switch (normalizedCategory) {
-            case "global" -> 0;
+            case CATEGORY_GLOBAL -> 0;
             case "rare" -> 1;
             case "legendary" -> 2;
-            default -> normalizedCategory.startsWith("biome_") ? 3 : 4;
+            default -> normalizedCategory.startsWith(BIOME_PREFIX) ? 3 : 4;
         };
     }
 

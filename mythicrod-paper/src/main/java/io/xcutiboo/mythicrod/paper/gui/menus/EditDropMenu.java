@@ -48,6 +48,22 @@ import io.xcutiboo.mythicrod.paper.util.StringFormatting;
 public class EditDropMenu extends BaseMenu {
 
     private static final String ADMIN_PERMISSION = PermissionNodes.ADMIN_CONFIG;
+    private static final String CTX_DROP = "drop";
+    private static final String CTX_CATEGORY = "category";
+    private static final String CTX_PAGE = "page";
+    private static final String CTX_IDENTIFIER = "identifier";
+    private static final String CTX_MATERIAL = "material";
+    private static final String CTX_WEIGHT = "weight";
+    private static final String CTX_VALUE = "value";
+    private static final String CTX_BIOMES = "biomes";
+    private static final String CTX_PERMISSION = "permission";
+    private static final String DROPS_VIEW = "drops";
+    private static final String MINECRAFT_PREFIX = "minecraft:";
+    private static final String NEXO_PREFIX = "nexo:";
+    private static final String EDITOR_LOG_PREFIX = "[EditDropMenu] Drop '";
+    private static final String IN_CATEGORY_FRAGMENT = "' in '";
+    private static final String TR_NUMBER_INVALID = "gui.edit_drop.messages.number-invalid";
+    private static final String TR_ACTION_BUSY = "gui.edit_drop.messages.action-busy";
     private static final int MAX_IDENTIFIER_LENGTH = 96;
     private static final int MAX_NAME_LENGTH = 128;
     private static final int MAX_LORE_LINE_LENGTH = 180;
@@ -87,16 +103,16 @@ public class EditDropMenu extends BaseMenu {
 
     @Override
     protected String getTitle() {
-        CustomDrop d = getContext("drop", CustomDrop.class);
+        CustomDrop d = getContext(CTX_DROP, CustomDrop.class);
         String id = currentIdentifier != null ? currentIdentifier : (d != null ? d.getIdentifier() : "?");
-        return tr("gui.edit_drop.title", Map.of("identifier", id));
+        return tr("gui.edit_drop.title", Map.of(CTX_IDENTIFIER, id));
     }
 
     @Override
     protected void build() {
-        drop = getContext("drop", CustomDrop.class);
-        category = getContext("category", String.class);
-        Integer requestedReturnPage = getContext("page", Integer.class);
+        drop = getContext(CTX_DROP, CustomDrop.class);
+        category = getContext(CTX_CATEGORY, String.class);
+        Integer requestedReturnPage = getContext(CTX_PAGE, Integer.class);
         returnPage = requestedReturnPage != null ? Math.max(0, requestedReturnPage) : 0;
         if (drop == null || category == null) {
             Player p = getPlayer();
@@ -150,7 +166,7 @@ public class EditDropMenu extends BaseMenu {
                 .name(currentName != null
                         ? currentName
                         : tr("gui.edit_drop.preview.default_name",
-                             Map.of("material", currentMaterialName())));
+                             Map.of(CTX_MATERIAL, currentMaterialName())));
 
         if (!currentLore.isEmpty()) {
             preview.addLore(tr("gui.edit_drop.preview.lore_header"));
@@ -160,20 +176,20 @@ public class EditDropMenu extends BaseMenu {
         }
 
         preview.addLore(tr("gui.edit_drop.preview.stats_header"))
-               .addLore(tr("gui.edit_drop.preview.item", Map.of("identifier", currentIdentifier)))
-               .addLore(tr("gui.edit_drop.preview.weight", Map.of("weight", String.valueOf(currentWeight))))
+               .addLore(tr("gui.edit_drop.preview.item", Map.of(CTX_IDENTIFIER, currentIdentifier)))
+               .addLore(tr("gui.edit_drop.preview.weight", Map.of(CTX_WEIGHT, String.valueOf(currentWeight))))
                .addLore(tr("gui.edit_drop.preview.amount", Map.of("amount", String.valueOf(currentAmount))))
                .addLore(tr("gui.edit_drop.preview.glow",
                            Map.of("status", currentGlow ? tr("gui.edit_drop.enabled") : tr("gui.edit_drop.disabled"))));
         if (currentCustomModelData > 0) {
             preview.addLore(tr("gui.edit_drop.preview.model_data",
-                Map.of("value", String.valueOf(currentCustomModelData))));
+                Map.of(CTX_VALUE, String.valueOf(currentCustomModelData))));
         }
         if (currentPermission != null && !currentPermission.isBlank()) {
-            preview.addLore(tr("gui.edit_drop.preview.permission", Map.of("permission", currentPermission)));
+            preview.addLore(tr("gui.edit_drop.preview.permission", Map.of(CTX_PERMISSION, currentPermission)));
         }
         if (currentBiomes != null && !currentBiomes.isEmpty()) {
-            preview.addLore(tr("gui.edit_drop.preview.biomes", Map.of("biomes", formatList(currentBiomes))));
+            preview.addLore(tr("gui.edit_drop.preview.biomes", Map.of(CTX_BIOMES, formatList(currentBiomes))));
         }
 
         if (currentGlow) preview.glow();
@@ -189,8 +205,8 @@ public class EditDropMenu extends BaseMenu {
         setItem(19,
                 ItemBuilder.of(material)
                         .name(tr("gui.edit_drop.item.name"))
-                        .addLore(tr("gui.edit_drop.item.current", Map.of("identifier", currentIdentifier)))
-                        .addLore(tr("gui.edit_drop.item.material", Map.of("material", currentMaterialName())))
+                        .addLore(tr("gui.edit_drop.item.current", Map.of(CTX_IDENTIFIER, currentIdentifier)))
+                        .addLore(tr("gui.edit_drop.item.material", Map.of(CTX_MATERIAL, currentMaterialName())))
                         .addLore("")
                         .addLore(tr("gui.edit_drop.item.left_click"))
                         .addLore(tr("gui.edit_drop.item.supports"))
@@ -205,7 +221,7 @@ public class EditDropMenu extends BaseMenu {
         setItem(20,
                 ItemBuilder.of(Material.CLOCK)
                         .name(tr("gui.edit_drop.weight.name"))
-                        .addLore(tr("gui.edit_drop.weight.current", Map.of("weight", String.valueOf(currentWeight))))
+                        .addLore(tr("gui.edit_drop.weight.current", Map.of(CTX_WEIGHT, String.valueOf(currentWeight))))
                         .addLore("")
                         .addLore(tr("gui.edit_drop.weight.left_click"))
                         .addLore(tr("gui.edit_drop.weight.right_click"))
@@ -263,11 +279,11 @@ public class EditDropMenu extends BaseMenu {
         List<String> presets = new ArrayList<>();
         presets.add(null);
         presets.addAll(List.of(
-            tr("gui.edit_drop.name.presets.legendary", Map.of("material", materialName)),
-            tr("gui.edit_drop.name.presets.rare", Map.of("material", materialName)),
-            tr("gui.edit_drop.name.presets.uncommon", Map.of("material", materialName)),
-            tr("gui.edit_drop.name.presets.common", Map.of("material", materialName)),
-            tr("gui.edit_drop.name.presets.power", Map.of("material", materialName))
+            tr("gui.edit_drop.name.presets.legendary", Map.of(CTX_MATERIAL, materialName)),
+            tr("gui.edit_drop.name.presets.rare", Map.of(CTX_MATERIAL, materialName)),
+            tr("gui.edit_drop.name.presets.uncommon", Map.of(CTX_MATERIAL, materialName)),
+            tr("gui.edit_drop.name.presets.common", Map.of(CTX_MATERIAL, materialName)),
+            tr("gui.edit_drop.name.presets.power", Map.of(CTX_MATERIAL, materialName))
         ));
 
         String displayName = currentName != null ? currentName : tr("gui.edit_drop.name.none");
@@ -357,7 +373,7 @@ public class EditDropMenu extends BaseMenu {
                 ItemBuilder.of(Material.TRIPWIRE_HOOK)
                         .name(tr("gui.edit_drop.permission.name"))
                         .addLore(tr("gui.edit_drop.permission.current",
-                            Map.of("permission", currentPermissionText())))
+                            Map.of(CTX_PERMISSION, currentPermissionText())))
                         .addLore("")
                         .addLore(tr("gui.edit_drop.permission.left_click"))
                         .addLore(tr("gui.edit_drop.permission.right_click"))
@@ -380,7 +396,7 @@ public class EditDropMenu extends BaseMenu {
         setItem(29,
                 ItemBuilder.of(Material.GRASS_BLOCK)
                         .name(tr("gui.edit_drop.biomes.name"))
-                        .addLore(tr("gui.edit_drop.biomes.current", Map.of("biomes", currentBiomesText())))
+                        .addLore(tr("gui.edit_drop.biomes.current", Map.of(CTX_BIOMES, currentBiomesText())))
                         .addLore("")
                         .addLore(tr("gui.edit_drop.biomes.left_click"))
                         .addLore(tr("gui.edit_drop.biomes.right_click"))
@@ -406,7 +422,7 @@ public class EditDropMenu extends BaseMenu {
                 ItemBuilder.of(Material.ITEM_FRAME)
                         .name(tr("gui.edit_drop.model_data.name"))
                         .addLore(tr("gui.edit_drop.model_data.current",
-                            Map.of("value", String.valueOf(currentCustomModelData))))
+                            Map.of(CTX_VALUE, String.valueOf(currentCustomModelData))))
                         .addLore("")
                         .addLore(tr("gui.edit_drop.model_data.left_click"))
                         .addLore(tr("gui.edit_drop.model_data.right_click"))
@@ -486,7 +502,7 @@ public class EditDropMenu extends BaseMenu {
                             .addLore(tr("gui.edit_drop.save.working_lore"))
                             .build(),
                     () -> {
-                        sendMessage(tr("gui.edit_drop.messages.action-busy"));
+                        sendMessage(tr(TR_ACTION_BUSY));
                         playErrorSound();
                     });
             return;
@@ -498,17 +514,17 @@ public class EditDropMenu extends BaseMenu {
                         .addLore(tr("gui.edit_drop.save.lore1"))
                         .addLore("")
                         .addLore(tr("gui.edit_drop.save.lore2"))
-                        .addLore(tr("gui.edit_drop.save.item", Map.of("identifier", currentIdentifier)))
-                        .addLore(tr("gui.edit_drop.save.weight", Map.of("weight", String.valueOf(currentWeight))))
+                        .addLore(tr("gui.edit_drop.save.item", Map.of(CTX_IDENTIFIER, currentIdentifier)))
+                        .addLore(tr("gui.edit_drop.save.weight", Map.of(CTX_WEIGHT, String.valueOf(currentWeight))))
                         .addLore(tr("gui.edit_drop.save.amount", Map.of("amount", String.valueOf(currentAmount))))
                         .addLore(tr("gui.edit_drop.save.glow",
                                     Map.of("status", currentGlow
                                         ? tr("gui.edit_drop.status_yes")
                                         : tr("gui.edit_drop.status_no"))))
                         .addLore(tr("gui.edit_drop.save.model_data",
-                            Map.of("value", String.valueOf(currentCustomModelData))))
+                            Map.of(CTX_VALUE, String.valueOf(currentCustomModelData))))
                         .addLore(tr("gui.edit_drop.save.permission",
-                            Map.of("permission", currentPermissionText())))
+                            Map.of(CTX_PERMISSION, currentPermissionText())))
                         .glow()
                         .build(),
                 () -> {
@@ -554,7 +570,7 @@ public class EditDropMenu extends BaseMenu {
                             .addLore(tr("gui.edit_drop.delete.working_lore"))
                             .build(),
                     () -> {
-                        sendMessage(tr("gui.edit_drop.messages.action-busy"));
+                        sendMessage(tr(TR_ACTION_BUSY));
                         playErrorSound();
                     });
             return;
@@ -585,7 +601,7 @@ public class EditDropMenu extends BaseMenu {
 
     private boolean beginEditorAction() {
         if (actionInProgress) {
-            sendMessage(tr("gui.edit_drop.messages.action-busy"));
+            sendMessage(tr(TR_ACTION_BUSY));
             playErrorSound();
             return false;
         }
@@ -611,7 +627,7 @@ public class EditDropMenu extends BaseMenu {
                         .build(),
                 () -> {
                     playClickSound();
-                    plugin.getGUIManager().openMenu(getPlayer(), "drops", buildDropsMenuContext(category));
+                    plugin.getGUIManager().openMenu(getPlayer(), DROPS_VIEW, buildDropsMenuContext(category));
                 });
     }
 
@@ -620,9 +636,9 @@ public class EditDropMenu extends BaseMenu {
                 ItemBuilder.of(Material.KNOWLEDGE_BOOK)
                         .name(tr("gui.edit_drop.info.name"))
                         .addLore(tr("gui.edit_drop.info.lore1",
-                                    Map.of("identifier", currentIdentifier)))
+                                    Map.of(CTX_IDENTIFIER, currentIdentifier)))
                         .addLore(tr("gui.edit_drop.info.lore2",
-                                    Map.of("material", currentMaterialName())))
+                                    Map.of(CTX_MATERIAL, currentMaterialName())))
                         .addLore("")
                         .addLore(tr("gui.edit_drop.info.lore3"))
                         .addLore(tr("gui.edit_drop.info.lore4"))
@@ -720,7 +736,7 @@ public class EditDropMenu extends BaseMenu {
         }
 
         currentIdentifier = normalizedIdentifier;
-        sendMessage(tr("gui.edit_drop.messages.item-updated", Map.of("identifier", currentIdentifier)));
+        sendMessage(tr("gui.edit_drop.messages.item-updated", Map.of(CTX_IDENTIFIER, currentIdentifier)));
         playSuccessSound();
         open();
     }
@@ -728,7 +744,7 @@ public class EditDropMenu extends BaseMenu {
     private void handleWeightInput(String input) {
         Integer value = parseIntegerInput(input, 1, 100);
         if (value == null) {
-            sendMessage(tr("gui.edit_drop.messages.number-invalid",
+            sendMessage(tr(TR_NUMBER_INVALID,
                 Map.of("min", "1", "max", "100")));
             playErrorSound();
             open();
@@ -737,7 +753,7 @@ public class EditDropMenu extends BaseMenu {
 
         currentWeight = value;
         sendMessage(tr("gui.edit_drop.messages.weight-updated",
-            Map.of("weight", String.valueOf(currentWeight))));
+            Map.of(CTX_WEIGHT, String.valueOf(currentWeight))));
         playSuccessSound();
         open();
     }
@@ -745,7 +761,7 @@ public class EditDropMenu extends BaseMenu {
     private void handleAmountInput(String input) {
         Integer value = parseIntegerInput(input, 1, 64);
         if (value == null) {
-            sendMessage(tr("gui.edit_drop.messages.number-invalid",
+            sendMessage(tr(TR_NUMBER_INVALID,
                 Map.of("min", "1", "max", "64")));
             playErrorSound();
             open();
@@ -794,7 +810,7 @@ public class EditDropMenu extends BaseMenu {
 
         Integer parsed = parseIntegerInput(value, 0, MAX_CUSTOM_MODEL_DATA);
         if (parsed == null) {
-            sendMessage(tr("gui.edit_drop.messages.number-invalid",
+            sendMessage(tr(TR_NUMBER_INVALID,
                 Map.of("min", "0", "max", String.valueOf(MAX_CUSTOM_MODEL_DATA))));
             playErrorSound();
             open();
@@ -803,7 +819,7 @@ public class EditDropMenu extends BaseMenu {
 
         currentCustomModelData = parsed;
         sendMessage(tr("gui.edit_drop.messages.model-data-updated",
-            Map.of("value", String.valueOf(currentCustomModelData))));
+            Map.of(CTX_VALUE, String.valueOf(currentCustomModelData))));
         playSuccessSound();
         open();
     }
@@ -827,7 +843,7 @@ public class EditDropMenu extends BaseMenu {
 
         currentPermission = value;
         sendMessage(tr("gui.edit_drop.messages.permission-updated",
-            Map.of("permission", currentPermission)));
+            Map.of(CTX_PERMISSION, currentPermission)));
         playSuccessSound();
         open();
     }
@@ -851,7 +867,7 @@ public class EditDropMenu extends BaseMenu {
 
         currentBiomes = parsed;
         sendMessage(tr("gui.edit_drop.messages.biomes-updated",
-            Map.of("biomes", formatList(currentBiomes))));
+            Map.of(CTX_BIOMES, formatList(currentBiomes))));
         playSuccessSound();
         open();
     }
@@ -965,12 +981,12 @@ public class EditDropMenu extends BaseMenu {
         }
 
         String trimmed = input.trim();
-        if (trimmed.regionMatches(true, 0, "nexo:", 0, 5)) {
+        if (trimmed.regionMatches(true, 0, NEXO_PREFIX, 0, 5)) {
             String nexoId = trimmed.substring(5).trim();
             if (nexoId.isEmpty()) {
                 return null;
             }
-            String nexoIdentifier = "nexo:" + nexoId;
+            String nexoIdentifier = NEXO_PREFIX + nexoId;
             if (plugin.getPlatformServer() == null
                     || plugin.getPlatformServer().getItemFactory() == null
                     || !plugin.getPlatformServer().getItemFactory().canCreate(nexoIdentifier)) {
@@ -989,17 +1005,17 @@ public class EditDropMenu extends BaseMenu {
 
     private Material materialFromIdentifier(String identifier) {
         if (identifier == null || identifier.isBlank()
-                || identifier.regionMatches(true, 0, "nexo:", 0, 5)) {
+                || identifier.regionMatches(true, 0, NEXO_PREFIX, 0, 5)) {
             return null;
         }
 
         String trimmed = identifier.trim();
         Material material = Material.matchMaterial(trimmed);
-        if (material == null && trimmed.regionMatches(true, 0, "minecraft:", 0, "minecraft:".length())) {
-            material = Material.matchMaterial(trimmed.substring("minecraft:".length()));
+        if (material == null && trimmed.regionMatches(true, 0, MINECRAFT_PREFIX, 0, MINECRAFT_PREFIX.length())) {
+            material = Material.matchMaterial(trimmed.substring(MINECRAFT_PREFIX.length()));
         }
         if (material == null && !trimmed.contains(":")) {
-            material = Material.matchMaterial("minecraft:" + trimmed.toLowerCase(Locale.ROOT));
+            material = Material.matchMaterial(MINECRAFT_PREFIX + trimmed.toLowerCase(Locale.ROOT));
         }
 
         if (material == null || material.isAir() || !material.isItem()) {
@@ -1009,7 +1025,7 @@ public class EditDropMenu extends BaseMenu {
     }
 
     private String currentMaterialName() {
-        if (currentIdentifier != null && currentIdentifier.regionMatches(true, 0, "nexo:", 0, 5)) {
+        if (currentIdentifier != null && currentIdentifier.regionMatches(true, 0, NEXO_PREFIX, 0, 5)) {
             return "Nexo: " + currentIdentifier.substring(5);
         }
         return StringFormatting.formatMaterialName(currentIdentifier);
@@ -1075,7 +1091,7 @@ public class EditDropMenu extends BaseMenu {
         if (normalized.startsWith("biome_")) {
             normalized = normalized.substring("biome_".length());
         }
-        return normalized.contains(":") ? normalized : "minecraft:" + normalized;
+        return normalized.contains(":") ? normalized : MINECRAFT_PREFIX + normalized;
     }
 
     private Map<String, Integer> parseEnchantments(String input) {
@@ -1162,7 +1178,7 @@ public class EditDropMenu extends BaseMenu {
 
         String normalized = value.toLowerCase(Locale.ROOT).replace(' ', '_');
         if (!normalized.contains(":")) {
-            normalized = "minecraft:" + normalized;
+            normalized = MINECRAFT_PREFIX + normalized;
         }
         return NamespacedKey.fromString(normalized);
     }
@@ -1292,8 +1308,8 @@ public class EditDropMenu extends BaseMenu {
                             finalCustomModelData, finalEnchantments, finalItemFlags,
                             finalGlow, finalPermission, finalBiomes);
                     if (!updated) {
-                        plugin.getLogger().info(() -> "[EditDropMenu] Drop '" + finalDrop.getIdentifier()
-                            + "' in '" + finalCategory + "' was already changed before "
+                        plugin.getLogger().info(() -> EDITOR_LOG_PREFIX + finalDrop.getIdentifier()
+                            + IN_CATEGORY_FRAGMENT + finalCategory + "' was already changed before "
                             + finalPlayerName + " could save it");
                         runForPlayerIfOnline(finalPlayer, () -> {
                             finishEditorActionAfterFailure();
@@ -1303,19 +1319,19 @@ public class EditDropMenu extends BaseMenu {
                         return;
                     }
                     plugin.getDropManager().saveDropsConfig();
-                    plugin.getLogger().info(() -> "[EditDropMenu] Drop '" + finalDrop.getIdentifier()
-                        + "' -> '" + finalIdentifier + "' in '" + finalCategory + "' updated by "
+                    plugin.getLogger().info(() -> EDITOR_LOG_PREFIX + finalDrop.getIdentifier()
+                        + "' -> '" + finalIdentifier + IN_CATEGORY_FRAGMENT + finalCategory + "' updated by "
                         + finalPlayerName);
 
                     runForPlayerIfOnline(finalPlayer, () -> {
                         playSuccessSound();
                         sendMessage(tr("gui.edit_drop.messages.save-success"));
-                        plugin.getGUIManager().openMenu(finalPlayer, "drops", buildDropsMenuContext(finalCategory));
+                        plugin.getGUIManager().openMenu(finalPlayer, DROPS_VIEW, buildDropsMenuContext(finalCategory));
                         });
                 } catch (Exception e) {
                     plugin.getLogger().log(Level.WARNING, e,
                         () -> "[EditDropMenu] Failed to save drop '" + finalDrop.getIdentifier()
-                            + "' in '" + finalCategory + "'");
+                            + IN_CATEGORY_FRAGMENT + finalCategory + "'");
                     runForPlayerIfOnline(finalPlayer, () -> {
                         finishEditorActionAfterFailure();
                         playErrorSound();
@@ -1349,8 +1365,8 @@ public class EditDropMenu extends BaseMenu {
                 try {
                     boolean deleted = plugin.getDropManager().deleteDrop(finalDrop, finalCategory);
                     if (!deleted) {
-                        plugin.getLogger().info(() -> "[EditDropMenu] Drop '" + finalDrop.getIdentifier()
-                            + "' in '" + finalCategory + "' was already deleted before "
+                        plugin.getLogger().info(() -> EDITOR_LOG_PREFIX + finalDrop.getIdentifier()
+                            + IN_CATEGORY_FRAGMENT + finalCategory + "' was already deleted before "
                             + finalPlayerName + " confirmed it");
                         runForPlayerIfOnline(finalPlayer, () -> {
                             finishEditorActionAfterFailure();
@@ -1360,18 +1376,18 @@ public class EditDropMenu extends BaseMenu {
                         return;
                     }
                     plugin.getDropManager().saveDropsConfig();
-                    plugin.getLogger().info(() -> "[EditDropMenu] Drop '" + finalDrop.getIdentifier()
-                        + "' in '" + finalCategory + "' deleted by " + finalPlayerName);
+                    plugin.getLogger().info(() -> EDITOR_LOG_PREFIX + finalDrop.getIdentifier()
+                        + IN_CATEGORY_FRAGMENT + finalCategory + "' deleted by " + finalPlayerName);
 
                     runForPlayerIfOnline(finalPlayer, () -> {
                         playSuccessSound();
                         sendMessage(tr("gui.edit_drop.messages.delete-success"));
-                        plugin.getGUIManager().openMenu(finalPlayer, "drops", buildDropsMenuContext(finalCategory));
+                        plugin.getGUIManager().openMenu(finalPlayer, DROPS_VIEW, buildDropsMenuContext(finalCategory));
                     });
                 } catch (Exception e) {
                     plugin.getLogger().log(Level.WARNING, e,
                         () -> "[EditDropMenu] Failed to delete drop '" + finalDrop.getIdentifier()
-                            + "' in '" + finalCategory + "'");
+                            + IN_CATEGORY_FRAGMENT + finalCategory + "'");
                     runForPlayerIfOnline(finalPlayer, () -> {
                         finishEditorActionAfterFailure();
                         playErrorSound();
@@ -1404,7 +1420,7 @@ public class EditDropMenu extends BaseMenu {
     }
 
     private Map<String, Object> buildDropsMenuContext(String targetCategory) {
-        return Map.of("category", targetCategory, "viewing_category", Boolean.TRUE, "page", returnPage);
+        return Map.of(CTX_CATEGORY, targetCategory, "viewing_category", Boolean.TRUE, CTX_PAGE, returnPage);
     }
 
     @Override

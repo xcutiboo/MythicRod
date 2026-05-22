@@ -12,6 +12,8 @@ import io.xcutiboo.mythicrod.constants.MythicRodKeys;
 
 /// Creates MythicRod fishing rods and reads their persistent tier data.
 public class RodFactory {
+    private static final String LORE_RARE_LUCK_SUFFIX = "x rare luck";
+
     private final MythicRod plugin;
     private final NamespacedKey customRodKey;
     private final NamespacedKey rodTierKey;
@@ -31,7 +33,7 @@ public class RodFactory {
                 "<gray>custom MythicRod catches",
                 "",
                 "<gold>Tier: <yellow>Basic</yellow>",
-                "<dark_gray>✦ " + formatMultiplier("basic") + "x rare luck"
+                "<dark_gray>✦ " + formatMultiplier("basic") + LORE_RARE_LUCK_SUFFIX
             }
         );
     }
@@ -45,7 +47,7 @@ public class RodFactory {
                 "<gray>with higher-tier access",
                 "",
                 "<gold>Tier: <light_purple>Advanced</light_purple>",
-                "<dark_gray>✦✦ " + formatMultiplier("advanced") + "x rare luck",
+                "<dark_gray>✦✦ " + formatMultiplier("advanced") + LORE_RARE_LUCK_SUFFIX,
                 "<dark_gray>✦✦ Requires advanced rod access"
             }
         );
@@ -60,7 +62,7 @@ public class RodFactory {
                 "<gray>that gate top-tier rewards",
                 "",
                 "<gold>Tier: <gradient:#FFD700:#FFAA00>Legendary</gradient>",
-                "<dark_gray>✦✦✦ " + formatMultiplier("legendary") + "x rare luck",
+                "<dark_gray>✦✦✦ " + formatMultiplier("legendary") + LORE_RARE_LUCK_SUFFIX,
                 "<dark_gray>✦✦✦ Requires legendary rod access",
                 "<dark_gray>✦✦✦ Tuned for rare rewards"
             }

@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class ItemFactory implements PlatformItemFactory {
+    private static final String MINECRAFT_PREFIX = "minecraft:";
+
     private final NexoItemProvider nexoProvider;
 
     public ItemFactory(Logger logger) {
@@ -68,11 +70,11 @@ public class ItemFactory implements PlatformItemFactory {
 
     private Material resolveMaterial(String identifier) {
         Material material = Material.matchMaterial(identifier);
-        if (material == null && identifier.regionMatches(true, 0, "minecraft:", 0, "minecraft:".length())) {
-            material = Material.matchMaterial(identifier.substring("minecraft:".length()));
+        if (material == null && identifier.regionMatches(true, 0, MINECRAFT_PREFIX, 0, MINECRAFT_PREFIX.length())) {
+            material = Material.matchMaterial(identifier.substring(MINECRAFT_PREFIX.length()));
         }
         if (material == null && !identifier.contains(":")) {
-            material = Material.matchMaterial("minecraft:" + identifier.toLowerCase(Locale.ROOT));
+            material = Material.matchMaterial(MINECRAFT_PREFIX + identifier.toLowerCase(Locale.ROOT));
         }
         return material != null && material.isItem() && !material.isAir() ? material : null;
     }

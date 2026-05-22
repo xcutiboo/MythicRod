@@ -25,6 +25,8 @@ public class ConfigManager {
     private static final String DEFAULT_BUBBLE_PARTICLE = "BUBBLE_POP";
     private static final String DEFAULT_SUCCESS_PARTICLE = "HAPPY_VILLAGER";
     private static final String DEFAULT_XP_PARTICLE = "HAPPY_VILLAGER";
+    private static final String DEFAULT_LANGUAGE = "en_US";
+    private static final String DEFAULT_PROFILE = "balanced";
 
     private String prefix = DEFAULT_PREFIX;
     private boolean soundsEnabled = true;
@@ -48,8 +50,8 @@ public class ConfigManager {
     private double advancedRodLuckMultiplier = 1.25D;
     private double legendaryRodLuckMultiplier = 1.5D;
     private int statsSaveInterval = 600;
-    private String language = "en_US";
-    private String profile = "balanced";
+    private String language = DEFAULT_LANGUAGE;
+    private String profile = DEFAULT_PROFILE;
 
     private static final int MIN_STATS_INTERVAL = 60;
     private static final int MAX_STATS_INTERVAL = 3600;
@@ -116,15 +118,15 @@ public class ConfigManager {
                 prefix = prefix.substring(0, 100);
             }
 
-            String rawLang = config.getString("language.default", "en_US");
-            language = isValidLanguage(rawLang) ? rawLang : "en_US";
+            String rawLang = config.getString("language.default", DEFAULT_LANGUAGE);
+            language = isValidLanguage(rawLang) ? rawLang : DEFAULT_LANGUAGE;
             if (!language.equals(rawLang) && rawLang != null && !rawLang.isEmpty()) {
                 logger().log(Level.WARNING, () -> "Invalid language format: " + rawLang + ", using en_US");
             }
 
-            String rawProfile = config.getString("profile", "balanced");
+            String rawProfile = config.getString("profile", DEFAULT_PROFILE);
             String normalizedProfile = normalizeProfile(rawProfile);
-            profile = normalizedProfile != null ? normalizedProfile : "balanced";
+            profile = normalizedProfile != null ? normalizedProfile : DEFAULT_PROFILE;
             if (normalizedProfile == null && rawProfile != null && !rawProfile.isEmpty()) {
                 logger().log(Level.WARNING, () -> "Invalid profile: " + rawProfile + ", using balanced");
             }
@@ -194,8 +196,8 @@ public class ConfigManager {
         basicRodLuckMultiplier = 1.0D;
         advancedRodLuckMultiplier = 1.25D;
         legendaryRodLuckMultiplier = 1.5D;
-        language = "en_US";
-        profile = "balanced";
+        language = DEFAULT_LANGUAGE;
+        profile = DEFAULT_PROFILE;
         statsSaveInterval = 600;
     }
 
@@ -259,16 +261,16 @@ public class ConfigManager {
     public String getXpParticle() { return xpParticle; }
 
     public void setCatchParticle(String particle) {
-        this.catchParticle = updateParticleSetting("features.particles.catch-particle", particle, "SPLASH");
+        this.catchParticle = updateParticleSetting("features.particles.catch-particle", particle, DEFAULT_CATCH_PARTICLE);
     }
     public void setBubbleParticle(String particle) {
-        this.bubbleParticle = updateParticleSetting("features.particles.bubble-particle", particle, "BUBBLE_POP");
+        this.bubbleParticle = updateParticleSetting("features.particles.bubble-particle", particle, DEFAULT_BUBBLE_PARTICLE);
     }
     public void setSuccessParticle(String particle) {
-        this.successParticle = updateParticleSetting("features.particles.success-particle", particle, "HAPPY_VILLAGER");
+        this.successParticle = updateParticleSetting("features.particles.success-particle", particle, DEFAULT_SUCCESS_PARTICLE);
     }
     public void setXpParticle(String particle) {
-        this.xpParticle = updateParticleSetting("features.particles.xp-particle", particle, "HAPPY_VILLAGER");
+        this.xpParticle = updateParticleSetting("features.particles.xp-particle", particle, DEFAULT_XP_PARTICLE);
     }
     public boolean enableBiomeSpecificDrops() { return biomeDropsEnabled; }
     public boolean trackStatistics() { return statisticsEnabled; }

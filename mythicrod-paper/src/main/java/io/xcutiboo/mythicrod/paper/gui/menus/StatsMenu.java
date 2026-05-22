@@ -27,6 +27,8 @@ import io.xcutiboo.mythicrod.stats.PlayerStats;
  * for the leaderboard (returns {@code List<PlayerStats>} sorted by totalCaught).
  */
 public class StatsMenu extends BaseMenu {
+    private static final String CTX_COUNT = "count";
+
 
     private boolean viewingLeaderboard = false;
 
@@ -70,7 +72,7 @@ public class StatsMenu extends BaseMenu {
                         tr("gui.stats.total_catches_lore1"),
                         "",
                         tr("gui.stats.total_catches_lore2",
-                                Map.of("count", String.valueOf(stats.getTotalCaught()))),
+                                Map.of(CTX_COUNT, String.valueOf(stats.getTotalCaught()))),
                         "",
                         tr("gui.stats.total_catches_lore3")
                 )
@@ -86,7 +88,7 @@ public class StatsMenu extends BaseMenu {
                         tr("gui.stats.rare_catches_lore2"),
                         "",
                         tr("gui.stats.rare_catches_lore3",
-                                Map.of("count", String.valueOf(rarePlus))),
+                                Map.of(CTX_COUNT, String.valueOf(rarePlus))),
                         "",
                         tr("gui.stats.rare_catches_lore4")
                 )
@@ -133,7 +135,7 @@ public class StatsMenu extends BaseMenu {
                                 Map.of("tier", StringFormatting.formatMaterialName(entry.getKey()))))
                         .lore(
                                 tr("gui.stats.tier_caught",
-                                        Map.of("count", String.valueOf(entry.getValue()))),
+                                        Map.of(CTX_COUNT, String.valueOf(entry.getValue()))),
                                 "",
                                 tr("gui.stats.tier_percentage",
                                         Map.of("percent", String.format("%.1f%%", pct)))
@@ -234,7 +236,7 @@ public class StatsMenu extends BaseMenu {
 
                 List<String> lore = new ArrayList<>();
                 lore.add(tr("gui.stats.player_label",   Map.of("name",  playerName)));
-                lore.add(tr("gui.stats.player_catches",  Map.of("count", String.valueOf(catches))));
+                lore.add(tr("gui.stats.player_catches",  Map.of(CTX_COUNT, String.valueOf(catches))));
                 lore.add("");
                 if (isCurrentPlayer) {
                     lore.add(tr("gui.stats.you_indicator"));

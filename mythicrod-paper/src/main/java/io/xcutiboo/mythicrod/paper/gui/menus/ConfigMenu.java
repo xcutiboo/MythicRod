@@ -19,6 +19,14 @@ import io.xcutiboo.mythicrod.paper.util.ParticleOptions;
 import io.xcutiboo.mythicrod.paper.util.StringFormatting;
 
 public class ConfigMenu extends BaseMenu {
+    private static final String CTX_STATUS = "status";
+    private static final String CTX_ACTION = "action";
+    private static final String CTX_PARTICLE = "particle";
+    private static final String TR_ENABLED = "gui.config.enabled";
+    private static final String TR_DISABLED = "gui.config.disabled";
+    private static final String TR_ENABLE = "gui.config.enable";
+    private static final String TR_DISABLE = "gui.config.disable";
+
     private static final String ADMIN_PERMISSION = PermissionNodes.ADMIN_CONFIG;
 
     private boolean draftSoundsEnabled;
@@ -109,10 +117,10 @@ public class ConfigMenu extends BaseMenu {
                         tr("gui.config.particles_settings.lore1"),
                         tr("gui.config.particles_settings.lore2"),
                         "",
-                        tr("gui.config.particles_settings.current_catch", Map.of("particle", draftCatchParticle)),
-                        tr("gui.config.particles_settings.current_bubble", Map.of("particle", draftBubbleParticle)),
-                        tr("gui.config.particles_settings.current_success", Map.of("particle", draftSuccessParticle)),
-                        tr("gui.config.particles_settings.current_xp", Map.of("particle", draftXpParticle)),
+                        tr("gui.config.particles_settings.current_catch", Map.of(CTX_PARTICLE, draftCatchParticle)),
+                        tr("gui.config.particles_settings.current_bubble", Map.of(CTX_PARTICLE, draftBubbleParticle)),
+                        tr("gui.config.particles_settings.current_success", Map.of(CTX_PARTICLE, draftSuccessParticle)),
+                        tr("gui.config.particles_settings.current_xp", Map.of(CTX_PARTICLE, draftXpParticle)),
                         "",
                         tr("gui.config.particles_settings.left_click"),
                         tr("gui.config.particles_settings.right_click"),
@@ -183,18 +191,18 @@ public class ConfigMenu extends BaseMenu {
 
         boolean usePerms = draftPermissionsEnabled;
         ItemStack permsItem = new ItemBuilder(usePerms ? Material.DIAMOND : Material.COAL)
-                .name(tr("gui.config.perms.name", Map.of("status", usePerms ? "<green>✓" : "<red>✗")))
+                .name(tr("gui.config.perms.name", Map.of(CTX_STATUS, usePerms ? "<green>✓" : "<red>✗")))
                 .lore(
                         tr("gui.config.perms.lore1"),
                         tr("gui.config.perms.lore2"),
                         "",
-                        tr("gui.config.perms.status", Map.of("color", getStatusColor(usePerms), "status", usePerms ? tr("gui.config.enabled") : tr("gui.config.disabled"))),
+                        tr("gui.config.perms.status", Map.of("color", getStatusColor(usePerms), CTX_STATUS, usePerms ? tr(TR_ENABLED) : tr(TR_DISABLED))),
                         "",
                         usePerms ? tr("gui.config.perms.active") : tr("gui.config.perms.inactive"),
                         "",
                         tr("gui.config.perms.warning"),
                         "",
-                        tr("gui.config.perms.click", Map.of("action", usePerms ? tr("gui.config.disable") : tr("gui.config.enable")))
+                        tr("gui.config.perms.click", Map.of(CTX_ACTION, usePerms ? tr(TR_DISABLE) : tr(TR_ENABLE)))
                 )
                 .glow(usePerms)
                 .build();
@@ -244,18 +252,18 @@ public class ConfigMenu extends BaseMenu {
 
         boolean debugMode = draftDebugEnabled;
         ItemStack debugItem = new ItemBuilder(debugMode ? Material.REDSTONE_TORCH : Material.TORCH)
-                .name(tr("gui.config.debug.name", Map.of("status", debugMode ? "<green>✓" : "<red>✗")))
+                .name(tr("gui.config.debug.name", Map.of(CTX_STATUS, debugMode ? "<green>✓" : "<red>✗")))
                 .lore(
                         tr("gui.config.debug.lore1"),
                         tr("gui.config.debug.lore2"),
                         "",
-                        tr("gui.config.debug.status", Map.of("color", getStatusColor(debugMode), "status", debugMode ? tr("gui.config.enabled") : tr("gui.config.disabled"))),
+                        tr("gui.config.debug.status", Map.of("color", getStatusColor(debugMode), CTX_STATUS, debugMode ? tr(TR_ENABLED) : tr(TR_DISABLED))),
                         "",
                         debugMode ? tr("gui.config.debug.active") : tr("gui.config.debug.inactive"),
                         "",
                         tr("gui.config.debug.warning"),
                         "",
-                        tr("gui.config.debug.click", Map.of("action", debugMode ? tr("gui.config.disable") : tr("gui.config.enable")))
+                        tr("gui.config.debug.click", Map.of(CTX_ACTION, debugMode ? tr(TR_DISABLE) : tr(TR_ENABLE)))
                 )
                 .glow(debugMode)
                 .build();
@@ -356,15 +364,15 @@ public class ConfigMenu extends BaseMenu {
             String description,
             Material enabledMaterial,
             Material disabledMaterial) {
-        String status = enabled ? tr("gui.config.enabled") : tr("gui.config.disabled");
-        String action = enabled ? tr("gui.config.disable") : tr("gui.config.enable");
+        String status = enabled ? tr(TR_ENABLED) : tr(TR_DISABLED);
+        String action = enabled ? tr(TR_DISABLE) : tr(TR_ENABLE);
 
         return MenuItemFactory.createToggleItem(
             enabled,
             name,
             description,
-            tr("gui.config.toggle.status", Map.of("status", status)),
-            tr("gui.config.toggle.click", Map.of("action", action)),
+            tr("gui.config.toggle.status", Map.of(CTX_STATUS, status)),
+            tr("gui.config.toggle.click", Map.of(CTX_ACTION, action)),
             enabledMaterial,
             disabledMaterial
         );

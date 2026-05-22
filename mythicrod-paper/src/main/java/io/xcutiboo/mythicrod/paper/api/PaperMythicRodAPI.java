@@ -53,6 +53,8 @@ import io.xcutiboo.mythicrod.stats.PlayerStats;
 /// callers must schedule platform mutations back to the correct Paper/Folia
 /// owner.
 public class PaperMythicRodAPI implements MythicRodAPI {
+    private static final String PROVIDER_LABEL = "External drop provider '";
+
 
     private final String version;
     private final Logger logger;
@@ -314,7 +316,7 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         } catch (Exception exception) {
             logger.log(
                 Level.WARNING,
-                "External drop provider '" + safeProviderKey(provider) + "' failed during weight calculation",
+                PROVIDER_LABEL + safeProviderKey(provider) + "' failed during weight calculation",
                 exception
             );
             return 0.0D;
@@ -331,7 +333,7 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         } catch (Exception exception) {
             logger.log(
                 Level.WARNING,
-                "External drop provider '" + safeProviderKey(provider) + "' failed while generating a reward item",
+                PROVIDER_LABEL + safeProviderKey(provider) + "' failed while generating a reward item",
                 exception
             );
             return null;
@@ -344,7 +346,7 @@ public class PaperMythicRodAPI implements MythicRodAPI {
             long elapsedMs = elapsedNanos / 1_000_000L;
             logger.log(
                 Level.WARNING,
-                () -> "External drop provider '" + safeProviderKey(provider) + "' " + stage
+                () -> PROVIDER_LABEL + safeProviderKey(provider) + "' " + stage
                     + " took " + elapsedMs + "ms on the fishing path; providers must stay non-blocking."
             );
         }
@@ -379,7 +381,7 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         } catch (Exception exception) {
             logger.log(
                 Level.WARNING,
-                "External drop provider '" + safeProviderKey(provider) + "' failed while resolving its display name",
+                PROVIDER_LABEL + safeProviderKey(provider) + "' failed while resolving its display name",
                 exception
             );
         }
