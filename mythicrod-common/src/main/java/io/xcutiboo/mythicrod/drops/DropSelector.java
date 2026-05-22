@@ -9,13 +9,11 @@ import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-/**
- * Thread-safe drop selector using weighted random selection.
- *
- * <p>Thread safety: All methods are stateless with respect to mutable shared data.
- * {@code ThreadLocalRandom.current()} is called per-invocation (never stored as a field)
- * to guarantee correct behaviour across Folia region threads.
- */
+/// Thread-safe drop selector using weighted random selection.
+///
+/// Thread safety: All methods are stateless with respect to mutable shared data.
+/// {@code ThreadLocalRandom.current()} is called per-invocation (never stored as a field)
+/// to guarantee correct behaviour across Folia region threads.
 @RequiredArgsConstructor
 public class DropSelector {
     private static final double MIN_LUCK_MULTIPLIER = 0.01D;
@@ -46,19 +44,17 @@ public class DropSelector {
         this.useBiomeSpecificDrops = use;
     }
 
-    /**
-     * Selects a drop with luck-modified weights.
-     *
-     * <p>A {@code luckMultiplier} &gt; 1.0 scales up the effective weight of drops
-     * whose base weight is &le; 5 (rare / legendary tier), making them relatively
-     * more probable without touching common or uncommon weights. A multiplier
-     * of 1.0 reproduces identical behaviour to the no-luck overload.
-     *
-     * @param drops          the full eligible drop pool for the category
-     * @param player         the fishing player (permission + biome checks)
-     * @param biomeName      current biome key, or null for global drops
-     * @param luckMultiplier clamped externally to &ge; 0.01
-     */
+    /// Selects a drop with luck-modified weights.
+    ///
+    /// A {@code luckMultiplier} &gt; 1.0 scales up the effective weight of drops
+    /// whose base weight is &le; 5 (rare / legendary tier), making them relatively
+    /// more probable without touching common or uncommon weights. A multiplier
+    /// of 1.0 reproduces identical behaviour to the no-luck overload.
+    ///
+    /// @param drops          the full eligible drop pool for the category
+    /// @param player         the fishing player (permission + biome checks)
+    /// @param biomeName      current biome key, or null for global drops
+    /// @param luckMultiplier clamped externally to &ge; 0.01
     public CustomDrop selectDrop(List<CustomDrop> drops, PlatformPlayer player,
                                   String biomeName, double luckMultiplier) {
         double safeLuckMultiplier = sanitizeLuckMultiplier(luckMultiplier);
@@ -94,20 +90,18 @@ public class DropSelector {
         return clamped;
     }
 
-    /** Convenience overload for luck-neutral selection. */
+    /// Convenience overload for luck-neutral selection.
     public CustomDrop selectDrop(List<CustomDrop> drops, PlatformPlayer player, String biomeName) {
         return selectDrop(drops, player, biomeName, 1.0);
     }
 
-    /**
-     * Returns the eligible subset of the supplied drop list for the given
-     * player and biome context.
-     *
-     * @param drops     Full drop pool.
-     * @param player    Player being evaluated.
-     * @param biomeName Current biome key, or {@code null} if unavailable.
-     * @return Immutable snapshot of eligible drops.
-     */
+    /// Returns the eligible subset of the supplied drop list for the given
+    /// player and biome context.
+    ///
+    /// @param drops     Full drop pool.
+    /// @param player    Player being evaluated.
+    /// @param biomeName Current biome key, or {@code null} if unavailable.
+    /// @return Immutable snapshot of eligible drops.
     public List<CustomDrop> getEligibleDrops(List<CustomDrop> drops, PlatformPlayer player, String biomeName) {
         if (drops == null || drops.isEmpty()) {
             return List.of();
@@ -115,14 +109,12 @@ public class DropSelector {
         return List.copyOf(filterEligible(drops, player, biomeName));
     }
 
-    /**
-     * Computes the effective roll weight for a base drop weight after applying
-     * MythicRod's luck rules.
-     *
-     * @param baseWeight      Raw configured weight.
-     * @param luckMultiplier  Multiplier from the reward-roll event.
-     * @return Non-negative effective weight used by the selector.
-     */
+    /// Computes the effective roll weight for a base drop weight after applying
+    /// MythicRod's luck rules.
+    ///
+    /// @param baseWeight      Raw configured weight.
+    /// @param luckMultiplier  Multiplier from the reward-roll event.
+    /// @return Non-negative effective weight used by the selector.
     public int getEffectiveWeight(int baseWeight, double luckMultiplier) {
         int safeBaseWeight = Math.max(0, baseWeight);
         double safeLuckMultiplier = sanitizeLuckMultiplier(luckMultiplier);
@@ -166,21 +158,19 @@ public class DropSelector {
         return biomes.stream().anyMatch(b -> b.equalsIgnoreCase(biomeName));
     }
 
-    /**
-     * Selects from eligible drops using a primitive cumulative-weight array and
-     * a manual binary search.
-     *
-     * <p>The implementation avoids per-roll map nodes and boxed cumulative
-     * weights. It still builds short-lived arrays for each selection because
-     * the eligible set depends on player, biome and luck context.</p>
-     *
-     * <p>Thread safety: {@code ThreadLocalRandom.current()} is called per
-     * invocation so each Folia region thread uses its own random source.</p>
-     *
-     * @param drops list of eligible drops
-     * @param luckMultiplier multiplier applied to rare drop weights
-     * @return the selected drop, or {@code null} if all weights are zero
-     */
+    /// Selects from eligible drops using a primitive cumulative-weight array and
+    /// a manual binary search.
+    ///
+    /// The implementation avoids per-roll map nodes and boxed cumulative
+    /// weights. It still builds short-lived arrays for each selection because
+    /// the eligible set depends on player, biome and luck context.
+    ///
+    /// Thread safety: {@code ThreadLocalRandom.current()} is called per
+    /// invocation so each Folia region thread uses its own random source.
+    ///
+    /// @param drops list of eligible drops
+    /// @param luckMultiplier multiplier applied to rare drop weights
+    /// @return the selected drop, or {@code null} if all weights are zero
     private CustomDrop selectWeightedRandomOptimized(List<CustomDrop> drops, double luckMultiplier) {
         final int n = drops.size();
 

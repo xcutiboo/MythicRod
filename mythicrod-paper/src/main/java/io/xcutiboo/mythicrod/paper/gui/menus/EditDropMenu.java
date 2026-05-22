@@ -32,21 +32,19 @@ import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
 import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import io.xcutiboo.mythicrod.paper.util.StringFormatting;
 
-/**
- * GUI menu for editing individual drop properties in-game.
- *
- * <p>Context keys (set via {@link #setContext(Map)} before {@link #open()}):
- * <ul>
-     *   <li>{@code "drop"} - {@link CustomDrop} to edit (required)</li>
-     *   <li>{@code "category"} - {@link String} category name (required)</li>
- * </ul>
- *
- * <p>Usage:
- * <pre>{@code
- * plugin.getGUIManager().openMenu(player, "editdrop",
- *     Map.of("drop", drop, "category", category));
- * }</pre>
- */
+/// GUI menu for editing individual drop properties in-game.
+///
+/// Context keys (set via {@link #setContext(Map)} before {@link #open()}):
+/// <ul>
+///   <li>{@code "drop"} - {@link CustomDrop} to edit (required)</li>
+///   <li>{@code "category"} - {@link String} category name (required)</li>
+/// </ul>
+///
+/// Usage:
+/// <pre>{@code
+/// plugin.getGUIManager().openMenu(player, "editdrop",
+///     Map.of("drop", drop, "category", category));
+/// }</pre>
 public class EditDropMenu extends BaseMenu {
     private static final String CTX_AMOUNT = "amount";
 

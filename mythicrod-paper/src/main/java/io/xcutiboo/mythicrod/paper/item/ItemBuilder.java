@@ -20,10 +20,8 @@ import io.xcutiboo.mythicrod.text.ConfiguredText;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 
-/**
- * Builder for creating ItemStacks through Paper's modern DataComponent API.
- * ItemMeta remains reserved for data that Paper still exposes there, such as PDC.
- */
+/// Builder for creating ItemStacks through Paper's modern DataComponent API.
+/// ItemMeta remains reserved for data that Paper still exposes there, such as PDC.
 public class ItemBuilder {
     private final ItemStack item;
 
