@@ -72,6 +72,14 @@ command:
     bubble-set: '<green>✓ <gray>Bubble particle set to <white>%type%</white><gray>.'
     success-set: '<green>✓ <gray>Success particle set to <white>%type%</white><gray>.'
     xp-set: '<green>✓ <gray>XP particle set to <white>%type%</white><gray>.'
+  status:
+    header: '<gold><bold>=== MythicRod Status ===</bold></gold>'
+    version: '<gray>Plugin: <white>%version%'
+    runtime: '<gray>Runtime: <white>%mode%</white> on Minecraft <white>%minecraft%'
+    drops: '<gray>Drops: <white>%drops%</white> across <white>%categories%</white> categories'
+    language: '<gray>Language: <white>%active%</white> (<white>%loaded%</white> loaded: <white>%list%</white>)'
+    nexo: '<gray>Nexo integration: %status%'
+    stats: '<gray>Tracked players: <white>%players%'
   debug:
     header: '<gold><bold>=== MythicRod Debug Info ===</bold></gold>'
     runtime: '<gray>Runtime: <white>%drops%<gray> drops in <white>%categories%<gray> categories, <white>%players%<gray> tracked players, <white>%catches%<gray> catches since reload'
