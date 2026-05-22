@@ -21,13 +21,18 @@ public class ConfigManager {
     private static final String DEFAULT_MSG_UNCOMMON = "<green><bold>♦ Uncommon Catch ♦</bold></green>\n<dark_green>You caught <green><bold>{amount}x {item}</bold></green>!";
     private static final String DEFAULT_MSG_COMMON = "<gray>You caught <white><bold>{amount}x {item}</bold></white>!";
 
+    private static final String DEFAULT_CATCH_PARTICLE = "SPLASH";
+    private static final String DEFAULT_BUBBLE_PARTICLE = "BUBBLE_POP";
+    private static final String DEFAULT_SUCCESS_PARTICLE = "HAPPY_VILLAGER";
+    private static final String DEFAULT_XP_PARTICLE = "HAPPY_VILLAGER";
+
     private String prefix = DEFAULT_PREFIX;
     private boolean soundsEnabled = true;
     private boolean particlesEnabled = true;
-    private String catchParticle = "SPLASH";
-    private String bubbleParticle = "BUBBLE_POP";
-    private String successParticle = "HAPPY_VILLAGER";
-    private String xpParticle = "HAPPY_VILLAGER";
+    private String catchParticle = DEFAULT_CATCH_PARTICLE;
+    private String bubbleParticle = DEFAULT_BUBBLE_PARTICLE;
+    private String successParticle = DEFAULT_SUCCESS_PARTICLE;
+    private String xpParticle = DEFAULT_XP_PARTICLE;
 
     private String msgLegendary = DEFAULT_MSG_LEGENDARY;
     private String msgRare = DEFAULT_MSG_RARE;
@@ -83,10 +88,10 @@ public class ConfigManager {
             soundsEnabled = config.getBoolean("features.sounds.enabled", true);
             particlesEnabled = config.getBoolean("features.particles.enabled", true);
 
-            catchParticle = validateParticle(config.getString("features.particles.catch-particle", "SPLASH"), "SPLASH");
-            bubbleParticle = validateParticle(config.getString("features.particles.bubble-particle", "BUBBLE_POP"), "BUBBLE_POP");
-            successParticle = validateParticle(config.getString("features.particles.success-particle", "HAPPY_VILLAGER"), "HAPPY_VILLAGER");
-            xpParticle = validateParticle(config.getString("features.particles.xp-particle", "HAPPY_VILLAGER"), "HAPPY_VILLAGER");
+            catchParticle = validateParticle(config.getString("features.particles.catch-particle", DEFAULT_CATCH_PARTICLE), DEFAULT_CATCH_PARTICLE);
+            bubbleParticle = validateParticle(config.getString("features.particles.bubble-particle", DEFAULT_BUBBLE_PARTICLE), DEFAULT_BUBBLE_PARTICLE);
+            successParticle = validateParticle(config.getString("features.particles.success-particle", DEFAULT_SUCCESS_PARTICLE), DEFAULT_SUCCESS_PARTICLE);
+            xpParticle = validateParticle(config.getString("features.particles.xp-particle", DEFAULT_XP_PARTICLE), DEFAULT_XP_PARTICLE);
 
             msgLegendary = defaultCatchTemplate(config.getString("messages.catch.legendary", DEFAULT_MSG_LEGENDARY), DEFAULT_MSG_LEGENDARY);
             msgRare = defaultCatchTemplate(config.getString("messages.catch.rare", DEFAULT_MSG_RARE), DEFAULT_MSG_RARE);
@@ -173,10 +178,10 @@ public class ConfigManager {
         prefix = DEFAULT_PREFIX;
         soundsEnabled = true;
         particlesEnabled = true;
-        catchParticle = "SPLASH";
-        bubbleParticle = "BUBBLE_POP";
-        successParticle = "HAPPY_VILLAGER";
-        xpParticle = "HAPPY_VILLAGER";
+        catchParticle = DEFAULT_CATCH_PARTICLE;
+        bubbleParticle = DEFAULT_BUBBLE_PARTICLE;
+        successParticle = DEFAULT_SUCCESS_PARTICLE;
+        xpParticle = DEFAULT_XP_PARTICLE;
         msgLegendary = DEFAULT_MSG_LEGENDARY;
         msgRare = DEFAULT_MSG_RARE;
         msgUncommon = DEFAULT_MSG_UNCOMMON;

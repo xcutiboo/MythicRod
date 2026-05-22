@@ -82,14 +82,14 @@ public class DropSelector {
     private double sanitizeLuckMultiplier(double luckMultiplier) {
         if (Double.isNaN(luckMultiplier) || Double.isInfinite(luckMultiplier)) {
             if (debugMode) {
-                logger.fine("Invalid luck multiplier " + luckMultiplier + ", using default 1.0");
+                logger.fine(() -> "Invalid luck multiplier " + luckMultiplier + ", using default 1.0");
             }
             return 1.0D;
         }
 
-        double clamped = Math.max(MIN_LUCK_MULTIPLIER, Math.min(MAX_LUCK_MULTIPLIER, luckMultiplier));
+        double clamped = Math.clamp(luckMultiplier, MIN_LUCK_MULTIPLIER, MAX_LUCK_MULTIPLIER);
         if (debugMode && clamped != luckMultiplier) {
-            logger.fine("Luck multiplier clamped from " + luckMultiplier + " to " + clamped);
+            logger.fine(() -> "Luck multiplier clamped from " + luckMultiplier + " to " + clamped);
         }
         return clamped;
     }

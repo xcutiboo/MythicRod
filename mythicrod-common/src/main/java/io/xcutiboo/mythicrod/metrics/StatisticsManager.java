@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,6 +52,17 @@ public final class StatisticsManager {
 
     private static final int EXPIRE_AFTER_ACCESS_MINUTES = 30;
     private static final int INITIAL_CAPACITY = 64;
+    private static final String STATS_ROOT = "players.";
+    private static final String FIELD_NAME = ".name";
+    private static final String FIELD_TOTAL = ".total";
+    private static final String FIELD_COMMON = ".common";
+    private static final String FIELD_UNCOMMON = ".uncommon";
+    private static final String FIELD_RARE = ".rare";
+    private static final String FIELD_LEGENDARY = ".legendary";
+    private static final String FIELD_ROD_BASIC = ".rod_basic";
+    private static final String FIELD_ROD_ADVANCED = ".rod_advanced";
+    private static final String FIELD_ROD_LEGENDARY = ".rod_legendary";
+    private static final String FIELD_LAST_FISHED = ".last_fished";
 
     private final MythicRodRuntime runtime;
     private final Cache<UUID, PlayerStats> statsCache;
@@ -151,7 +161,7 @@ public final class StatisticsManager {
         return getAllStats().values().stream()
                 .sorted(byTotalDesc.thenComparing(byLegendaryDesc).thenComparing(byRecentDesc).thenComparing(byUuid))
                 .limit(Math.max(1, limit))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -373,17 +383,17 @@ public final class StatisticsManager {
     }
 
     private void writeStats(@NotNull PlatformConfiguration cfg, @NotNull UUID uuid, @NotNull PlayerStats stats) {
-        String base = "players." + uuid;
-        cfg.set(base + ".name",          stats.getPlayerName());
-        cfg.set(base + ".total",         stats.getTotalCaught());
-        cfg.set(base + ".common",        stats.getCommonCaught());
-        cfg.set(base + ".uncommon",      stats.getUncommonCaught());
-        cfg.set(base + ".rare",          stats.getRareCaught());
-        cfg.set(base + ".legendary",     stats.getLegendaryCaught());
-        cfg.set(base + ".rod_basic",     stats.getBasicRodUses());
-        cfg.set(base + ".rod_advanced",  stats.getAdvancedRodUses());
-        cfg.set(base + ".rod_legendary", stats.getLegendaryRodUses());
-        cfg.set(base + ".last_fished",   stats.getLastFished());
+        String base = STATS_ROOT + uuid;
+        cfg.set(base + FIELD_NAME,           stats.getPlayerName());
+        cfg.set(base + FIELD_TOTAL,          stats.getTotalCaught());
+        cfg.set(base + FIELD_COMMON,         stats.getCommonCaught());
+        cfg.set(base + FIELD_UNCOMMON,       stats.getUncommonCaught());
+        cfg.set(base + FIELD_RARE,           stats.getRareCaught());
+        cfg.set(base + FIELD_LEGENDARY,      stats.getLegendaryCaught());
+        cfg.set(base + FIELD_ROD_BASIC,      stats.getBasicRodUses());
+        cfg.set(base + FIELD_ROD_ADVANCED,   stats.getAdvancedRodUses());
+        cfg.set(base + FIELD_ROD_LEGENDARY,  stats.getLegendaryRodUses());
+        cfg.set(base + FIELD_LAST_FISHED,    stats.getLastFished());
     }
 
     private Logger logger() {
@@ -397,7 +407,7 @@ public final class StatisticsManager {
             return fallbackName != null ? new PlayerStats(uuid, fallbackName) : null;
         }
 
-        String base = "players." + uuid;
+        String base = STATS_ROOT + uuid;
         String savedName;
         int total;
         int common;
@@ -410,32 +420,40 @@ public final class StatisticsManager {
         long lastFishedMs;
 
         synchronized (this) {
-            if (!cfg.contains(base + ".total")
-                && !cfg.contains(base + ".common")
-                && !cfg.contains(base + ".rare")
-                && !cfg.contains(base + ".legendary")) {
+            if (!cfg.contains(base + FIELD_TOTAL)
+                && !cfg.contains(base + FIELD_COMMON)
+                && !cfg.contains(base + FIELD_RARE)
+                && !cfg.contains(base + FIELD_LEGENDARY)) {
                 return fallbackName != null ? new PlayerStats(uuid, fallbackName) : null;
             }
 
-            savedName = cfg.getString(base + ".name");
-            total = cfg.getInt(base + ".total", 0);
-            common = cfg.getInt(base + ".common", 0);
-            uncommon = cfg.getInt(base + ".uncommon", 0);
-            rare = cfg.getInt(base + ".rare", 0);
-            legendary = cfg.getInt(base + ".legendary", 0);
-            rodBasic = cfg.getInt(base + ".rod_basic", 0);
-            rodAdvanced = cfg.getInt(base + ".rod_advanced", 0);
-            rodLegendary = cfg.getInt(base + ".rod_legendary", 0);
-            lastFishedMs = (long) cfg.getDouble(base + ".last_fished", 0.0D);
+            savedName    = cfg.getString(base + FIELD_NAME);
+            total        = cfg.getInt(base + FIELD_TOTAL, 0);
+            common       = cfg.getInt(base + FIELD_COMMON, 0);
+            uncommon     = cfg.getInt(base + FIELD_UNCOMMON, 0);
+            rare         = cfg.getInt(base + FIELD_RARE, 0);
+            legendary    = cfg.getInt(base + FIELD_LEGENDARY, 0);
+            rodBasic     = cfg.getInt(base + FIELD_ROD_BASIC, 0);
+            rodAdvanced  = cfg.getInt(base + FIELD_ROD_ADVANCED, 0);
+            rodLegendary = cfg.getInt(base + FIELD_ROD_LEGENDARY, 0);
+            lastFishedMs = (long) cfg.getDouble(base + FIELD_LAST_FISHED, 0.0D);
         }
 
-        String name = (savedName != null && !savedName.isEmpty())
-            ? savedName
-            : (fallbackName != null && !fallbackName.isEmpty() ? fallbackName : "Unknown");
+        String name = resolvePlayerName(savedName, fallbackName);
         PlayerStats playerStats = new PlayerStats(uuid, name);
         playerStats.loadFromPersisted(total, common, uncommon, rare, legendary,
             rodBasic, rodAdvanced, rodLegendary, lastFishedMs);
         return playerStats;
+    }
+
+    private static String resolvePlayerName(@Nullable String savedName, @Nullable String fallbackName) {
+        if (savedName != null && !savedName.isEmpty()) {
+            return savedName;
+        }
+        if (fallbackName != null && !fallbackName.isEmpty()) {
+            return fallbackName;
+        }
+        return "Unknown";
     }
 
     @NotNull

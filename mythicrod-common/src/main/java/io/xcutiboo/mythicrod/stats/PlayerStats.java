@@ -62,7 +62,7 @@ public final class PlayerStats {
     /** Returns non-zero catch counts by rarity tier, ordered from rarest to common. */
     @NotNull
     public Map<String, Integer> getTierCounts() {
-        Map<String, Integer> counts = new LinkedHashMap<>(4);
+        Map<String, Integer> counts = LinkedHashMap.newLinkedHashMap(4);
         int common    = commonCaught.get();
         int uncommon  = uncommonCaught.get();
         int rare      = rareCaught.get();

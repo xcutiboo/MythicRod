@@ -272,7 +272,7 @@ public class PaperMythicRodAPI implements MythicRodAPI {
     @Override
     @NotNull
     public CompletableFuture<Void> flushAllStats() {
-        return runAsync(() -> statisticsManager.saveAll());
+        return runAsync(statisticsManager::saveAll);
     }
 
     private <T> CompletableFuture<T> supplyAsync(@NotNull Supplier<T> supplier) {

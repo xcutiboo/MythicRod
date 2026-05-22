@@ -1404,7 +1404,7 @@ public class BrigadierCommandManager {
             }
 
             List<Map.Entry<String, Integer>> topIdentifiers = identifierCounts.entrySet().stream()
-                .sorted(Comparator.comparingInt((Map.Entry<String, Integer> e) -> e.getValue()).reversed())
+                .sorted(Comparator.comparingInt(Map.Entry<String, Integer>::getValue).reversed())
                 .limit(5)
                 .toList();
             if (!topIdentifiers.isEmpty()) {

@@ -206,12 +206,11 @@ public class DropsMenu extends BaseMenu {
             if (!drop.getEnchantments().isEmpty()) {
                 lore.add("");
                 lore.add(tr("gui.drops.enchantments_header"));
-                drop.getEnchantments().forEach((enchant, level) -> {
+                drop.getEnchantments().forEach((enchant, level) ->
                     lore.add(tr("gui.drops.enchantment_entry", Map.of(
                             "name", StringFormatting.formatEnchantName(enchant),
                             "level", String.valueOf(level)
-                    )));
-                });
+                    ))));
             }
             if (drop.getLore() != null && !drop.getLore().isEmpty()) {
                 lore.add("");

@@ -559,21 +559,25 @@ public class DropManager implements DropCatalog {
             sanitizedModelData, enchantments, flags, glowing, permission, biomes, nexoItemId));
     }
 
+    private static final String DROP_LABEL = "Drop '";
+    private static final int MIN_DROP_AMOUNT = 1;
+    private static final int MAX_DROP_AMOUNT = 64;
+
     private int sanitizeWeight(String id, int weight) {
         if (weight >= 1) {
             return weight;
         }
-        warning(() -> "Drop '" + id + "' had non-positive weight " + weight
+        warning(() -> DROP_LABEL + id + "' had non-positive weight " + weight
             + "; clamping to 1. Fix the entry to silence this warning.");
         return 1;
     }
 
     private int sanitizeAmount(String id, int amount) {
-        if (amount >= 1 && amount <= 64) {
+        if (amount >= MIN_DROP_AMOUNT && amount <= MAX_DROP_AMOUNT) {
             return amount;
         }
-        int clamped = Math.max(1, Math.min(64, amount));
-        warning(() -> "Drop '" + id + "' had out-of-range amount " + amount
+        int clamped = Math.clamp(amount, MIN_DROP_AMOUNT, MAX_DROP_AMOUNT);
+        warning(() -> DROP_LABEL + id + "' had out-of-range amount " + amount
             + "; clamping to " + clamped + ". Fix the entry to silence this warning.");
         return clamped;
     }
@@ -786,8 +790,8 @@ public class DropManager implements DropCatalog {
         }
 
         String nexoItemId = null;
-        if (normalizedIdentifier.regionMatches(true, 0, "nexo:", 0, 5)) {
-            nexoItemId = normalizedIdentifier.substring(5);
+        if (normalizedIdentifier.regionMatches(true, 0, NEXO_PREFIX, 0, NEXO_PREFIX.length())) {
+            nexoItemId = normalizedIdentifier.substring(NEXO_PREFIX.length());
         }
         String normalizedPermission = permission == null || permission.isBlank()
             ? null
@@ -994,9 +998,9 @@ public class DropManager implements DropCatalog {
     ) {
         String trimmedIdentifier = identifier;
         String nexoItemId = null;
-        if (trimmedIdentifier.regionMatches(true, 0, "nexo:", 0, 5)) {
-            nexoItemId = trimmedIdentifier.substring(5);
-            trimmedIdentifier = "nexo:" + nexoItemId;
+        if (trimmedIdentifier.regionMatches(true, 0, NEXO_PREFIX, 0, NEXO_PREFIX.length())) {
+            nexoItemId = trimmedIdentifier.substring(NEXO_PREFIX.length());
+            trimmedIdentifier = NEXO_PREFIX + nexoItemId;
         }
 
         DropConfigurationRecord newConfig = new DropConfigurationRecord(
@@ -1021,9 +1025,9 @@ public class DropManager implements DropCatalog {
         if (trimmedIdentifier.isEmpty()) {
             return null;
         }
-        if (trimmedIdentifier.regionMatches(true, 0, "nexo:", 0, 5)) {
-            String nexoItemId = trimmedIdentifier.substring(5).trim();
-            return nexoItemId.isEmpty() ? null : "nexo:" + nexoItemId;
+        if (trimmedIdentifier.regionMatches(true, 0, NEXO_PREFIX, 0, NEXO_PREFIX.length())) {
+            String nexoItemId = trimmedIdentifier.substring(NEXO_PREFIX.length()).trim();
+            return nexoItemId.isEmpty() ? null : NEXO_PREFIX + nexoItemId;
         }
         return trimmedIdentifier;
     }
@@ -1067,37 +1071,37 @@ public class DropManager implements DropCatalog {
         Map<String, Object> serializedDrop = new LinkedHashMap<>();
 
         if (drop.isNexoItem()) {
-            serializedDrop.put("nexo-item", drop.getNexoItemId());
+            serializedDrop.put(KEY_NEXO_ITEM, drop.getNexoItemId());
         } else {
-            serializedDrop.put("identifier", drop.getIdentifier());
+            serializedDrop.put(KEY_IDENTIFIER, drop.getIdentifier());
         }
 
-        serializedDrop.put("weight", drop.getWeight());
-        serializedDrop.put("amount", drop.getAmount());
+        serializedDrop.put(KEY_WEIGHT, drop.getWeight());
+        serializedDrop.put(KEY_AMOUNT, drop.getAmount());
 
         if (drop.getCustomName() != null && !drop.getCustomName().isBlank()) {
-            serializedDrop.put("custom_name", drop.getCustomName());
+            serializedDrop.put(KEY_CUSTOM_NAME, drop.getCustomName());
         }
         if (!drop.getLore().isEmpty()) {
-            serializedDrop.put("lore", new ArrayList<>(drop.getLore()));
+            serializedDrop.put(KEY_LORE, new ArrayList<>(drop.getLore()));
         }
         if (drop.getCustomModelData() > 0) {
-            serializedDrop.put("custom_model_data", drop.getCustomModelData());
+            serializedDrop.put(KEY_CUSTOM_MODEL_DATA, drop.getCustomModelData());
         }
         if (!drop.getEnchantments().isEmpty()) {
-            serializedDrop.put("enchantments", new LinkedHashMap<>(drop.getEnchantments()));
+            serializedDrop.put(KEY_ENCHANTMENTS, new LinkedHashMap<>(drop.getEnchantments()));
         }
         if (!drop.getItemFlags().isEmpty()) {
-            serializedDrop.put("item_flags", new ArrayList<>(drop.getItemFlags()));
+            serializedDrop.put(KEY_ITEM_FLAGS, new ArrayList<>(drop.getItemFlags()));
         }
         if (drop.isGlowing()) {
-            serializedDrop.put("glow", true);
+            serializedDrop.put(KEY_GLOW, true);
         }
         if (drop.getPermission() != null && !drop.getPermission().isBlank()) {
-            serializedDrop.put("permission", drop.getPermission());
+            serializedDrop.put(KEY_PERMISSION, drop.getPermission());
         }
         if (!drop.getBiomes().isEmpty()) {
-            serializedDrop.put("biomes", new ArrayList<>(drop.getBiomes()));
+            serializedDrop.put(KEY_BIOMES, new ArrayList<>(drop.getBiomes()));
         }
 
         return serializedDrop;

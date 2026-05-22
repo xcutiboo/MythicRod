@@ -51,6 +51,9 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     private static final int BSTATS_PLUGIN_ID = 23847;
+    private static final String FILE_CONFIG = "config.yml";
+    private static final String FILE_DROPS = "drops.yml";
+    private static final String FILE_STATS = "statistics.yml";
 
     private final Logger logger = getSLF4JLogger();
     private PrettyLogger prettyLogger;
@@ -88,15 +91,15 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
             this.platformServer = new PaperServer(super.getServer(), this);
             this.platformScheduler = platformServer.getScheduler();
 
-            File configFile = new File(getDataFolder(), "config.yml");
+            File configFile = new File(getDataFolder(), FILE_CONFIG);
             if (!configFile.exists()) {
                 saveDefaultConfig();
             }
             PlatformConfiguration platformConfig = platformServer.loadConfiguration(configFile);
 
-            File dropsFile = new File(getDataFolder(), "drops.yml");
+            File dropsFile = new File(getDataFolder(), FILE_DROPS);
             if (!dropsFile.exists()) {
-                saveResource("drops.yml", false);
+                saveResource(FILE_DROPS, false);
             }
             PlatformConfiguration dropsConfig = platformServer.loadConfiguration(dropsFile);
 
@@ -114,7 +117,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
 
             this.statisticsManager = new StatisticsManager(this);
 
-            File statsFile = new File(getDataFolder(), "statistics.yml");
+            File statsFile = new File(getDataFolder(), FILE_STATS);
             PlatformConfiguration statsConfig = platformServer.loadConfiguration(statsFile);
             configManager.setStatsConfig(statsFile, statsConfig);
             statisticsManager.initialize();
@@ -257,12 +260,12 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
                 guiManager.invalidateOpenMenusForReload();
             }
 
-            File configFile = new File(getDataFolder(), "config.yml");
+            File configFile = new File(getDataFolder(), FILE_CONFIG);
             PlatformConfiguration newConfig = platformServer.loadConfiguration(configFile);
             if (dropManager != null) {
                 dropManager.awaitAsyncPersistenceOperations();
             }
-            File dropsFile = new File(getDataFolder(), "drops.yml");
+            File dropsFile = new File(getDataFolder(), FILE_DROPS);
             PlatformConfiguration newDropsConfig = platformServer.loadConfiguration(dropsFile);
             configManager.reload(newConfig);
             validateConfiguredParticles();

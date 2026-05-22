@@ -85,6 +85,7 @@ public class CustomDrop implements PlatformDrop {
         return config.nexoItemId() != null && !config.nexoItemId().isEmpty();
     }
 
+    @Override
     public String getTier() {
         int weight = getWeight();
         if (weight <= 1) {
