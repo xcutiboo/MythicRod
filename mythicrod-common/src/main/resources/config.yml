@@ -23,7 +23,8 @@ ui:
   prefix: '<gold><bold>[MythicRod]</bold></gold> '
 
 language:
-  # Supported: en_US, ja_JP (defaults to en_US if invalid)
+  # Bundled: en_US, en_GB, ja_JP. Drop additional locale files in
+  # plugins/MythicRod/lang/ to add more. Falls back to en_US if invalid.
   default: en_US
 
 messages:
