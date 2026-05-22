@@ -102,7 +102,7 @@ public abstract class BaseMenu {
             playOpenSound();
             playOpenEffect();
         } catch (RuntimeException e) {
-            plugin.getLogger().log(Level.WARNING, "Error opening menu for " + player.getName(), e);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Error opening menu for " + player.getName());
         }
     }
 

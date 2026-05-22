@@ -104,7 +104,7 @@ public class GUIManager implements Listener {
             menu.open();
             return true;
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to open menu: " + menuId, e);
+            plugin.getLogger().log(Level.SEVERE, e, () -> "Failed to open menu: " + menuId);
             return false;
         }
     }

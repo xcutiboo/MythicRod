@@ -30,18 +30,12 @@ public final class StatisticsPlayerListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (player == null) {
-            return;
-        }
         queueLoad(player.getUniqueId(), player.getName());
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        if (player == null) {
-            return;
-        }
         queueUnload(player.getUniqueId());
     }
 

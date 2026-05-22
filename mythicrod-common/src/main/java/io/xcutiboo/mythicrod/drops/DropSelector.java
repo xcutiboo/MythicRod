@@ -63,7 +63,7 @@ public class DropSelector {
                                   String biomeName, double luckMultiplier) {
         double safeLuckMultiplier = sanitizeLuckMultiplier(luckMultiplier);
         if (debugMode) {
-            logger.fine("selectDrop called with " + (drops != null ? drops.size() : "null")
+            logger.fine(() -> "selectDrop called with " + (drops != null ? drops.size() : "null")
                     + " drops, luckMultiplier=" + safeLuckMultiplier);
         }
         if (drops == null || drops.isEmpty()) {
@@ -73,7 +73,7 @@ public class DropSelector {
 
         List<CustomDrop> eligible = filterEligible(drops, player, biomeName);
         if (eligible.isEmpty()) {
-            if (debugMode) logger.fine("No eligible drops for biome: " + biomeName);
+            if (debugMode) logger.fine(() -> "No eligible drops for biome: " + biomeName);
             return null;
         }
         return selectWeightedRandomOptimized(eligible, safeLuckMultiplier);
@@ -210,8 +210,10 @@ public class DropSelector {
         final int roll = ThreadLocalRandom.current().nextInt(total) + 1;
 
         if (debugMode) {
-            logger.fine("Drop selection: totalWeight=" + total
-                    + ", roll=" + roll + ", validDrops=" + validCount);
+            final int totalFinal = total;
+            final int validCountFinal = validCount;
+            logger.fine(() -> "Drop selection: totalWeight=" + totalFinal
+                    + ", roll=" + roll + ", validDrops=" + validCountFinal);
         }
 
         // Manual binary search for the smallest cumulative[i] >= roll.

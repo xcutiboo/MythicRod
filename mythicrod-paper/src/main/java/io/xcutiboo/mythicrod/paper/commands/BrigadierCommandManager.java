@@ -280,7 +280,7 @@ public class BrigadierCommandManager {
         } catch (Exception e) {
             sendMessage(context.getSource().getSender(), tr(context.getSource().getSender(), "general.error"));
             playErrorSound(context.getSource().getSender());
-            plugin.getLogger().log(Level.SEVERE, "Error executing menu command for " + menuId, e);
+            plugin.getLogger().log(Level.SEVERE, e, () -> "Error executing menu command for " + menuId);
             return 0;
         }
     }
@@ -478,7 +478,7 @@ public class BrigadierCommandManager {
             sendMessage(sender, tr(sender, "command.config.save-failed",
                 Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
             playErrorSound(sender);
-            plugin.getLogger().log(Level.SEVERE, "Failed to update config setting " + settingKey, e);
+            plugin.getLogger().log(Level.SEVERE, e, () -> "Failed to update config setting " + settingKey);
             return 0;
         }
     }
@@ -1175,7 +1175,7 @@ public class BrigadierCommandManager {
             setter.accept(previousValue);
             sendMessage(sender, tr(sender, "general.error"));
             playErrorSound(sender);
-            plugin.getLogger().log(Level.SEVERE, "Failed to update " + settingName + " particle setting", e);
+            plugin.getLogger().log(Level.SEVERE, e, () -> "Failed to update " + settingName + " particle setting");
             return 0;
         }
     }
