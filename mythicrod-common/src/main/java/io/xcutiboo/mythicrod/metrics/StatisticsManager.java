@@ -377,7 +377,7 @@ public final class StatisticsManager {
             logger().fine(() -> "Persisted stats for " + uuid + " (total=" + stats.getTotalCaught() + ")");
             return true;
         } catch (IOException | RuntimeException e) {
-            logger().log(Level.WARNING, "Failed to persist stats for " + uuid, e);
+            logger().log(Level.WARNING, e, () -> "Failed to persist stats for " + uuid);
             return false;
         }
     }
@@ -477,7 +477,8 @@ public final class StatisticsManager {
                     persistedStats.put(uuid, playerStats);
                 }
             } catch (IllegalArgumentException e) {
-                logger().log(Level.WARNING, "Ignoring invalid statistics entry for " + playerId, e);
+                final String entryId = playerId;
+                logger().log(Level.WARNING, e, () -> "Ignoring invalid statistics entry for " + entryId);
             }
         }
         return persistedStats;

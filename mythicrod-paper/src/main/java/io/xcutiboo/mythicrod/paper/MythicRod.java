@@ -208,14 +208,14 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
                 super.getServer().getServicesManager().unregisterAll(this);
                 logger.info("Services unregistered");
             } catch (Exception e) {
-                logger.warn("Error unregistering services: " + e.getMessage());
+                logger.warn("Error unregistering services: {}", e.getMessage());
             }
 
             try {
                 HandlerList.unregisterAll(this);
                 logger.info("Event handlers unregistered");
             } catch (Exception e) {
-                logger.warn("Error unregistering event handlers: " + e.getMessage());
+                logger.warn("Error unregistering event handlers: {}", e.getMessage());
             }
 
             if (statisticsManager != null) {
@@ -367,8 +367,8 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
                 .append(ConfiguredText.parse(message));
             bukkitPlayer.sendMessage(fullMessage);
         } catch (Exception e) {
-            this.getLogger().log(Level.WARNING,
-                "Unexpected error while sending formatted message: " + e.getMessage(), e);
+            this.getLogger().log(Level.WARNING, e,
+                () -> "Unexpected error while sending formatted message: " + e.getMessage());
         }
     }
 

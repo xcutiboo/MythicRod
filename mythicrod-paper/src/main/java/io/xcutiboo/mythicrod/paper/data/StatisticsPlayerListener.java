@@ -44,8 +44,8 @@ public final class StatisticsPlayerListener implements Listener {
             try {
                 plugin.getStatisticsManager().loadPlayer(playerId, playerName);
             } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING,
-                    "[MythicRod-StatisticsPlayerListener] Failed to load statistics for " + playerId, e);
+                plugin.getLogger().log(Level.WARNING, e,
+                    () -> "[MythicRod-StatisticsPlayerListener] Failed to load statistics for " + playerId);
             }
         });
     }
@@ -55,8 +55,8 @@ public final class StatisticsPlayerListener implements Listener {
             try {
                 plugin.getStatisticsManager().unloadPlayer(playerId);
             } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING,
-                    "[MythicRod-StatisticsPlayerListener] Failed to unload statistics for " + playerId, e);
+                plugin.getLogger().log(Level.WARNING, e,
+                    () -> "[MythicRod-StatisticsPlayerListener] Failed to unload statistics for " + playerId);
             }
         });
     }

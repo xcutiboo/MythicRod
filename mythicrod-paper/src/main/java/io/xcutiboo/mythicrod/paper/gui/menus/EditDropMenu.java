@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -860,14 +861,14 @@ public class EditDropMenu extends BaseMenu {
             return;
         }
 
-        List<String> parsed = parseBiomeList(value);
-        if (parsed == null) {
+        Optional<List<String>> parsed = parseBiomeList(value);
+        if (parsed.isEmpty()) {
             playErrorSound();
             open();
             return;
         }
 
-        currentBiomes = parsed;
+        currentBiomes = parsed.get();
         sendMessage(tr("gui.edit_drop.messages.biomes-updated",
             Map.of(CTX_BIOMES, formatList(currentBiomes))));
         playSuccessSound();
@@ -884,14 +885,14 @@ public class EditDropMenu extends BaseMenu {
             return;
         }
 
-        Map<String, Integer> parsed = parseEnchantments(value);
-        if (parsed == null) {
+        Optional<Map<String, Integer>> parsed = parseEnchantments(value);
+        if (parsed.isEmpty()) {
             playErrorSound();
             open();
             return;
         }
 
-        currentEnchantments = parsed;
+        currentEnchantments = parsed.get();
         sendMessage(tr("gui.edit_drop.messages.enchantments-updated",
             Map.of("enchantments", currentEnchantmentsText())));
         playSuccessSound();
@@ -908,14 +909,14 @@ public class EditDropMenu extends BaseMenu {
             return;
         }
 
-        List<String> parsed = parseItemFlags(value);
-        if (parsed == null) {
+        Optional<List<String>> parsed = parseItemFlags(value);
+        if (parsed.isEmpty()) {
             playErrorSound();
             open();
             return;
         }
 
-        currentItemFlags = parsed;
+        currentItemFlags = parsed.get();
         sendMessage(tr("gui.edit_drop.messages.item-flags-updated",
             Map.of("flags", currentItemFlagsText())));
         playSuccessSound();
@@ -1050,7 +1051,7 @@ public class EditDropMenu extends BaseMenu {
         }
     }
 
-    private List<String> parseBiomeList(String input) {
+    private Optional<List<String>> parseBiomeList(String input) {
         String[] parts = input.split("[,;]");
         Set<String> parsed = new LinkedHashSet<>();
         Registry<Biome> biomeRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME);
@@ -1063,22 +1064,22 @@ public class EditDropMenu extends BaseMenu {
             if (parsed.size() >= MAX_BIOME_ENTRIES) {
                 sendMessage(tr("gui.edit_drop.messages.biomes-too-many",
                     Map.of("max", String.valueOf(MAX_BIOME_ENTRIES))));
-                return null;
+                return Optional.empty();
             }
 
             NamespacedKey namespacedKey = NamespacedKey.fromString(key);
             if (namespacedKey == null || biomeRegistry.get(namespacedKey) == null) {
                 sendMessage(tr("gui.edit_drop.messages.biome-invalid", Map.of("biome", safeMessageInput(part))));
-                return null;
+                return Optional.empty();
             }
             parsed.add(namespacedKey.asString());
         }
 
         if (parsed.isEmpty()) {
             sendMessage(tr("gui.edit_drop.messages.biomes-empty"));
-            return null;
+            return Optional.empty();
         }
-        return new ArrayList<>(parsed);
+        return Optional.of(new ArrayList<>(parsed));
     }
 
     private String normalizeBiomeKey(String input) {
@@ -1096,7 +1097,7 @@ public class EditDropMenu extends BaseMenu {
         return normalized.contains(":") ? normalized : MINECRAFT_PREFIX + normalized;
     }
 
-    private Map<String, Integer> parseEnchantments(String input) {
+    private Optional<Map<String, Integer>> parseEnchantments(String input) {
         String[] parts = input.split("[,;]");
         Map<String, Integer> parsed = new LinkedHashMap<>();
         Registry<Enchantment> enchantmentRegistry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT);
@@ -1109,30 +1110,30 @@ public class EditDropMenu extends BaseMenu {
             if (parsed.size() >= MAX_ENCHANTMENT_ENTRIES) {
                 sendMessage(tr("gui.edit_drop.messages.enchantments-too-many",
                     Map.of("max", String.valueOf(MAX_ENCHANTMENT_ENTRIES))));
-                return null;
+                return Optional.empty();
             }
 
             ParsedPair parsedPair = parseNameAndLevel(entry);
             if (parsedPair == null) {
                 sendMessage(tr("gui.edit_drop.messages.enchantment-invalid",
                     Map.of("enchantment", safeMessageInput(part))));
-                return null;
+                return Optional.empty();
             }
 
             NamespacedKey key = normalizeMinecraftKey(parsedPair.name());
             if (key == null || enchantmentRegistry.get(key) == null) {
                 sendMessage(tr("gui.edit_drop.messages.enchantment-invalid",
                     Map.of("enchantment", safeMessageInput(part))));
-                return null;
+                return Optional.empty();
             }
             parsed.put(key.asString(), parsedPair.level());
         }
 
         if (parsed.isEmpty()) {
             sendMessage(tr("gui.edit_drop.messages.enchantments-empty"));
-            return null;
+            return Optional.empty();
         }
-        return parsed;
+        return Optional.of(parsed);
     }
 
     private ParsedPair parseNameAndLevel(String entry) {
@@ -1185,7 +1186,7 @@ public class EditDropMenu extends BaseMenu {
         return NamespacedKey.fromString(normalized);
     }
 
-    private List<String> parseItemFlags(String input) {
+    private Optional<List<String>> parseItemFlags(String input) {
         String[] parts = input.split("[,;]");
         Set<String> parsed = new LinkedHashSet<>();
 
@@ -1197,7 +1198,7 @@ public class EditDropMenu extends BaseMenu {
             if (parsed.size() >= MAX_ITEM_FLAG_ENTRIES) {
                 sendMessage(tr("gui.edit_drop.messages.item-flags-too-many",
                     Map.of("max", String.valueOf(MAX_ITEM_FLAG_ENTRIES))));
-                return null;
+                return Optional.empty();
             }
 
             try {
@@ -1206,15 +1207,15 @@ public class EditDropMenu extends BaseMenu {
             } catch (IllegalArgumentException _) {
                 sendMessage(tr("gui.edit_drop.messages.item-flag-invalid",
                     Map.of("flag", safeMessageInput(part))));
-                return null;
+                return Optional.empty();
             }
         }
 
         if (parsed.isEmpty()) {
             sendMessage(tr("gui.edit_drop.messages.item-flags-empty"));
-            return null;
+            return Optional.empty();
         }
-        return new ArrayList<>(parsed);
+        return Optional.of(new ArrayList<>(parsed));
     }
 
     private String normalizeTypedText(String input) {

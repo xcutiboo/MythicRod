@@ -267,8 +267,8 @@ public class FishingListener implements Listener {
             try {
                 giveCustomDropOnPlayerThread(player, caughtItem, customItem, drop, hookLoc);
             } catch (Exception e) {
-                plugin.getLogger().log(Level.SEVERE,
-                    "Error giving custom drop to " + player.getName(), e);
+                plugin.getLogger().log(Level.SEVERE, e,
+                    () -> "Error giving custom drop to " + player.getName());
             }
         }), null) == null && plugin.getConfigManager().isDebugMode()) {
             info(() -> "Player scheduler rejected drop delivery for " + player.getName());

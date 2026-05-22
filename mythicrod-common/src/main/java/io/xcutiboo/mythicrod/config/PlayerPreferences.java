@@ -100,8 +100,9 @@ public class PlayerPreferences {
                     loadedPreferences.put(uuid, language);
                 }
             } catch (IllegalArgumentException e) {
-                runtime.getLogger().log(Level.WARNING,
-                    "Ignoring invalid player preference entry for " + playerId, e);
+                final String entryId = playerId;
+                runtime.getLogger().log(Level.WARNING, e,
+                    () -> "Ignoring invalid player preference entry for " + entryId);
             }
         }
         return loadedPreferences.isEmpty() ? Map.of() : Map.copyOf(loadedPreferences);

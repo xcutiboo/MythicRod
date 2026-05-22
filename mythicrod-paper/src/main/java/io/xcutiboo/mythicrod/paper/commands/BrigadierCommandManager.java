@@ -786,8 +786,8 @@ public class BrigadierCommandManager {
                             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(ps.getPlayerUuid());
                             name = offlinePlayer.getName() != null ? offlinePlayer.getName() : "Unknown";
                         } catch (RuntimeException nameError) {
-                            plugin.getLogger().log(Level.WARNING,
-                                "Failed to resolve player name for " + ps.getPlayerUuid(), nameError);
+                            plugin.getLogger().log(Level.WARNING, nameError,
+                                () -> "Failed to resolve player name for " + ps.getPlayerUuid());
                             name = "Unknown";
                         }
                     }
@@ -795,8 +795,8 @@ public class BrigadierCommandManager {
                         Map.of("rank", String.valueOf(rank), "player", name, "catches", String.valueOf(ps.getTotalCaught()))));
                     rank++;
                 } catch (RuntimeException entryError) {
-                    plugin.getLogger().log(Level.WARNING,
-                        "Failed to format leaderboard entry: " + entryError.getMessage(), entryError);
+                    plugin.getLogger().log(Level.WARNING, entryError,
+                        () -> "Failed to format leaderboard entry: " + entryError.getMessage());
                     // Continue to next entry rather than failing entire command
                 }
             }

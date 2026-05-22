@@ -317,9 +317,8 @@ public class PaperMythicRodAPI implements MythicRodAPI {
             return weight;
         } catch (Exception exception) {
             logger.log(
-                Level.WARNING,
-                PROVIDER_LABEL + safeProviderKey(provider) + "' failed during weight calculation",
-                exception
+                Level.WARNING, exception,
+                () -> PROVIDER_LABEL + safeProviderKey(provider) + "' failed during weight calculation"
             );
             return 0.0D;
         }
@@ -334,9 +333,8 @@ public class PaperMythicRodAPI implements MythicRodAPI {
             return item;
         } catch (Exception exception) {
             logger.log(
-                Level.WARNING,
-                PROVIDER_LABEL + safeProviderKey(provider) + "' failed while generating a reward item",
-                exception
+                Level.WARNING, exception,
+                () -> PROVIDER_LABEL + safeProviderKey(provider) + "' failed while generating a reward item"
             );
             return null;
         }
@@ -384,9 +382,8 @@ public class PaperMythicRodAPI implements MythicRodAPI {
             }
         } catch (Exception exception) {
             logger.log(
-                Level.WARNING,
-                PROVIDER_LABEL + safeProviderKey(provider) + "' failed while resolving its display name",
-                exception
+                Level.WARNING, exception,
+                () -> PROVIDER_LABEL + safeProviderKey(provider) + "' failed while resolving its display name"
             );
         }
 

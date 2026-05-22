@@ -381,17 +381,15 @@ public class GUIManager implements Listener {
         try {
             session.valueHandler().accept(input);
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING,
-                "Failed to apply GUI text input for " + player.getName(),
-                e);
+            plugin.getLogger().log(Level.WARNING, e,
+                () -> "Failed to apply GUI text input for " + player.getName());
             sendSystemMessage(player, "gui.system.input_failed");
             if (session.cancelHandler() != null) {
                 try {
                     session.cancelHandler().run();
                 } catch (Exception reopenException) {
-                    plugin.getLogger().log(Level.WARNING,
-                        "Failed to reopen GUI after text input error for " + player.getName(),
-                        reopenException);
+                    plugin.getLogger().log(Level.WARNING, reopenException,
+                        () -> "Failed to reopen GUI after text input error for " + player.getName());
                 }
             }
         }
