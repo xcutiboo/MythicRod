@@ -1,0 +1,48 @@
+// MythicRod brand accents on top of the just-the-docs dark theme.
+
+:root {
+  --mr-gold: #DCA13A;
+  --mr-gold-bright: #F0C75A;
+  --mr-gold-deep: #835516;
+  --mr-panel: #0B1320;
+}
+
+// Subtle gold underline on H2/H3 so feature pages feel anchored.
+.main-content h2 {
+  border-bottom: 1px solid rgba(220, 161, 58, 0.35);
+  padding-bottom: 0.25rem;
+}
+
+.main-content h3 {
+  color: var(--mr-gold-bright);
+}
+
+// Links carry the brand colour instead of the default theme blue.
+.main-content a:not(.btn):not(.site-button) {
+  color: var(--mr-gold-bright);
+}
+
+.main-content a:not(.btn):not(.site-button):hover {
+  color: var(--mr-gold);
+}
+
+// Tables: keep borders muted, header row faintly gold.
+.main-content table th {
+  background-color: rgba(220, 161, 58, 0.08);
+  color: var(--mr-gold-bright);
+}
+
+// Inline `code` chips.
+.main-content :not(pre) > code {
+  background-color: rgba(220, 161, 58, 0.10);
+  color: var(--mr-gold-bright);
+  padding: 0 0.3em;
+  border-radius: 4px;
+}
+
+// Wider content column on big screens so the dev-api tables breathe.
+@media (min-width: 66.5rem) {
+  .main {
+    max-width: 1080px;
+  }
+}
