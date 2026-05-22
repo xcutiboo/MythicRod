@@ -36,6 +36,26 @@ branches the sender can't run.
 | `/mythicrod status` | Runtime snapshot (version, runtime mode, drops, locales, Nexo, stats) | `mythicrod.admin.debug` |
 | `/mythicrod help` | Reference | `mythicrod.command` |
 
+## Walkthrough: your first five minutes
+
+1. Drop the jar into `plugins/` and start the server once. The plugin
+   writes `plugins/MythicRod/config.yml`, `drops.yml`, `statistics.yml`,
+   and `lang/`.
+2. Run `/mythicrod status`. The output names the runtime (`Paper` or
+   `Folia`), the active locale, and the drop count. If the line says
+   `Drops: 0`, the config file is empty rather than broken; the default
+   drops should have been written on first start, so check that the
+   plugin folder isn't read-only.
+3. Cast a fishing rod a few times to confirm the base catch flow works.
+4. Open `/mythicrod gui` to browse drops and tiers.
+5. Edit `drops.yml`, then run `/mythicrod validate` followed by
+   `/mythicrod reload`. Validation flags errors before reload swaps the
+   live table.
+
+If anything in this sequence does not behave as described, check
+[troubleshooting]({{ site.baseurl }}/troubleshooting.html) before opening
+an issue.
+
 ## Behaviour worth knowing
 
 - `/mythicrod give` runs the inventory insertion on the target's owner

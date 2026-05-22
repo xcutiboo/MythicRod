@@ -44,11 +44,18 @@ nav_order: 10
 ## Folia stalls or region-thread warnings
 
 - Inventory mutations, scheduled tasks, and entity calls all go through
-  `PlatformScheduler`. If you see a region-thread warning, please open an
-  issue with the stack trace.
-- The plugin's `paper-plugin.yml` declares `folia-supported: true` but the
-  current release has not yet been smoke-tested against a live Folia build.
-  Validate before relying on Folia in production.
+  `PlatformScheduler`. If you see a region-thread warning, open an issue
+  with the stack trace and the exact build numbers of Folia and the plugin.
+- `paper-plugin.yml` declares `folia-supported: true`. A live smoke test on
+  Folia `26.1.2 build 8` covered the GUI, drop rolls, statistics writes,
+  language reload, and `/mythicrod give`. `/mythicrod status` reports
+  `Runtime: Folia` when the plugin is running on a Folia jar; if you see
+  `Runtime: Paper` while booted on Folia, the detection failed and is the
+  bug to report.
+- The first place to look on a Folia-only crash is the schedulers list in
+  the developer docs at [Folia threading]({{ site.baseurl }}/developer-api/folia-threading.html).
+  A common cause is third-party code touching Bukkit state inside a
+  MythicRod async callback.
 
 ## bStats not reporting
 
