@@ -5,9 +5,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.SimplePie;
-import org.bstats.charts.SingleLineChart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.ServicePriority;
@@ -38,6 +35,7 @@ import io.xcutiboo.mythicrod.paper.gui.menus.LanguageSwitchMenu;
 import io.xcutiboo.mythicrod.paper.gui.menus.MainHubMenu;
 import io.xcutiboo.mythicrod.paper.gui.menus.RodMenu;
 import io.xcutiboo.mythicrod.paper.gui.menus.StatsMenu;
+import io.xcutiboo.mythicrod.paper.metrics.MetricsReporter;
 import io.xcutiboo.mythicrod.paper.internal.config.LanguageFileLoader;
 import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import io.xcutiboo.mythicrod.paper.platform.PaperServer;
@@ -50,7 +48,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
-    private static final int BSTATS_PLUGIN_ID = 23847;
     private static final String FILE_CONFIG = "config.yml";
     private static final String FILE_DROPS = "drops.yml";
     private static final String FILE_STATS = "statistics.yml";
@@ -74,7 +71,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     private LanguageFileLoader languageFileLoader;
 
     private PaperMythicRodAPI api;
-    private Metrics metrics;
+    private MetricsReporter metricsReporter;
     private PlatformTask statisticsSaveTask;
     private final AtomicBoolean reloadInProgress = new AtomicBoolean(false);
 
@@ -422,13 +419,8 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     }
 
     private void initializeMetrics() {
-        try {
-            this.metrics = new Metrics(this, BSTATS_PLUGIN_ID);
-            setupMetricsCharts();
-        } catch (RuntimeException | LinkageError e) {
-            this.metrics = null;
-            logger.warn("bStats metrics are unavailable; MythicRod will continue without telemetry", e);
-        }
+        this.metricsReporter = new MetricsReporter(this);
+        metricsReporter.start();
     }
 
     private void validateConfiguredParticles() {
@@ -471,46 +463,6 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
 
         logger.warn("Invalid particle '{}' at {}. Falling back to {}.", configuredValue, path, fallback);
         setter.accept(fallback);
-    }
-
-    private void setupMetricsCharts() {
-        if (metrics == null) {
-            return;
-        }
-
-        metrics.addCustomChart(new SimplePie("server_type", () -> "Paper"));
-        metrics.addCustomChart(new SimplePie("minecraft_version", () -> getServer().getMinecraftVersion()));
-        metrics.addCustomChart(new SimplePie("folia_runtime", () -> isFoliaRuntime() ? "Folia" : "Paper"));
-        metrics.addCustomChart(new SimplePie("language", () ->
-            languageManager != null ? languageManager.getLanguage() : "en"));
-        metrics.addCustomChart(new SimplePie("profile", () ->
-            configManager != null ? configManager.getProfile() : "balanced"));
-        metrics.addCustomChart(new SimplePie("reward_delivery_mode", () ->
-            configManager != null ? configManager.getRewardDeliveryMode().getConfigValue() : "vanilla_retrieve"));
-        metrics.addCustomChart(new SimplePie("statistics_enabled", () ->
-            enabledDisabled(configManager != null && configManager.trackStatistics())));
-        metrics.addCustomChart(new SimplePie("biome_drops_enabled", () ->
-            enabledDisabled(configManager != null && configManager.enableBiomeSpecificDrops())));
-        metrics.addCustomChart(new SimplePie("permissions_enabled", () ->
-            enabledDisabled(configManager != null && configManager.usePermissions())));
-        metrics.addCustomChart(new SimplePie("particles_enabled", () ->
-            enabledDisabled(configManager != null && configManager.useParticles())));
-        metrics.addCustomChart(new SimplePie("sounds_enabled", () ->
-            enabledDisabled(configManager != null && configManager.useSounds())));
-        metrics.addCustomChart(new SimplePie("nexo_enabled", () ->
-            enabledDisabled(platformServer != null && platformServer.isNexoEnabled())));
-        metrics.addCustomChart(new SingleLineChart("configured_drops", () ->
-            dropManager != null ? dropManager.getTotalDropCount() : 0));
-        metrics.addCustomChart(new SingleLineChart("configured_drop_categories", () ->
-            dropManager != null ? dropManager.getDropCategories().size() : 0));
-        metrics.addCustomChart(new SingleLineChart("tracked_players", () ->
-            statisticsManager != null ? statisticsManager.getAllStats().size() : 0));
-        metrics.addCustomChart(new SingleLineChart("total_catches", () ->
-            statisticsManager != null ? (int) Math.min(statisticsManager.getTotalCatches(), Integer.MAX_VALUE) : 0));
-    }
-
-    private String enabledDisabled(boolean enabled) {
-        return enabled ? "Enabled" : "Disabled";
     }
 
     private void scheduleStatisticsSaveTask() {
