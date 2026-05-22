@@ -53,7 +53,7 @@ public class NexoItemProvider {
         }
         try {
             return Boolean.TRUE.equals(existsMethod.invoke(null, itemId));
-        } catch (LinkageError | ReflectiveOperationException | SecurityException e) {
+        } catch (LinkageError | ReflectiveOperationException | SecurityException _) {
             return false;
         }
     }

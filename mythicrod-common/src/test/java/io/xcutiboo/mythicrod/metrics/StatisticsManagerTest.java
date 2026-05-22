@@ -193,6 +193,7 @@ class StatisticsManagerTest {
 
         @Override
         public void save(File file) throws IOException {
+            // Test stub: in-memory configuration is never persisted to disk.
         }
 
         private String qualify(String path) {

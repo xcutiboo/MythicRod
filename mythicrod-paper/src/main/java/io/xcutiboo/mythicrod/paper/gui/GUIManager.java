@@ -190,6 +190,7 @@ public class GUIManager implements Listener {
                     return;
                 }
                 default -> {
+                    // Other actions pass through to the regular click handling below.
                 }
             }
 

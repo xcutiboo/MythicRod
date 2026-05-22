@@ -780,7 +780,7 @@ public class FishingListener implements Listener {
             } else {
                 player.spawnParticle(particle, location, count, offset, offset, offset, extra, data);
             }
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException _) {
             player.spawnParticle(fallback, location, count, offset, offset, offset, extra);
         }
     }

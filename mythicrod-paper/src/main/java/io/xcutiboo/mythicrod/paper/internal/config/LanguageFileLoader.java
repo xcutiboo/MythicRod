@@ -134,7 +134,7 @@ public final class LanguageFileLoader {
         String resourcePath = "lang/" + lang + ".yml";
         try {
             plugin.saveResource(resourcePath, false);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             logger.warn("Missing bundled language resource {}", resourcePath);
         } catch (Exception e) {
             logger.warn("Failed to save bundled language file {}", resourcePath, e);

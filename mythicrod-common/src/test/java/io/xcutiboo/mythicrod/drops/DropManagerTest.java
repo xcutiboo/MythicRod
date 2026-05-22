@@ -498,6 +498,7 @@ class DropManagerTest {
 
         @Override
         public void closeInventory() {
+            // Test stub: drop-selection tests don't exercise inventory close.
         }
 
         @Override
@@ -507,6 +508,7 @@ class DropManagerTest {
 
         @Override
         public void sendMessage(String message) {
+            // Test stub: drop-selection tests don't capture chat output.
         }
 
         @Override

@@ -243,7 +243,9 @@ public class EditDropMenu extends BaseMenu {
                         case RIGHT       -> currentWeight = Math.min(100, currentWeight + 1);
                         case SHIFT_LEFT  -> currentWeight = Math.min(100, currentWeight + 10);
                         case SHIFT_RIGHT -> currentWeight = Math.max(1,   currentWeight - 10);
-                        default          -> {}
+                        default          -> {
+                            // Ignore unsupported click types; weight stays untouched.
+                        }
                     }
                     refresh();
                 });
@@ -271,7 +273,9 @@ public class EditDropMenu extends BaseMenu {
                         case RIGHT       -> currentAmount = Math.min(64, currentAmount + 1);
                         case SHIFT_LEFT  -> currentAmount = Math.min(64, currentAmount + 10);
                         case SHIFT_RIGHT -> currentAmount = Math.max(1,  currentAmount - 10);
-                        default          -> {}
+                        default          -> {
+                            // Ignore unsupported click types; amount stays untouched.
+                        }
                     }
                     refresh();
                 });
@@ -347,6 +351,7 @@ public class EditDropMenu extends BaseMenu {
                             refresh();
                         }
                         default -> {
+                            // Other click types leave the lore list as-is.
                         }
                     }
                 });

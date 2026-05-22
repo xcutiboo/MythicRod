@@ -61,7 +61,7 @@ public final class ParticleOptions {
         }
         try {
             return supportsDefaultData(Particle.valueOf(normalized));
-        } catch (IllegalArgumentException ignored) {
+        } catch (IllegalArgumentException _) {
             return false;
         }
     }

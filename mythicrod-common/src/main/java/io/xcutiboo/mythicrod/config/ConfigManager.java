@@ -236,7 +236,7 @@ public class ConfigManager {
         }
 
         return switch (rawProfile.trim().toLowerCase(Locale.ROOT)) {
-            case "lightweight", "balanced", "performance" -> rawProfile.trim().toLowerCase(Locale.ROOT);
+            case "lightweight", DEFAULT_PROFILE, "performance" -> rawProfile.trim().toLowerCase(Locale.ROOT);
             default -> null;
         };
     }

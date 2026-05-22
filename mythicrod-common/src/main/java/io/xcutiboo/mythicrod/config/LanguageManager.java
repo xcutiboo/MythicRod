@@ -12,10 +12,12 @@ import io.xcutiboo.mythicrod.text.MessageFormatter;
 import net.kyori.adventure.text.Component;
 
 public class LanguageManager {
+    private static final String DEFAULT_LOCALE = "en_US";
+
     private MessageFormatter messageFormatter;
     private final ConfigManager configManager;
     private final Map<String, Map<String, String>> translations = new HashMap<>();
-    private String languageCode = "en_US";
+    private String languageCode = DEFAULT_LOCALE;
     private final Map<String, String> fallbackTranslations = new HashMap<>();
     private final PlayerPreferences playerPreferences;
 
@@ -27,16 +29,16 @@ public class LanguageManager {
     }
 
     private String normalizeLocale(String code) {
-        if (code == null || code.isEmpty()) return "en_US";
+        if (code == null || code.isEmpty()) return DEFAULT_LOCALE;
         String lc = code.trim().replace('-', '_');
-        if (lc.equalsIgnoreCase("en")) return "en_US";
+        if (lc.equalsIgnoreCase("en")) return DEFAULT_LOCALE;
         return lc;
     }
 
     public void loadTranslations(String langCode, Map<String, String> translationMap) {
         String normalizedLocale = normalizeLocale(langCode);
         translations.put(normalizedLocale, new HashMap<>(translationMap));
-        if (normalizedLocale.equals("en_US")) {
+        if (normalizedLocale.equals(DEFAULT_LOCALE)) {
             fallbackTranslations.clear();
             fallbackTranslations.putAll(translationMap);
         }

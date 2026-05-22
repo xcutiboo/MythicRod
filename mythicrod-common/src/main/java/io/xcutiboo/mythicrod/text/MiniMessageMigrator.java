@@ -67,7 +67,7 @@ public class MiniMessageMigrator {
         try {
             Component component = LegacyComponentSerializer.legacyAmpersand().deserialize(legacy);
             return MINI_MESSAGE.serialize(component);
-        } catch (Exception | LinkageError e) {
+        } catch (Exception | LinkageError _) {
             return migrate(legacy);
         }
     }

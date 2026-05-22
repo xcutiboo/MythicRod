@@ -62,6 +62,10 @@ public class BrigadierCommandManager {
     private static final String KEY_ENABLED = "enabled";
     private static final String KEY_SECONDS = "seconds";
     private static final String KEY_COUNT = "count";
+    private static final String KEY_PLAYER = "player";
+    private static final String KEY_LIMIT = "limit";
+    private static final String KEY_CATEGORY = "category";
+    private static final String KEY_DROPS = "drops";
     private static final String TR_GENERAL_ERROR = "general.error";
     private static final String TR_PLAYER_ONLY = "general.player_only";
     private static final String KEY_ERROR = "error";
@@ -194,30 +198,30 @@ public class BrigadierCommandManager {
                 .executes(this::executeStatsOwnPlayer)
                 .then(Commands.literal("reset")
                     .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_CONFIG))
-                    .then(Commands.argument("player", StringArgumentType.word())
+                    .then(Commands.argument(KEY_PLAYER, StringArgumentType.word())
                         .suggests(this::suggestKnownStatsPlayers)
                         .executes(this::executeStatsReset)))
-                .then(Commands.argument("player", StringArgumentType.word())
+                .then(Commands.argument(KEY_PLAYER, StringArgumentType.word())
                     .requires(source -> source.getSender().hasPermission(PermissionNodes.STATS_VIEW_OTHERS))
                     .suggests(this::suggestKnownStatsPlayers)
                     .executes(this::executeStatsSpecificPlayer)))
             .then(Commands.literal("top")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.STATS_LEADERBOARD))
                 .executes(context -> executeTop(context.getSource(), 10))
-                .then(Commands.argument("limit", IntegerArgumentType.integer(1, 50))
+                .then(Commands.argument(KEY_LIMIT, IntegerArgumentType.integer(1, 50))
                     .executes(context -> executeTop(context.getSource(),
-                        IntegerArgumentType.getInteger(context, "limit")))))
+                        IntegerArgumentType.getInteger(context, KEY_LIMIT)))))
             .then(Commands.literal("give")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_GIVE))
-                .then(Commands.argument("player", StringArgumentType.word())
+                .then(Commands.argument(KEY_PLAYER, StringArgumentType.word())
                     .suggests(this::suggestOnlinePlayers)
                     .then(Commands.argument("tier", StringArgumentType.word())
                         .suggests(this::suggestRodTiers)
                         .executes(this::executeGive))))
-            .then(Commands.literal("drops")
+            .then(Commands.literal(KEY_DROPS)
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.DROPS_VIEW))
                 .executes(this::executeDrops)
-                .then(Commands.argument("category", StringArgumentType.word())
+                .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
                     .suggests(this::suggestDropCategories)
                     .executes(this::executeDropsCategory)))
             .then(Commands.literal("debug")
@@ -303,7 +307,7 @@ public class BrigadierCommandManager {
     private int executeGive(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
         try {
-            String playerName = StringArgumentType.getString(context, "player");
+            String playerName = StringArgumentType.getString(context, KEY_PLAYER);
             String tier = StringArgumentType.getString(context, "tier");
             if (tier == null || tier.isEmpty()) {
                 sendMessage(sender, tr(sender, "command.give.tier-missing"));
@@ -314,7 +318,7 @@ public class BrigadierCommandManager {
             Player target = Bukkit.getPlayer(playerName);
             if (target == null || !target.isOnline()) {
                 sendMessage(sender, tr(sender, "command.player_not_found",
-                    Map.of("player", playerName)));
+                    Map.of(KEY_PLAYER, playerName)));
                 playErrorSound(sender);
                 return 0;
             }
@@ -360,7 +364,7 @@ public class BrigadierCommandManager {
             Player onlineTarget = Bukkit.getPlayer(targetId);
             if (onlineTarget == null || !onlineTarget.isOnline()) {
                 sendMessage(sender, tr(sender, "command.give.target-offline",
-                    Map.of("player", targetName)));
+                    Map.of(KEY_PLAYER, targetName)));
                 playErrorSound(sender);
                 return;
             }
@@ -369,7 +373,7 @@ public class BrigadierCommandManager {
                 Map<Integer, ItemStack> leftovers = onlineTarget.getInventory().addItem(rod);
                 if (!leftovers.isEmpty()) {
                     sendMessage(sender, tr(sender, "command.give.inventory-full",
-                        Map.of("player", onlineTarget.getName())));
+                        Map.of(KEY_PLAYER, onlineTarget.getName())));
                     sendMessage(onlineTarget, tr(onlineTarget, "command.give.inventory-full-self"));
                     playErrorSound(sender);
                     playErrorSound(onlineTarget);
@@ -384,7 +388,7 @@ public class BrigadierCommandManager {
             }
 
             sendMessage(sender, tr(sender, "command.give.sender-success",
-                Map.of("tier", tier, "player", onlineTarget.getName())));
+                Map.of("tier", tier, KEY_PLAYER, onlineTarget.getName())));
             sendMessage(onlineTarget, tr(onlineTarget, "command.give.target-success",
                 Map.of("tier", tier)));
             playSuccessSound(sender);
@@ -613,7 +617,7 @@ public class BrigadierCommandManager {
 
     private int executeStatsSpecificPlayer(CommandContext<CommandSourceStack> context) {
         try {
-            String playerName = StringArgumentType.getString(context, "player");
+            String playerName = StringArgumentType.getString(context, KEY_PLAYER);
             handleStats(context.getSource().getSender(), new String[]{"stats", playerName});
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
@@ -635,7 +639,7 @@ public class BrigadierCommandManager {
             target = resolveStatsTarget(playerName);
             if (target == null) {
                 sendMessage(sender, tr(sender, "stats.player-not-found",
-                    Map.of("player", playerName)));
+                    Map.of(KEY_PLAYER, playerName)));
                 return;
             }
         } else {
@@ -653,7 +657,7 @@ public class BrigadierCommandManager {
         }
 
         sendMessage(sender, tr(sender, "stats.header",
-            Map.of("player", target.playerName())));
+            Map.of(KEY_PLAYER, target.playerName())));
         sendMessage(sender, tr(sender, "stats.total-catches",
             Map.of("total", String.valueOf(stats.getTotalCaught()))));
         sendMessage(sender, tr(sender, "stats.rare-catches",
@@ -710,11 +714,11 @@ public class BrigadierCommandManager {
     private int executeStatsReset(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
         try {
-            String playerArg = StringArgumentType.getString(context, "player");
+            String playerArg = StringArgumentType.getString(context, KEY_PLAYER);
             StatsTarget target = resolveStatsTarget(playerArg);
             if (target == null) {
                 sendMessage(sender, tr(sender, "command.player_not_found",
-                    Map.of("player", playerArg)));
+                    Map.of(KEY_PLAYER, playerArg)));
                 playErrorSound(sender);
                 return 0;
             }
@@ -722,13 +726,13 @@ public class BrigadierCommandManager {
             boolean reset = plugin.getStatisticsManager().resetStats(target.playerId());
             if (!reset) {
                 sendMessage(sender, tr(sender, "stats.reset.no-entry",
-                    Map.of("player", target.playerName())));
+                    Map.of(KEY_PLAYER, target.playerName())));
                 playErrorSound(sender);
                 return 0;
             }
 
             sendMessage(sender, tr(sender, "stats.reset.success",
-                Map.of("player", target.playerName())));
+                Map.of(KEY_PLAYER, target.playerName())));
             playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
@@ -754,7 +758,7 @@ public class BrigadierCommandManager {
             } else if (limit > MAX_LIMIT) {
                 limit = MAX_LIMIT;
                 sendMessage(source.getSender(), tr(source.getSender(), "stats.limit-capped",
-                    Map.of("limit", String.valueOf(MAX_LIMIT))));
+                    Map.of(KEY_LIMIT, String.valueOf(MAX_LIMIT))));
             }
 
             List<PlayerStats> topFishers;
@@ -774,14 +778,14 @@ public class BrigadierCommandManager {
             }
 
             sendMessage(source.getSender(), tr(source.getSender(), "stats.top-header",
-                Map.of("limit", String.valueOf(Math.min(limit, topFishers.size())))));
+                Map.of(KEY_LIMIT, String.valueOf(Math.min(limit, topFishers.size())))));
 
             int rank = 1;
             for (PlayerStats ps : topFishers) {
                 try {
                     String name = ps.getPlayerName().isEmpty() ? resolveOfflineName(ps) : ps.getPlayerName();
                     sendMessage(source.getSender(), tr(source.getSender(), "stats.top-entry",
-                        Map.of("rank", String.valueOf(rank), "player", name, "catches", String.valueOf(ps.getTotalCaught()))));
+                        Map.of("rank", String.valueOf(rank), KEY_PLAYER, name, "catches", String.valueOf(ps.getTotalCaught()))));
                     rank++;
                 } catch (RuntimeException entryError) {
                     plugin.getLogger().log(Level.WARNING, entryError,
@@ -827,7 +831,7 @@ public class BrigadierCommandManager {
     private int executeDrops(CommandContext<CommandSourceStack> context) {
         try {
             if (context.getSource().getSender() instanceof Player player) {
-                return plugin.getGUIManager().openMenu(player, "drops") ? Command.SINGLE_SUCCESS : 0;
+                return plugin.getGUIManager().openMenu(player, KEY_DROPS) ? Command.SINGLE_SUCCESS : 0;
             }
             handleDrops(context.getSource().getSender(), new String[0]);
             return Command.SINGLE_SUCCESS;
@@ -842,7 +846,7 @@ public class BrigadierCommandManager {
     private int executeDropsCategory(CommandContext<CommandSourceStack> context) {
         try {
             CommandSender sender = context.getSource().getSender();
-            String category = normalizeDropCategory(StringArgumentType.getString(context, "category"));
+            String category = normalizeDropCategory(StringArgumentType.getString(context, KEY_CATEGORY));
             Map<String, List<CustomDrop>> categories = plugin.getDropManager().getDropCategories();
             if (categories.get(category) == null) {
                 sendUnknownDropCategory(sender, category);
@@ -851,9 +855,9 @@ public class BrigadierCommandManager {
             }
 
             if (sender instanceof Player player) {
-                return plugin.getGUIManager().openMenu(player, "drops", Map.of(
+                return plugin.getGUIManager().openMenu(player, KEY_DROPS, Map.of(
                     "viewing_category", Boolean.TRUE,
-                    "category", category
+                    KEY_CATEGORY, category
                 )) ? Command.SINGLE_SUCCESS : 0;
             }
 
@@ -881,7 +885,7 @@ public class BrigadierCommandManager {
             for (String category : sortedDropCategoryIds()) {
                 sendMessage(sender, tr(sender, "drops.category-entry",
                     Map.of(
-                        "category", category,
+                        KEY_CATEGORY, category,
                         "label", StringFormatting.formatCategoryName(category),
                         KEY_COUNT, String.valueOf(categories.get(category).size())
                     )));
@@ -911,7 +915,7 @@ public class BrigadierCommandManager {
 
     private void sendUnknownDropCategory(CommandSender sender, String category) {
         sendMessage(sender, tr(sender, "drops.category-not-found",
-            Map.of("category", category)));
+            Map.of(KEY_CATEGORY, category)));
         sendMessage(sender, tr(sender, "drops.available-categories",
             Map.of("categories", String.join(", ", sortedDropCategoryIds()))));
         sendMessage(sender, tr(sender, "drops.category-help"));
@@ -921,12 +925,12 @@ public class BrigadierCommandManager {
         List<CustomDrop> drops = plugin.getDropManager().getDropCategories().get(category);
         if (drops == null || drops.isEmpty()) {
             sendMessage(sender, tr(sender, "drops.category-not-found",
-                Map.of("category", category)));
+                Map.of(KEY_CATEGORY, category)));
             return;
         }
         sendMessage(sender, tr(sender, "drops.category-header",
             Map.of(
-                "category", category,
+                KEY_CATEGORY, category,
                 "label", StringFormatting.formatCategoryName(category)
             )));
         for (CustomDrop drop : drops) {
@@ -1541,7 +1545,7 @@ public class BrigadierCommandManager {
             sendMessage(sender, tr(sender, "command.debug.runtime",
                 Map.of(
                     "categories", String.valueOf(categoryCount),
-                    "drops", String.valueOf(dropCount),
+                    KEY_DROPS, String.valueOf(dropCount),
                     "players", String.valueOf(trackedPlayers),
                     "catches", String.valueOf(totalCatches)
                 )));

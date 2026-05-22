@@ -23,7 +23,7 @@ public final class ConfiguredText {
 
         try {
             return MINI_MESSAGE.deserialize(MiniMessageMigrator.migrateWithSerializer(text));
-        } catch (Exception | LinkageError ignored) {
+        } catch (Exception | LinkageError _) {
             return Component.text(text);
         }
     }

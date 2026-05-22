@@ -239,10 +239,12 @@ class ConfigManagerTest {
 
         @Override
         public void dispatchCommandConsole(String command) {
+            // Test stub: PlatformServer side effects are not exercised here.
         }
 
         @Override
         public void broadcastMessage(String message) {
+            // Test stub: PlatformServer side effects are not exercised here.
         }
     }
 
