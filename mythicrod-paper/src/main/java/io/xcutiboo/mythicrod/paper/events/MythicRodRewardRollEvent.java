@@ -134,6 +134,8 @@ public final class MythicRodRewardRollEvent extends Event {
 
     @Override
     @NotNull
+    @SuppressWarnings("java:S4144")
+    // Bukkit requires both the instance and static accessor to expose the same HandlerList.
     public HandlerList getHandlers() {
         return HANDLER_LIST;
     }

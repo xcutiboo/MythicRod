@@ -89,7 +89,8 @@ public class MiniMessageMigrator {
         StringBuilder result = new StringBuilder();
         char[] chars = input.toCharArray();
 
-        for (int i = 0; i < chars.length; i++) {
+        int i = 0;
+        while (i < chars.length) {
             if (chars[i] == '&' && i + 1 < chars.length) {
                 char code = Character.toLowerCase(chars[i + 1]);
                 String replacement = COLOR_MAP.get(code);
@@ -99,13 +100,12 @@ public class MiniMessageMigrator {
 
                 if (replacement != null) {
                     result.append(replacement);
-                    i++;
-                } else {
-                    result.append(chars[i]);
+                    i += 2;
+                    continue;
                 }
-            } else {
-                result.append(chars[i]);
             }
+            result.append(chars[i]);
+            i++;
         }
 
         return result.toString();

@@ -219,21 +219,17 @@ public class DropManager implements DropCatalog {
             String categoryKey = toBiomeCategoryKey(biomeKey);
             if (target.containsKey(categoryKey)) {
                 skippedDuplicateCategories.add("biome-drops." + biomeKey + " -> drops." + categoryKey);
-                continue;
+            } else {
+                List<CustomDrop> categoryDrops = loadCategory(biomeDropsSection, biomeKey, report);
+                if (!categoryDrops.isEmpty()) {
+                    List<String> biomeConstraints = List.of(normalizeBiomeKey(biomeKey));
+                    List<CustomDrop> biomeScopedDrops = new ArrayList<>(categoryDrops.size());
+                    for (CustomDrop drop : categoryDrops) {
+                        biomeScopedDrops.add(copyDropWithBiomes(drop, biomeConstraints));
+                    }
+                    totalDrops += publishCategory(target, categoryKey, biomeScopedDrops);
+                }
             }
-
-            List<CustomDrop> categoryDrops = loadCategory(biomeDropsSection, biomeKey, report);
-            if (categoryDrops.isEmpty()) {
-                continue;
-            }
-
-            List<String> biomeConstraints = List.of(normalizeBiomeKey(biomeKey));
-            List<CustomDrop> biomeScopedDrops = new ArrayList<>(categoryDrops.size());
-            for (CustomDrop drop : categoryDrops) {
-                biomeScopedDrops.add(copyDropWithBiomes(drop, biomeConstraints));
-            }
-
-            totalDrops += publishCategory(target, categoryKey, biomeScopedDrops);
         }
 
         if (!skippedDuplicateCategories.isEmpty()) {
