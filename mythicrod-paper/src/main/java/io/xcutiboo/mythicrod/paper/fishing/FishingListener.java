@@ -25,7 +25,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
-import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.paper.MythicRod;
 import io.xcutiboo.mythicrod.api.PlayerStatSnapshot;
 import io.xcutiboo.mythicrod.api.Result;
 import io.xcutiboo.mythicrod.api.platform.PlatformItem;

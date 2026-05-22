@@ -1,6 +1,6 @@
 name: MythicRod
 version: '${version}'
-main: io.xcutiboo.mythicrod.MythicRod
+main: io.xcutiboo.mythicrod.paper.MythicRod
 api-version: '26.1.2'
 description: Custom fishing drops, biome-aware loot, statistics, and in-game administration for Paper.
 website: https://github.com/xcutiboo/mythicrod

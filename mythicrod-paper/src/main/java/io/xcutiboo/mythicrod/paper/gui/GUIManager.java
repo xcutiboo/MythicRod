@@ -21,7 +21,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
-import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.paper.MythicRod;
 import io.xcutiboo.mythicrod.api.platform.PlatformScheduler;
 import io.xcutiboo.mythicrod.paper.gui.menus.BaseMenu;
 import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;

@@ -16,7 +16,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.paper.MythicRod;
 import io.xcutiboo.mythicrod.paper.gui.MythicRodMenuHolder;
 import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
 import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;

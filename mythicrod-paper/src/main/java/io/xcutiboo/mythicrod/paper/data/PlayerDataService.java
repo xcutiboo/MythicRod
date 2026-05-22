@@ -16,7 +16,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.paper.MythicRod;
 
 /**
  * Manages per-player persistent data used by Paper-only gameplay and UI code.

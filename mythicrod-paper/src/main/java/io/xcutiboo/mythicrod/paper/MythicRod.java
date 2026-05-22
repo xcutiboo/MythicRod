@@ -1,4 +1,4 @@
-package io.xcutiboo.mythicrod;
+package io.xcutiboo.mythicrod.paper;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;

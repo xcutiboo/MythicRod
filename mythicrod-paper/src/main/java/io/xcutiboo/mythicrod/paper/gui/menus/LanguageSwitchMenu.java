@@ -17,7 +17,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 
-import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.paper.MythicRod;
 import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;

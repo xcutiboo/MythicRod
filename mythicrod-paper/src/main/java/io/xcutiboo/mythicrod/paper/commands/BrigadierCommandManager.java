@@ -44,7 +44,7 @@ import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
-import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.paper.MythicRod;
 import io.xcutiboo.mythicrod.config.ConfigManager;
 import io.xcutiboo.mythicrod.config.RewardDeliveryMode;
 import io.xcutiboo.mythicrod.constants.MythicRodKeys;

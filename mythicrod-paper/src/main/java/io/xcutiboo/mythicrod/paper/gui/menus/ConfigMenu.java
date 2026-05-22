@@ -9,7 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.paper.MythicRod;
 import io.xcutiboo.mythicrod.config.ConfigManager;
 import io.xcutiboo.mythicrod.config.RewardDeliveryMode;
 import io.xcutiboo.mythicrod.constants.PermissionNodes;

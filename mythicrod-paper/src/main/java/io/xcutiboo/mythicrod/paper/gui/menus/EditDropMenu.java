@@ -23,7 +23,7 @@ import org.bukkit.inventory.ItemFlag;
 
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
-import io.xcutiboo.mythicrod.MythicRod;
+import io.xcutiboo.mythicrod.paper.MythicRod;
 import io.xcutiboo.mythicrod.constants.PermissionNodes;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
 import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
