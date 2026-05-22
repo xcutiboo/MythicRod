@@ -10,32 +10,41 @@ permalink: /
 
 <p align="center" markdown="1">
 Weighted drop tables, biome filters, permission gates, in-game drop editor,
-statistics, and a small public API.
+statistics, and a small public API. Paper-first, Folia-verified.
 </p>
 
 <p align="center">
   <a href="https://github.com/xcutiboo/MythicRod"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-xcutiboo%2FMythicRod-0b1320?style=flat-square&labelColor=0b1320&color=dca13a" /></a>
   <a href="https://hangar.papermc.io/xcutiboo/MythicRod"><img alt="Hangar" src="https://img.shields.io/badge/Hangar-listing-0b1320?style=flat-square&labelColor=0b1320&color=dca13a" /></a>
+  <a href="https://modrinth.com/plugin/mythicrod"><img alt="Modrinth" src="https://img.shields.io/badge/Modrinth-listing-0b1320?style=flat-square&labelColor=0b1320&color=00AF5C" /></a>
   <a href="https://crowdin.com/project/mythicrod"><img alt="Crowdin" src="https://img.shields.io/badge/Crowdin-translate-0b1320?style=flat-square&labelColor=0b1320&color=f0c75a" /></a>
   <a href="https://ko-fi.com/xcutiboo"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-0b1320?style=flat-square&labelColor=0b1320&color=b87924" /></a>
 </p>
 
 ![divider]({{ site.baseurl }}/assets/divider-feature.svg)
 
-## Quick links
+## Pick a path
 
-| Section | What it covers |
+| You are... | Start here |
 | --- | --- |
-| [Installation](installation.md) | Drop-in setup, first reload, optional Nexo. |
-| [Commands](commands.md) | Brigadier command reference and aliases. |
-| [Permissions](permissions.md) | Node tree and per-drop gates. |
-| [Configuration](configuration.md) | `config.yml` keys, defaults, messages. |
-| [Loot tables](loot-tables.md) | `drops.yml` shape, biome categories, identifiers. |
-| [Custom rods](rods.md) | Tier multipliers, in-game rod menu. |
-| [Developer API](developer-api.md) | Service lookup, `ExternalDropProvider`, events. |
-| [Testing checklist](testing.md) | 12-step Paper + Folia smoke test runbook. |
-| [Release guide](release.md) | Secrets, pre-flight, tag flow, Hangar + Modrinth automation. |
-| [Troubleshooting](troubleshooting.md) | Reload failures, Nexo, Folia notes. |
+| Running a server and want to install MythicRod | [Installation](installation.md) then [Quick start](commands.md) |
+| Tuning drops, rods, or messages | [Configuration](configuration.md) and [Loot tables](loot-tables.md) |
+| Debugging a live server | [Troubleshooting](troubleshooting.md), `/mythicrod status`, `/mythicrod validate` |
+| Translating MythicRod | [Localization]({{ site.baseurl }}/localization/), [Crowdin]({{ site.baseurl }}/localization/crowdin.html) |
+| Building another plugin against the API | [Developer API](developer-api.md) |
+| Tagging a public release | [Release guide]({{ site.baseurl }}/release/) and the [Checklist]({{ site.baseurl }}/release/checklist.html) |
+
+![divider]({{ site.baseurl }}/assets/divider.svg)
+
+## Five-minute setup
+
+1. Grab the latest `MythicRod-Paper-<version>.jar` from the [GitHub releases page](https://github.com/xcutiboo/MythicRod/releases).
+2. Drop it in `plugins/` on a Paper 1.21.11 server. Folia is supported.
+3. Start the server once. Default `config.yml`, `drops.yml`, and `lang/` files are written.
+4. Customise `drops.yml`, then run `/mythicrod reload`.
+5. Verify with `/mythicrod status`.
+
+Full walkthrough: [Installation](installation.md).
 
 ![divider]({{ site.baseurl }}/assets/divider.svg)
 
@@ -44,16 +53,11 @@ statistics, and a small public API.
 | Item | Value |
 | --- | --- |
 | Plugin | `2026.1.0` (CalVer, year.release.patch) |
-| API | Paper `26.1.2` |
+| API | Paper `26.1.2` (Minecraft 1.21.11) |
 | Java | 25+ |
 | Optional integration | Nexo (`nexo:*` identifiers) |
-| Bundled languages | `en_US`, `ja_JP` (rest sync from Crowdin) |
-| Scheduler | Paper-first, Folia owner-thread handoffs in place |
-
-Folia hasn't been smoke-tested on a live build yet. The handoffs are written
-into the listener, command, and scheduler paths, but treat the
-`folia-supported: true` flag in the descriptor as a target until you've
-exercised it on your own server.
+| Bundled languages | `en_US`, `en_GB`, `ja_JP` (rest sync from Crowdin) |
+| Scheduler | Paper-first, Folia owner-thread handoffs verified |
 
 ![divider]({{ site.baseurl }}/assets/divider.svg)
 
@@ -61,5 +65,6 @@ exercised it on your own server.
 
 - SonarCloud: 0 bugs / 0 vulnerabilities / 0 code smells / 0 hotspots.
 - bStats: pluginId `23847` ([dashboard](https://bstats.org/plugin/bukkit/MythicRod/23847)).
-- Crowdin: [crowdin.com/project/mythicrod](https://crowdin.com/project/mythicrod).
+- Crowdin: [crowdin.com/project/mythicrod](https://crowdin.com/project/mythicrod) (en_US source, en_GB + ja_JP imported, 13 other targets open).
 - Releases: [github.com/xcutiboo/MythicRod/releases](https://github.com/xcutiboo/MythicRod/releases).
+- Folia 26.1.2 build 8: smoke test passed; runtime reports as `Folia` from `/mythicrod status`.
