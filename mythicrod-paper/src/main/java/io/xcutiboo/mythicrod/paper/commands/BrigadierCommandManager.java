@@ -104,6 +104,18 @@ public class BrigadierCommandManager {
         return plugin.getLanguageManager().tr(key, args);
     }
 
+    /// Returns the sender as a [Player], or null after emitting the standard
+    /// player-only reply and error sound. Use instead of duplicating the
+    /// `sender instanceof Player` block in every player-bound executor.
+    private Player requirePlayer(CommandSender sender) {
+        if (sender instanceof Player player) {
+            return player;
+        }
+        sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
+        playErrorSound(sender);
+        return null;
+    }
+
     public void initialize() {
         LifecycleEventManager<Plugin> manager = plugin.getLifecycleManager();
 
@@ -1529,11 +1541,8 @@ public class BrigadierCommandManager {
     private int executeTestRoll(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
         try {
-            if (!(sender instanceof Player player)) {
-                sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
-                playErrorSound(sender);
-                return 0;
-            }
+            Player player = requirePlayer(sender);
+            if (player == null) return 0;
 
             String biomeArg = optionalStringArg(context, "biome");
             int count = Math.clamp(optionalIntArg(context, KEY_COUNT, 100), 1, 10000);
@@ -1748,11 +1757,8 @@ public class BrigadierCommandManager {
     private int executeRodSelect(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
         try {
-            if (!(sender instanceof Player player)) {
-                sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
-                playErrorSound(sender);
-                return 0;
-            }
+            Player player = requirePlayer(sender);
+            if (player == null) return 0;
             String tier = StringArgumentType.getString(context, "tier").toLowerCase(Locale.ROOT);
             String permission = switch (tier) {
                 case TIER_BASIC -> PermissionNodes.GUI;
@@ -1788,11 +1794,8 @@ public class BrigadierCommandManager {
     private int executeRodInspect(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
         try {
-            if (!(sender instanceof Player player)) {
-                sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
-                playErrorSound(sender);
-                return 0;
-            }
+            Player player = requirePlayer(sender);
+            if (player == null) return 0;
 
             sendMessage(sender, "<gold><st>            </st> <bold>Rod Inspect</bold> <st>            </st>");
             inspectRodSlot(sender, player, EquipmentSlot.HAND, "Main hand");
@@ -1863,11 +1866,8 @@ public class BrigadierCommandManager {
 
     private int executeEffectsToggle(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
-        if (!(sender instanceof Player player)) {
-            sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
-            playErrorSound(sender);
-            return 0;
-        }
+        Player player = requirePlayer(sender);
+        if (player == null) return 0;
         plugin.getPlayerDataService().toggleReducedEffects(player);
         boolean reduced = plugin.getPlayerDataService().hasReducedEffects(player);
         sendMessage(sender, tr(sender, reduced
@@ -1879,11 +1879,8 @@ public class BrigadierCommandManager {
 
     private int executeEffectsSet(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
-        if (!(sender instanceof Player player)) {
-            sendMessage(sender, tr(sender, TR_PLAYER_ONLY));
-            playErrorSound(sender);
-            return 0;
-        }
+        Player player = requirePlayer(sender);
+        if (player == null) return 0;
         String mode = StringArgumentType.getString(context, "mode").toLowerCase(Locale.ROOT);
         boolean reduced;
         switch (mode) {
