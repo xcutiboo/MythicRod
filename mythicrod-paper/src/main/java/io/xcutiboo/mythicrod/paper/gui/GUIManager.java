@@ -163,61 +163,63 @@ public class GUIManager implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent event) {
         try {
-            if (!(event.getWhoClicked() instanceof Player player) || !player.isOnline()) {
-                return;
-            }
-
-            Inventory topInventory = event.getView().getTopInventory();
-            if (!(topInventory.getHolder() instanceof MythicRodMenuHolder holder)) {
-                return;
-            }
-
-            BaseMenu menu = holder.getMenu();
-            if (menu == null) {
-                event.setCancelled(true);
-                return;
-            }
-
-            if (isStaleMenu(menu)) {
-                event.setCancelled(true);
-                closeStaleMenuIfPresent(player, true);
-                return;
-            }
-
-            switch (event.getClick()) {
-                case NUMBER_KEY, SWAP_OFFHAND, DROP, CONTROL_DROP -> {
-                    event.setCancelled(true);
-                    return;
-                }
-                default -> {
-                    // Other actions pass through to the regular click handling below.
-                }
-            }
-
-            Inventory clicked = event.getClickedInventory();
-            if (clicked == null) {
-                event.setCancelled(true);
-                return;
-            }
-
-            if (!menu.isMenuInventory(clicked)) {
-                if (isUnsafePlayerInventoryClick(event)) {
-                    event.setCancelled(true);
-                }
-                return;
-            }
-
-            event.setCancelled(true);
-            menu.handleClick(event);
+            dispatchInventoryClick(event);
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Error handling menu interaction. Player action may not have been processed.", e);
-            if (event.getWhoClicked() instanceof Player player && player.isOnline()) {
-                try {
-                    player.closeInventory();
-                } catch (Exception ex) {
-                    plugin.getLogger().log(Level.WARNING, "Error closing inventory after click handler exception", ex);
-                }
+            forceCloseOnClickError(event);
+        }
+    }
+
+    private void dispatchInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player) || !player.isOnline()) return;
+
+        Inventory topInventory = event.getView().getTopInventory();
+        if (!(topInventory.getHolder() instanceof MythicRodMenuHolder holder)) return;
+
+        BaseMenu menu = holder.getMenu();
+        if (menu == null) {
+            event.setCancelled(true);
+            return;
+        }
+        if (isStaleMenu(menu)) {
+            event.setCancelled(true);
+            closeStaleMenuIfPresent(player, true);
+            return;
+        }
+        if (isAlwaysBlockedClick(event)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        Inventory clicked = event.getClickedInventory();
+        if (clicked == null) {
+            event.setCancelled(true);
+            return;
+        }
+        if (!menu.isMenuInventory(clicked)) {
+            if (isUnsafePlayerInventoryClick(event)) {
+                event.setCancelled(true);
             }
+            return;
+        }
+
+        event.setCancelled(true);
+        menu.handleClick(event);
+    }
+
+    private boolean isAlwaysBlockedClick(InventoryClickEvent event) {
+        return switch (event.getClick()) {
+            case NUMBER_KEY, SWAP_OFFHAND, DROP, CONTROL_DROP -> true;
+            default -> false;
+        };
+    }
+
+    private void forceCloseOnClickError(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player) || !player.isOnline()) return;
+        try {
+            player.closeInventory();
+        } catch (Exception ex) {
+            plugin.getLogger().log(Level.WARNING, "Error closing inventory after click handler exception", ex);
         }
     }
 
@@ -262,36 +264,35 @@ public class GUIManager implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onInventoryClose(InventoryCloseEvent event) {
         try {
-            if (!(event.getPlayer() instanceof Player player) || !player.isOnline()) {
-                return;
-            }
-
-            Inventory topInventory = event.getView().getTopInventory();
-            if (!(topInventory.getHolder() instanceof MythicRodMenuHolder holder)) {
-                return;
-            }
-
-            BaseMenu menu = holder.getMenu();
-            if (menu == null) {
-                return;
-            }
-
-            if (menu.shouldReopenOnClose() && !isStaleMenu(menu) && !plugin.isReloadInProgress()) {
-                scheduler.runForPlayer(new PaperPlayer(player), () -> {
-                    if (player.isOnline() && !isStaleMenu(menu) && !plugin.isReloadInProgress()) {
-                        try {
-                            menu.open();
-                        } catch (Exception e) {
-                            plugin.getLogger().log(Level.WARNING, "Error reopening menu", e);
-                        }
-                    }
-                });
-            } else {
-                menu.onClose();
-            }
+            dispatchInventoryClose(event);
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Error handling inventory close", e);
         }
+    }
+
+    private void dispatchInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player player) || !player.isOnline()) return;
+        Inventory topInventory = event.getView().getTopInventory();
+        if (!(topInventory.getHolder() instanceof MythicRodMenuHolder holder)) return;
+        BaseMenu menu = holder.getMenu();
+        if (menu == null) return;
+
+        if (menu.shouldReopenOnClose() && !isStaleMenu(menu) && !plugin.isReloadInProgress()) {
+            scheduleReopen(player, menu);
+        } else {
+            menu.onClose();
+        }
+    }
+
+    private void scheduleReopen(Player player, BaseMenu menu) {
+        scheduler.runForPlayer(new PaperPlayer(player), () -> {
+            if (!player.isOnline() || isStaleMenu(menu) || plugin.isReloadInProgress()) return;
+            try {
+                menu.open();
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Error reopening menu", e);
+            }
+        });
     }
 
     @EventHandler(priority = EventPriority.NORMAL)

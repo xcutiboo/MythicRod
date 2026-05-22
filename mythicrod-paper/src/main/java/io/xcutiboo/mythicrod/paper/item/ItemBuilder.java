@@ -119,32 +119,34 @@ public class ItemBuilder {
     }
 
     public ItemBuilder enchantments(Map<String, Integer> enchantments) {
-        if (enchantments != null && !enchantments.isEmpty()) {
-            Registry<Enchantment> registry = RegistryAccess.registryAccess()
-                .getRegistry(RegistryKey.ENCHANTMENT);
+        if (enchantments == null || enchantments.isEmpty()) return this;
 
-            ItemEnchantments current = item.getData(enchantmentComponentType());
-            ItemEnchantments.Builder builder = ItemEnchantments.itemEnchantments();
-            if (current != null) {
-                builder.addAll(current.enchantments());
-            }
-
-            for (Map.Entry<String, Integer> entry : enchantments.entrySet()) {
-                if (entry.getKey() == null || entry.getValue() == null) {
-                    continue;
-                }
-                String enchantName = entry.getKey().toLowerCase(java.util.Locale.ROOT);
-                NamespacedKey key = enchantName.contains(":")
-                    ? NamespacedKey.fromString(enchantName)
-                    : NamespacedKey.minecraft(enchantName);
-                Enchantment enchant = key != null ? registry.get(key) : null;
-                if (enchant != null) {
-                    builder.add(enchant, entry.getValue());
-                }
-            }
-            item.setData(enchantmentComponentType(), builder.build());
+        Registry<Enchantment> registry = RegistryAccess.registryAccess()
+            .getRegistry(RegistryKey.ENCHANTMENT);
+        ItemEnchantments.Builder builder = ItemEnchantments.itemEnchantments();
+        ItemEnchantments current = item.getData(enchantmentComponentType());
+        if (current != null) {
+            builder.addAll(current.enchantments());
         }
+        for (Map.Entry<String, Integer> entry : enchantments.entrySet()) {
+            applyEnchantmentEntry(builder, registry, entry);
+        }
+        item.setData(enchantmentComponentType(), builder.build());
         return this;
+    }
+
+    private void applyEnchantmentEntry(ItemEnchantments.Builder builder,
+                                       Registry<Enchantment> registry,
+                                       Map.Entry<String, Integer> entry) {
+        if (entry.getKey() == null || entry.getValue() == null) return;
+        String enchantName = entry.getKey().toLowerCase(java.util.Locale.ROOT);
+        NamespacedKey key = enchantName.contains(":")
+            ? NamespacedKey.fromString(enchantName)
+            : NamespacedKey.minecraft(enchantName);
+        Enchantment enchant = key != null ? registry.get(key) : null;
+        if (enchant != null) {
+            builder.add(enchant, entry.getValue());
+        }
     }
 
     public ItemBuilder customModelData(int data) {

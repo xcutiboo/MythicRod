@@ -919,49 +919,47 @@ public class DropManager implements DropCatalog {
      * @return {@code true} when the target was still present and the new fields validated
      */
     public boolean updateDrop(CustomDrop targetDrop, String category, EditableDropFields fields) {
-        if (targetDrop == null || category == null || category.isBlank() || fields == null) {
-            return false;
-        }
-        if (fields.identifier() == null || fields.identifier().isBlank()) {
-            return false;
-        }
-        if (fields.weight() <= 0 || fields.amount() <= 0 || fields.customModelData() < 0) {
-            return false;
-        }
+        if (!hasUpdatableArguments(targetDrop, category, fields)) return false;
         String normalizedIdentifier = normalizeEditedIdentifier(fields.identifier());
-        if (normalizedIdentifier == null) {
-            return false;
-        }
+        if (normalizedIdentifier == null) return false;
+
+        List<CustomDrop> drops = dropCategories().get(category.toLowerCase(Locale.ROOT));
+        if (drops == null) return false;
+
+        EditableDropFields sanitized = sanitizeFields(fields, normalizedIdentifier);
+        return replaceTarget(drops, targetDrop, category, sanitized);
+    }
+
+    private boolean hasUpdatableArguments(CustomDrop targetDrop, String category, EditableDropFields fields) {
+        if (targetDrop == null || category == null || category.isBlank() || fields == null) return false;
+        if (fields.identifier() == null || fields.identifier().isBlank()) return false;
+        return fields.weight() > 0 && fields.amount() > 0 && fields.customModelData() >= 0;
+    }
+
+    private EditableDropFields sanitizeFields(EditableDropFields fields, String normalizedIdentifier) {
         String normalizedPermission = fields.permission() == null || fields.permission().isBlank()
             ? null
             : fields.permission().trim();
-        List<String> safeLore = fields.lore() == null ? List.of() : List.copyOf(fields.lore());
-        Map<String, Integer> safeEnchantments = fields.enchantments() == null
-            ? Map.of() : Map.copyOf(fields.enchantments());
-        List<String> safeItemFlags = fields.itemFlags() == null ? List.of() : List.copyOf(fields.itemFlags());
-        List<String> safeBiomes = fields.biomes() == null ? List.of() : List.copyOf(fields.biomes());
+        return new EditableDropFields(
+            normalizedIdentifier,
+            fields.weight(),
+            fields.amount(),
+            fields.customName(),
+            fields.lore() == null ? List.of() : List.copyOf(fields.lore()),
+            fields.customModelData(),
+            fields.enchantments() == null ? Map.of() : Map.copyOf(fields.enchantments()),
+            fields.itemFlags() == null ? List.of() : List.copyOf(fields.itemFlags()),
+            fields.glowing(),
+            normalizedPermission,
+            fields.biomes() == null ? List.of() : List.copyOf(fields.biomes())
+        );
+    }
 
-        List<CustomDrop> drops = dropCategories().get(category.toLowerCase(Locale.ROOT));
-        if (drops == null) {
-            return false;
-        }
-
+    private boolean replaceTarget(List<CustomDrop> drops, CustomDrop targetDrop, String category, EditableDropFields fields) {
         for (int i = 0; i < drops.size(); i++) {
             CustomDrop existing = drops.get(i);
             if (existing == targetDrop) {
-                CustomDrop editedDrop = copyDropWithEdits(new EditableDropFields(
-                    normalizedIdentifier,
-                    fields.weight(),
-                    fields.amount(),
-                    fields.customName(),
-                    safeLore,
-                    fields.customModelData(),
-                    safeEnchantments,
-                    safeItemFlags,
-                    fields.glowing(),
-                    normalizedPermission,
-                    safeBiomes
-                ));
+                CustomDrop editedDrop = copyDropWithEdits(fields);
                 drops.set(i, editedDrop);
                 info(() -> "Updated drop: " + existing.getIdentifier()
                     + " -> " + editedDrop.getIdentifier()
@@ -969,7 +967,6 @@ public class DropManager implements DropCatalog {
                 return true;
             }
         }
-
         return false;
     }
 
