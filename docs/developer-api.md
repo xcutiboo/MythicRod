@@ -50,7 +50,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.64-stable")
     // Compile against the MythicRod jar you ship alongside the runtime.
     compileOnly(files("libs/MythicRod-Paper-2026.1.0.jar"))
 }
@@ -60,7 +60,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:26.1.2.build.64-stable'
     compileOnly files('libs/MythicRod-Paper-2026.1.0.jar')
 }
 ```
@@ -72,7 +72,7 @@ dependencies {
   <dependency>
     <groupId>io.papermc.paper</groupId>
     <artifactId>paper-api</artifactId>
-    <version>1.21.11-R0.1-SNAPSHOT</version>
+    <version>26.1.2.build.64-stable</version>
     <scope>provided</scope>
   </dependency>
   <dependency>

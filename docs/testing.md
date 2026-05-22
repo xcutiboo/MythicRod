@@ -23,7 +23,7 @@ cp mythicrod-paper/build/libs/MythicRod-Paper-*.jar /path/to/server/plugins/
 Start the server. Look for the green banner in console:
 
 ```
-MythicRod-Paper v2026.1.0 | Paper 1.21.x | Brigadier ✓ | <Nms>ms
+MythicRod-Paper v2026.1.0 | Paper 26.1.2 | Brigadier ✓ | <Nms>ms
 ```
 
 If the plugin disabled itself, copy the stack trace and head to

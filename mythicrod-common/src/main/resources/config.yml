@@ -1,11 +1,11 @@
 ################################################################################
-# MythicRod Configuration v8.0
+# MythicRod Configuration v9.0
 ################################################################################
 # All values are cached at runtime. Changes require server reload or restart.
 # See documentation at: https://github.com/xcutiboo/MythicRod
 
 # Configuration version (managed automatically, do not edit)
-config-version: 8
+config-version: 9
 
 ################################################################################
 # PROFILE: Auto-optimized performance tuning
@@ -93,6 +93,12 @@ features:
   debug:
     # Enable detailed logging (performance impact)
     enabled: false
+
+  update-check:
+    # Check api.github.com on enable and every 6 hours to see whether a newer
+    # MythicRod release is available. Single GET per check, no telemetry sent.
+    # Setting this to false stops all outbound calls to GitHub from the plugin.
+    enabled: true
 
 ################################################################################
 # TIMERS: Performance intervals (in seconds)

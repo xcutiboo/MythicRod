@@ -1,6 +1,10 @@
 package io.xcutiboo.mythicrod.paper.metrics;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.bstats.bukkit.Metrics;
+import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
 import org.bstats.charts.SingleLineChart;
 
@@ -13,7 +17,7 @@ import io.xcutiboo.mythicrod.paper.MythicRod;
 /// each report cycle, so swapping managers during a reload is safe.
 public final class MetricsReporter {
 
-    private static final int BSTATS_PLUGIN_ID = 23847;
+    private static final int BSTATS_PLUGIN_ID = 31484;
 
     private final MythicRod plugin;
     private Metrics metrics;
@@ -41,8 +45,6 @@ public final class MetricsReporter {
     }
 
     private void registerEnvironmentCharts() {
-        metrics.addCustomChart(new SimplePie("server_type", () -> "Paper"));
-        metrics.addCustomChart(new SimplePie("minecraft_version", () -> plugin.getServer().getMinecraftVersion()));
         metrics.addCustomChart(new SimplePie("folia_runtime", () -> plugin.isFoliaRuntime() ? "Folia" : "Paper"));
         metrics.addCustomChart(new SimplePie("language", () ->
             plugin.getLanguageManager() != null ? plugin.getLanguageManager().getLanguage() : "en"));
@@ -84,6 +86,15 @@ public final class MetricsReporter {
             plugin.getStatisticsManager() != null
                 ? (int) Math.min(plugin.getStatisticsManager().getTotalCatches(), Integer.MAX_VALUE)
                 : 0));
+        metrics.addCustomChart(new AdvancedPie("drop_category_share", () -> {
+            Map<String, Integer> share = new HashMap<>();
+            if (plugin.getDropManager() == null) return share;
+            plugin.getDropManager().getDropCategories().forEach((category, drops) -> {
+                int count = drops != null ? drops.size() : 0;
+                if (count > 0) share.put(category, count);
+            });
+            return share;
+        }));
     }
 
     private static String enabledDisabled(boolean enabled) {

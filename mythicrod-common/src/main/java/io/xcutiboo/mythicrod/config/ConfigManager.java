@@ -13,7 +13,7 @@ public class ConfigManager {
 
     private final MythicRodRuntime runtime;
     private PlatformConfiguration config;
-    private static final int CURRENT_CONFIG_VERSION = 8;
+    private static final int CURRENT_CONFIG_VERSION = 9;
 
     private static final String DEFAULT_PREFIX = "<gold><bold>[MythicRod]</bold></gold> ";
     private static final String DEFAULT_MSG_LEGENDARY = "<gold><bold>✨ LEGENDARY CATCH! ✨</bold></gold>\n<yellow>You caught <gold><bold>{amount}x {item}</bold></gold>!";
@@ -45,6 +45,7 @@ public class ConfigManager {
     private boolean statisticsEnabled = true;
     private boolean permissionsEnabled = true;
     private boolean debugEnabled = false;
+    private boolean updateCheckEnabled = true;
     private RewardDeliveryMode rewardDeliveryMode = RewardDeliveryMode.VANILLA_RETRIEVE;
     private double basicRodLuckMultiplier = 1.0D;
     private double advancedRodLuckMultiplier = 1.25D;
@@ -104,6 +105,7 @@ public class ConfigManager {
             statisticsEnabled = config.getBoolean("features.statistics.enabled", true);
             permissionsEnabled = config.getBoolean("features.permissions.enabled", true);
             debugEnabled = config.getBoolean("features.debug.enabled", false);
+            updateCheckEnabled = config.getBoolean("features.update-check.enabled", true);
             rewardDeliveryMode = resolveRewardDeliveryMode();
             basicRodLuckMultiplier = resolveRodLuckMultiplier("basic", 1.0D);
             advancedRodLuckMultiplier = resolveRodLuckMultiplier("advanced", 1.25D);
@@ -276,6 +278,7 @@ public class ConfigManager {
     public boolean trackStatistics() { return statisticsEnabled; }
     public boolean usePermissions() { return permissionsEnabled; }
     public boolean isDebugMode() { return debugEnabled; }
+    public boolean isUpdateCheckEnabled() { return updateCheckEnabled; }
     public RewardDeliveryMode getRewardDeliveryMode() { return rewardDeliveryMode; }
     public double getRodLuckMultiplier(String tier) {
         if (tier == null || tier.isBlank()) {

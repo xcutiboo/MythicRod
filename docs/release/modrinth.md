@@ -38,7 +38,7 @@ Uploads the MythicRod Paper jar to
 | Files | `MythicRod-Paper-<version>.jar` (the shaded jar) |
 | Name | `MythicRod <version>` |
 | Loaders | `paper`, `folia` |
-| Game versions | `1.21.11` |
+| Game versions | `26.1.2` |
 | Changelog | `CHANGELOG.md` |
 | Dependencies | Nexo as optional |
 | Fail mode | `warn` (workflow does not abort on a single field complaint) |

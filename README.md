@@ -12,7 +12,7 @@ editor, statistics, and a small public API.
 <sub><b>Project</b></sub><br/>
 [![Release](https://img.shields.io/github/v/release/xcutiboo/MythicRod?style=flat-square&labelColor=0b1320&color=dca13a&label=release)](https://github.com/xcutiboo/MythicRod/releases)
 [![License](https://img.shields.io/badge/License-MIT-0b1320?style=flat-square&labelColor=0b1320&color=b87924)](LICENSE)
-[![Paper](https://img.shields.io/badge/Paper-1.21.x-0b1320?style=flat-square&labelColor=0b1320&color=dca13a)](https://papermc.io)
+[![Paper](https://img.shields.io/badge/Paper-26.1.2-0b1320?style=flat-square&labelColor=0b1320&color=dca13a)](https://papermc.io)
 [![Java](https://img.shields.io/badge/Java-25-0b1320?style=flat-square&labelColor=0b1320&color=f0c75a)](https://adoptium.net)
 [![Folia](https://img.shields.io/badge/Folia-region--ready-0b1320?style=flat-square&labelColor=0b1320&color=835516)](https://papermc.io/software/folia)
 
@@ -30,6 +30,10 @@ editor, statistics, and a small public API.
 [![Build](https://img.shields.io/github/actions/workflow/status/xcutiboo/MythicRod/build.yml?branch=master&style=flat-square&labelColor=0b1320&color=dca13a&label=build)](https://github.com/xcutiboo/MythicRod/actions/workflows/build.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/xcutiboo/MythicRod/codeql.yml?branch=master&style=flat-square&labelColor=0b1320&color=dca13a&label=codeql)](https://github.com/xcutiboo/MythicRod/actions/workflows/codeql.yml)
 [![SonarCloud](https://img.shields.io/sonar/quality_gate/xcutiboo_MythicRod?server=https%3A%2F%2Fsonarcloud.io&style=flat-square&labelColor=0b1320&color=dca13a&label=sonar)](https://sonarcloud.io/project/overview?id=xcutiboo_MythicRod)
+
+<sub><b>Live telemetry</b></sub><br/>
+[![bStats servers](https://img.shields.io/bstats/servers/31484?style=flat-square&labelColor=0b1320&color=dca13a&label=servers)](https://bstats.org/plugin/bukkit/MythicRod/31484)
+[![bStats players](https://img.shields.io/bstats/players/31484?style=flat-square&labelColor=0b1320&color=dca13a&label=players)](https://bstats.org/plugin/bukkit/MythicRod/31484)
 
 [Docs](https://xcutiboo.github.io/MythicRod/) ·
 [Developer API](docs/developer-api.md) ·
@@ -61,14 +65,16 @@ No extra runtime dependencies. Nexo is optional and only kicks in if you use
 - Bundled languages: `en_US` (source) and `ja_JP`. The rest land through Crowdin.
 
 Folia owner-thread handoffs are written into the scheduler, listener and
-command paths. I have not smoke-tested against a live Folia jar yet, so treat
-the `folia-supported: true` flag in `paper-plugin.yml` as a target rather than
-a guarantee until you boot it on your own server.
+command paths. A live smoke test on Folia `26.1.2 build 8` covered the GUI,
+drop rolls, statistics writes, language reload and `/mythicrod give`.
+`/mythicrod status` reports `Runtime: Folia` when the plugin is running on
+a Folia jar.
 
-Spigot has a compatibility stub jar in `mythicrod-spigot/`. It loads cleanly,
-logs that Paper is the supported runtime, and otherwise stays idle. The full
-feature surface (drops, GUI, public API, Folia handoffs) is Paper-only by
-design.
+Spigot is **not** an active build target. The `mythicrod-spigot/` module
+ships a stub jar that loads cleanly on a Spigot server and logs that Paper
+is the supported runtime. No further work on Spigot is planned until there
+is enough community interest or contributor support to justify a full
+backport.
 
 
 ![divider](assets/divider.svg)
@@ -313,10 +319,13 @@ Crowdin.
 
 ## Metrics
 
-bStats pluginId `23847`. The chart set covers Paper version, Folia detection,
-language, profile, delivery mode, feature toggles, drop count, tracked
-player count, and total custom catches. bStats startup failures don't block
-the plugin from enabling.
+bStats pluginId `31484`. The custom chart set covers Folia detection,
+server language, active profile, reward delivery mode, every feature
+toggle, total configured drops and categories, tracked player count,
+total custom catches, and per-category drop share. bStats startup
+failures don't block the plugin from enabling.
+
+[![bStats overview](https://bstats.org/signatures/bukkit/MythicRod.svg)](https://bstats.org/plugin/bukkit/MythicRod/31484)
 
 
 ![divider](assets/divider.svg)

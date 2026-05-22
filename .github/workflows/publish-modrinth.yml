@@ -42,25 +42,39 @@ jobs:
         id: meta
         env:
           REF_NAME: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          version="${REF_NAME#v}"
+          version=""
+          if [[ "$REF_NAME" == v* ]]; then
+            version="${REF_NAME#v}"
+          fi
           if [[ -z "$version" ]]; then
             version=$(./gradlew -q :mythicrod-paper:properties | awk -F': *' '/^version:/{print $2; exit}')
+          fi
+          if [[ -z "$version" ]]; then
+            echo "Could not resolve a version; aborting." >&2
+            exit 1
           fi
           jar=$(ls mythicrod-paper/build/libs/MythicRod-Paper-*.jar | grep -v -- '-dev' | head -1)
           channel="release"
           case "$version" in
             *-rc*|*-beta*|*-alpha*|*-snapshot*) channel="beta" ;;
           esac
+          # Manual dispatches only sync the project body; skip version upload to avoid duplicates.
+          jar_publish="true"
+          if [[ "$EVENT_NAME" != "push" ]]; then
+            jar_publish="false"
+          fi
           {
             echo "version=$version"
             echo "jar=$jar"
             echo "channel=$channel"
+            echo "jar_publish=$jar_publish"
           } >> "$GITHUB_OUTPUT"
 
       - name: Publish to Modrinth
-        if: env.MODRINTH_TOKEN != ''
+        if: env.MODRINTH_TOKEN != '' && steps.meta.outputs.jar_publish == 'true'
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: mythicrod
@@ -73,7 +87,7 @@ jobs:
             paper
             folia
           game-versions: |
-            1.21.11
+            26.1.2
           changelog-file: CHANGELOG.md
           dependencies: |
             Nexo(optional){modrinth:nexo}

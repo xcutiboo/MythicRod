@@ -36,6 +36,7 @@ import io.xcutiboo.mythicrod.paper.gui.menus.MainHubMenu;
 import io.xcutiboo.mythicrod.paper.gui.menus.RodMenu;
 import io.xcutiboo.mythicrod.paper.gui.menus.StatsMenu;
 import io.xcutiboo.mythicrod.paper.metrics.MetricsReporter;
+import io.xcutiboo.mythicrod.paper.update.UpdateChecker;
 import io.xcutiboo.mythicrod.paper.internal.config.LanguageFileLoader;
 import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import io.xcutiboo.mythicrod.paper.platform.PaperServer;
@@ -67,6 +68,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     private GUIManager guiManager;
     private PlayerDataService playerDataService;
     private StatisticsPlayerListener statisticsPlayerListener;
+    private UpdateChecker updateChecker;
     private LanguageFileLoader languageFileLoader;
 
     private PaperMythicRodAPI api;
@@ -93,6 +95,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
             bootstrapCommandsAndListeners();
             bootstrapGuiAndApi();
             initializeMetrics();
+            initializeUpdateChecker();
             announceStartup(start);
         } catch (Exception e) {
             logger.error("Failed to enable MythicRod", e);
@@ -202,6 +205,9 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     public void onDisable() {
         shutdownStep("services", () -> super.getServer().getServicesManager().unregisterAll(this));
         shutdownStep("event handlers", () -> HandlerList.unregisterAll(this));
+        if (updateChecker != null) {
+            shutdownStep("update checker", updateChecker::shutdown);
+        }
         if (statisticsManager != null) {
             shutdownStep("statistics manager", () -> {
                 cancelStatisticsSaveTask();
@@ -400,6 +406,16 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
 
     private void initializeMetrics() {
         new MetricsReporter(this).start();
+    }
+
+    private void initializeUpdateChecker() {
+        if (configManager != null && !configManager.isUpdateCheckEnabled()) {
+            return;
+        }
+        if (updateChecker == null) {
+            updateChecker = new UpdateChecker(this);
+        }
+        updateChecker.start();
     }
 
     private void validateConfiguredParticles() {

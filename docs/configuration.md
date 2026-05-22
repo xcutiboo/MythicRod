@@ -104,6 +104,15 @@ Two surfaces of MythicRod can be edited live without restarting:
 active language at runtime. Editing `language.default` in `config.yml`
 takes effect on the next reload.
 
+## Update checking
+
+`features.update-check.enabled` (default `true`) controls a small async
+worker that polls `api.github.com/repos/xcutiboo/MythicRod/releases/latest`
+on enable and every six hours afterwards. The check sends no data; it only
+parses the `tag_name` field and logs a single warning line when the
+installed plugin is older than the latest published release. Setting the
+flag to `false` stops every outbound call to GitHub from the plugin.
+
 ## What survives a reload, what does not
 
 | Surface | Survives reload? |

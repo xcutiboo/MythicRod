@@ -14,7 +14,7 @@ live.
 ## What you need
 
 - A Paper server matching the `paperVersion` in `gradle.properties`
-  (currently Paper `26.1.2`, Minecraft 1.21.x).
+  (currently Paper `26.1.2`, Minecraft `26.1.2`).
 - Java 25 or newer on the server host.
 - Optional: [Nexo](https://polymart.org/resource/nexo) if you want
   `nexo:*` identifiers in `drops.yml`.

@@ -50,7 +50,7 @@ Pin against the stable surfaces:
 
 | MythicRod | Paper API | Minecraft |
 | --- | --- | --- |
-| `2026.1.x` | `26.1.x` | `1.21.11` |
+| `2026.1.x` | `26.1.x` | `26.1.2` |
 
 A Paper API generation bump always lands in a year roll-over or a
 clearly-flagged minor release. Patch releases never raise the floor.
