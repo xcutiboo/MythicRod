@@ -15,14 +15,10 @@
 | `mythicrod-api` | Public API, service contracts, value objects. No Bukkit/Paper types. |
 | `mythicrod-common` | Drop logic, config, stats, text. Depends only on `mythicrod-api`. |
 | `mythicrod-paper` | Paper runtime: listeners, commands, GUIs, scheduler bridge, item factory. |
+| `mythicrod-spigot` | Compatibility stub. Loads on a Spigot server, logs that Paper is the supported runtime, then sits idle. Do not move feature code into this module. |
 
 If you find yourself pulling Bukkit/Paper types into `mythicrod-api` or
 `mythicrod-common`, that's a design break. Look for another seam.
-
-A `mythicrod-spigot` module is not in the repo yet. The split is set up so
-adding it is straightforward, but a second runtime is real maintenance load
-and I'm not shipping a half-baked one. If you want it sooner,
-[Ko-fi](https://ko-fi.com/xcutiboo) is the fastest signal.
 
 ## Build and test
 
@@ -43,6 +39,11 @@ CI runs the same `./gradlew build` on every push and PR.
   Use the plugin logger.
 - `mythicrod-api` should stay source-compatible across minor releases.
   Breaking changes go in a major version bump and get a CHANGELOG entry.
+- New Javadocs use Java 25 markdown form (`///` lines) rather than the
+  legacy `/** */` block. Keep them short and focused on contracts, not
+  prose.
+- Avoid em dashes in code comments, docs, README, and commit messages.
+  Use plain punctuation.
 
 ## Folia notes
 

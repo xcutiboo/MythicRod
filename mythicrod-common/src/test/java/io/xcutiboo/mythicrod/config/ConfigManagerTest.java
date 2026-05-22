@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -164,6 +165,31 @@ class ConfigManagerTest {
         assertEquals(true, manager.isDebugMode());
         assertEquals(RewardDeliveryMode.DROP_AT_PLAYER, manager.getRewardDeliveryMode());
         assertEquals(300, manager.getStatsSaveInterval());
+    }
+
+    @Test
+    void setLanguageRejectsMalformedLocaleAndKeepsPrevious() {
+        ConfigManager manager = new ConfigManager(new FakeRuntime(), new MapPlatformConfiguration(Map.of()));
+        String previous = manager.getLanguage();
+
+        assertFalse(manager.setLanguage(null), "null locale must be rejected");
+        assertFalse(manager.setLanguage(""), "blank locale must be rejected");
+        assertFalse(manager.setLanguage("english"), "non-pattern locale must be rejected");
+        assertFalse(manager.setLanguage("en-US"), "hyphenated locale must be rejected");
+        assertFalse(manager.setLanguage("EN_US"), "uppercase prefix must be rejected");
+
+        assertEquals(previous, manager.getLanguage(), "rejected setters must not mutate state");
+    }
+
+    @Test
+    void setLanguageAcceptsPatternedLocale() {
+        ConfigManager manager = new ConfigManager(new FakeRuntime(), new MapPlatformConfiguration(Map.of()));
+
+        assertTrue(manager.setLanguage("ja_JP"));
+        assertEquals("ja_JP", manager.getLanguage());
+
+        assertTrue(manager.setLanguage("en_GB"));
+        assertEquals("en_GB", manager.getLanguage());
     }
 
     @Test
