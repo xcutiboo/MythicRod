@@ -158,61 +158,80 @@ public class PaperMythicRodAPI implements MythicRodAPI {
             @Nullable String biomeName,
             double luckMultiplier) {
         List<CustomDrop> builtInDrops = dropManager.getEligibleDrops(player, biomeName);
-        List<WeightedExternalProvider> externalChoices = new ArrayList<>(externalProviders.size());
+        List<WeightedExternalProvider> externalChoices = buildExternalChoices(player);
 
-        double builtInWeight = 0.0D;
-        for (CustomDrop drop : builtInDrops) {
-            builtInWeight += dropManager.getEffectiveWeight(drop, luckMultiplier);
-        }
-
-        double externalWeight = 0.0D;
-        for (ExternalDropProvider provider : externalProviders.values()) {
-            double weight = getProviderWeight(provider, player);
-            if (weight > 0.0D) {
-                externalChoices.add(new WeightedExternalProvider(provider, weight));
-                externalWeight += weight;
-            }
-        }
-
-        double totalWeight = builtInWeight + externalWeight;
-        if (totalWeight <= 0.0D) {
-            return null;
-        }
+        double totalWeight = sumBuiltInWeight(builtInDrops, luckMultiplier)
+            + externalChoices.stream().mapToDouble(WeightedExternalProvider::weight).sum();
+        if (totalWeight <= 0.0D) return null;
 
         while (totalWeight > 0.0D) {
             double roll = ThreadLocalRandom.current().nextDouble(totalWeight);
-            double cursor = 0.0D;
+            RewardResolution builtInPick = pickBuiltIn(builtInDrops, roll, luckMultiplier);
+            if (builtInPick != null) return builtInPick;
 
-            for (CustomDrop drop : builtInDrops) {
-                cursor += dropManager.getEffectiveWeight(drop, luckMultiplier);
-                if (roll < cursor) {
-                    return new RewardResolution(drop, null);
-                }
-            }
+            double afterBuiltIn = sumBuiltInWeight(builtInDrops, luckMultiplier);
+            ExternalRollResult externalPick = pickExternal(externalChoices, player, roll, afterBuiltIn);
+            if (externalPick.resolution() != null) return externalPick.resolution();
+            if (!externalPick.shouldReroll()) break;
+            totalWeight -= externalPick.removedWeight();
+        }
+        return null;
+    }
 
-            boolean rerollRequired = false;
-            for (int index = 0; index < externalChoices.size(); index++) {
-                WeightedExternalProvider externalChoice = externalChoices.get(index);
-                cursor += externalChoice.weight();
-                if (roll < cursor) {
-                    PlatformItem externalItem = createExternalItem(externalChoice.provider(), player);
-                    if (externalItem != null) {
-                        return new RewardResolution(adaptExternalDrop(externalChoice.provider(), externalItem), externalItem);
-                    }
-
-                    totalWeight -= externalChoice.weight();
-                    externalChoices.remove(index);
-                    rerollRequired = true;
-                    break;
-                }
-            }
-
-            if (!rerollRequired) {
-                break;
+    private List<WeightedExternalProvider> buildExternalChoices(PlatformPlayer player) {
+        List<WeightedExternalProvider> choices = new ArrayList<>(externalProviders.size());
+        for (ExternalDropProvider provider : externalProviders.values()) {
+            double weight = getProviderWeight(provider, player);
+            if (weight > 0.0D) {
+                choices.add(new WeightedExternalProvider(provider, weight));
             }
         }
+        return choices;
+    }
 
+    private double sumBuiltInWeight(List<CustomDrop> builtInDrops, double luckMultiplier) {
+        double total = 0.0D;
+        for (CustomDrop drop : builtInDrops) {
+            total += dropManager.getEffectiveWeight(drop, luckMultiplier);
+        }
+        return total;
+    }
+
+    private RewardResolution pickBuiltIn(List<CustomDrop> builtInDrops, double roll, double luckMultiplier) {
+        double cursor = 0.0D;
+        for (CustomDrop drop : builtInDrops) {
+            cursor += dropManager.getEffectiveWeight(drop, luckMultiplier);
+            if (roll < cursor) {
+                return new RewardResolution(drop, null);
+            }
+        }
         return null;
+    }
+
+    private record ExternalRollResult(RewardResolution resolution, boolean shouldReroll, double removedWeight) {
+        static ExternalRollResult miss() { return new ExternalRollResult(null, false, 0.0D); }
+        static ExternalRollResult hit(RewardResolution res) { return new ExternalRollResult(res, false, 0.0D); }
+        static ExternalRollResult reroll(double removed) { return new ExternalRollResult(null, true, removed); }
+    }
+
+    private ExternalRollResult pickExternal(List<WeightedExternalProvider> externalChoices,
+                                             PlatformPlayer player, double roll, double cursorStart) {
+        double cursor = cursorStart;
+        for (int index = 0; index < externalChoices.size(); index++) {
+            WeightedExternalProvider externalChoice = externalChoices.get(index);
+            cursor += externalChoice.weight();
+            if (roll < cursor) {
+                PlatformItem externalItem = createExternalItem(externalChoice.provider(), player);
+                if (externalItem != null) {
+                    return ExternalRollResult.hit(new RewardResolution(
+                        adaptExternalDrop(externalChoice.provider(), externalItem), externalItem));
+                }
+                double removed = externalChoice.weight();
+                externalChoices.remove(index);
+                return ExternalRollResult.reroll(removed);
+            }
+        }
+        return ExternalRollResult.miss();
     }
 
     /// Runs the single-player stats lookup away from Paper/Folia owner threads.
