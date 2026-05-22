@@ -779,18 +779,7 @@ public class BrigadierCommandManager {
             int rank = 1;
             for (PlayerStats ps : topFishers) {
                 try {
-                    // Prefer cached player name; fall back to OfflinePlayer lookup
-                    String name = ps.getPlayerName();
-                    if (name.isEmpty()) {
-                        try {
-                            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(ps.getPlayerUuid());
-                            name = offlinePlayer.getName() != null ? offlinePlayer.getName() : "Unknown";
-                        } catch (RuntimeException nameError) {
-                            plugin.getLogger().log(Level.WARNING, nameError,
-                                () -> "Failed to resolve player name for " + ps.getPlayerUuid());
-                            name = "Unknown";
-                        }
-                    }
+                    String name = ps.getPlayerName().isEmpty() ? resolveOfflineName(ps) : ps.getPlayerName();
                     sendMessage(source.getSender(), tr(source.getSender(), "stats.top-entry",
                         Map.of("rank", String.valueOf(rank), "player", name, "catches", String.valueOf(ps.getTotalCaught()))));
                     rank++;
@@ -805,6 +794,33 @@ public class BrigadierCommandManager {
             sendMessage(source.getSender(), tr(source.getSender(), TR_GENERAL_ERROR));
             plugin.getLogger().log(Level.SEVERE, "Error executing top command", e);
             return 0;
+        }
+    }
+
+    private String optionalStringArg(CommandContext<CommandSourceStack> context, String name) {
+        try {
+            return StringArgumentType.getString(context, name);
+        } catch (IllegalArgumentException _) {
+            return null;
+        }
+    }
+
+    private int optionalIntArg(CommandContext<CommandSourceStack> context, String name, int fallback) {
+        try {
+            return IntegerArgumentType.getInteger(context, name);
+        } catch (IllegalArgumentException _) {
+            return fallback;
+        }
+    }
+
+    private String resolveOfflineName(PlayerStats ps) {
+        try {
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(ps.getPlayerUuid());
+            return offlinePlayer.getName() != null ? offlinePlayer.getName() : "Unknown";
+        } catch (RuntimeException nameError) {
+            plugin.getLogger().log(Level.WARNING, nameError,
+                () -> "Failed to resolve player name for " + ps.getPlayerUuid());
+            return "Unknown";
         }
     }
 
@@ -1359,18 +1375,8 @@ public class BrigadierCommandManager {
                 return 0;
             }
 
-            String biomeArg = null;
-            try {
-                biomeArg = StringArgumentType.getString(context, "biome");
-            } catch (IllegalArgumentException _) {
-            }
-            int count;
-            try {
-                count = IntegerArgumentType.getInteger(context, KEY_COUNT);
-            } catch (IllegalArgumentException _) {
-                count = 100;
-            }
-            count = Math.clamp(count, 1, 10000);
+            String biomeArg = optionalStringArg(context, "biome");
+            int count = Math.clamp(optionalIntArg(context, KEY_COUNT, 100), 1, 10000);
 
             String biome = biomeArg;
             if (biome == null || biome.isBlank()) {

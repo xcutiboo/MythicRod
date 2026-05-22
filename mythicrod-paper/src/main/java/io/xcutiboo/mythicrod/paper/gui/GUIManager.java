@@ -286,11 +286,7 @@ public class GUIManager implements Listener {
                     }
                 });
             } else {
-                try {
-                    menu.onClose();
-                } catch (Exception e) {
-                    plugin.getLogger().log(Level.WARNING, "Error on menu close", e);
-                }
+                menu.onClose();
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Error handling inventory close", e);
@@ -303,18 +299,14 @@ public class GUIManager implements Listener {
             Player player = event.getPlayer();
             pendingTextInputs.remove(player.getUniqueId());
 
-            try {
-                if (player.getOpenInventory() != null) {
-                    Inventory topInventory = player.getOpenInventory().getTopInventory();
-                    if (topInventory.getHolder() instanceof MythicRodMenuHolder holder) {
-                        BaseMenu menu = holder.getMenu();
-                        if (menu != null) {
-                            menu.onClose();
-                        }
+            if (player.getOpenInventory() != null) {
+                Inventory topInventory = player.getOpenInventory().getTopInventory();
+                if (topInventory.getHolder() instanceof MythicRodMenuHolder holder) {
+                    BaseMenu menu = holder.getMenu();
+                    if (menu != null) {
+                        menu.onClose();
                     }
                 }
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "Error closing menu on quit", e);
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Error handling player quit", e);
@@ -324,25 +316,28 @@ public class GUIManager implements Listener {
     public void shutdown() {
         try {
             for (Player player : plugin.getServer().getOnlinePlayers()) {
-                if (player != null && player.getOpenInventory() != null) {
-                    try {
-                        Inventory topInventory = player.getOpenInventory().getTopInventory();
-                        if (topInventory.getHolder() instanceof MythicRodMenuHolder holder) {
-                            player.closeInventory();
-                            BaseMenu menu = holder.getMenu();
-                            if (menu != null) {
-                                menu.onClose();
-                            }
-                        }
-                    } catch (Exception e) {
-                        plugin.getLogger().log(Level.WARNING, "Error closing player menu during shutdown", e);
-                    }
-                }
+                closePlayerMenuQuietly(player);
             }
             pendingTextInputs.clear();
             menuFactories.clear();
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Error during GUI shutdown", e);
+        }
+    }
+
+    private void closePlayerMenuQuietly(Player player) {
+        if (player == null || player.getOpenInventory() == null) return;
+        try {
+            Inventory topInventory = player.getOpenInventory().getTopInventory();
+            if (topInventory.getHolder() instanceof MythicRodMenuHolder holder) {
+                player.closeInventory();
+                BaseMenu menu = holder.getMenu();
+                if (menu != null) {
+                    menu.onClose();
+                }
+            }
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Error closing player menu during shutdown", e);
         }
     }
 

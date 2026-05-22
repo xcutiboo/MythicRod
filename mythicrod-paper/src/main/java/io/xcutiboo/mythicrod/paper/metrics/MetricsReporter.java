@@ -34,18 +34,30 @@ public final class MetricsReporter {
 
     private void registerCharts() {
         if (metrics == null) return;
+        registerEnvironmentCharts();
+        registerConfigCharts();
+        registerToggleCharts();
+        registerCatalogCharts();
+    }
 
+    private void registerEnvironmentCharts() {
         metrics.addCustomChart(new SimplePie("server_type", () -> "Paper"));
         metrics.addCustomChart(new SimplePie("minecraft_version", () -> plugin.getServer().getMinecraftVersion()));
         metrics.addCustomChart(new SimplePie("folia_runtime", () -> plugin.isFoliaRuntime() ? "Folia" : "Paper"));
         metrics.addCustomChart(new SimplePie("language", () ->
             plugin.getLanguageManager() != null ? plugin.getLanguageManager().getLanguage() : "en"));
+    }
+
+    private void registerConfigCharts() {
         metrics.addCustomChart(new SimplePie("profile", () ->
             plugin.getConfigManager() != null ? plugin.getConfigManager().getProfile() : "balanced"));
         metrics.addCustomChart(new SimplePie("reward_delivery_mode", () ->
             plugin.getConfigManager() != null
                 ? plugin.getConfigManager().getRewardDeliveryMode().getConfigValue()
                 : "vanilla_retrieve"));
+    }
+
+    private void registerToggleCharts() {
         metrics.addCustomChart(new SimplePie("statistics_enabled", () ->
             enabledDisabled(plugin.getConfigManager() != null && plugin.getConfigManager().trackStatistics())));
         metrics.addCustomChart(new SimplePie("biome_drops_enabled", () ->
@@ -59,6 +71,9 @@ public final class MetricsReporter {
             enabledDisabled(plugin.getConfigManager() != null && plugin.getConfigManager().useSounds())));
         metrics.addCustomChart(new SimplePie("nexo_enabled", () ->
             enabledDisabled(plugin.getPlatformServer() != null && plugin.getPlatformServer().isNexoEnabled())));
+    }
+
+    private void registerCatalogCharts() {
         metrics.addCustomChart(new SingleLineChart("configured_drops", () ->
             plugin.getDropManager() != null ? plugin.getDropManager().getTotalDropCount() : 0));
         metrics.addCustomChart(new SingleLineChart("configured_drop_categories", () ->

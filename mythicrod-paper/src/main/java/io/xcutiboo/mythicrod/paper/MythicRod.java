@@ -203,70 +203,35 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
 
     @Override
     public void onDisable() {
+        shutdownStep("services", () -> super.getServer().getServicesManager().unregisterAll(this));
+        shutdownStep("event handlers", () -> HandlerList.unregisterAll(this));
+        if (statisticsManager != null) {
+            shutdownStep("statistics manager", () -> {
+                cancelStatisticsSaveTask();
+                statisticsManager.cleanup();
+            });
+        }
+        if (languageManager != null) {
+            shutdownStep("language manager", languageManager::shutdown);
+        }
+        if (guiManager != null) {
+            shutdownStep("GUI manager", guiManager::shutdown);
+        }
+        if (playerDataService != null) {
+            shutdownStep("player data cache", playerDataService::clearAllCache);
+        }
+        if (platformScheduler instanceof FoliaSchedulerService schedulerService) {
+            shutdownStep("scheduled tasks", schedulerService::cancelPluginTasks);
+        }
+        logger.info("MythicRod disabled successfully");
+    }
+
+    private void shutdownStep(String label, Runnable step) {
         try {
-            try {
-                super.getServer().getServicesManager().unregisterAll(this);
-                logger.info("Services unregistered");
-            } catch (Exception e) {
-                logger.warn("Error unregistering services: {}", e.getMessage());
-            }
-
-            try {
-                HandlerList.unregisterAll(this);
-                logger.info("Event handlers unregistered");
-            } catch (Exception e) {
-                logger.warn("Error unregistering event handlers: {}", e.getMessage());
-            }
-
-            if (statisticsManager != null) {
-                try {
-                    cancelStatisticsSaveTask();
-                    statisticsManager.cleanup();
-                    logger.info("Statistics manager cleaned up");
-                } catch (Exception e) {
-                    logger.warn("Error cleaning up statistics manager", e);
-                }
-            }
-
-            if (languageManager != null) {
-                try {
-                    languageManager.shutdown();
-                    logger.info("Language manager shut down");
-                } catch (Exception e) {
-                    logger.warn("Error shutting down language manager", e);
-                }
-            }
-
-            if (guiManager != null) {
-                try {
-                    guiManager.shutdown();
-                    logger.info("GUI manager shut down");
-                } catch (Exception e) {
-                    logger.warn("Error shutting down GUI manager", e);
-                }
-            }
-
-            if (playerDataService != null) {
-                try {
-                    playerDataService.clearAllCache();
-                    logger.info("Player data cache cleared");
-                } catch (Exception e) {
-                    logger.warn("Error clearing player data cache", e);
-                }
-            }
-
-            try {
-                if (platformScheduler instanceof FoliaSchedulerService schedulerService) {
-                    schedulerService.cancelPluginTasks();
-                    logger.info("Scheduled MythicRod tasks cancelled");
-                }
-            } catch (Exception e) {
-                logger.warn("Error cancelling scheduled tasks", e);
-            }
-
-            logger.info("MythicRod disabled successfully");
+            step.run();
+            logger.info("Shutdown step completed: {}", label);
         } catch (Exception e) {
-            logger.error("Unexpected error during plugin disable", e);
+            logger.warn("Shutdown step failed: " + label, e);
         }
     }
 
