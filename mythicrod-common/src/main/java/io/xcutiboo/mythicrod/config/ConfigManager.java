@@ -203,7 +203,7 @@ public class ConfigManager {
             return fallback;
         }
 
-        double clamped = Math.max(MIN_ROD_LUCK_MULTIPLIER, Math.min(MAX_ROD_LUCK_MULTIPLIER, configuredValue));
+        double clamped = Math.clamp(configuredValue, MIN_ROD_LUCK_MULTIPLIER, MAX_ROD_LUCK_MULTIPLIER);
         if (configuredValue != clamped) {
             logger().log(Level.WARNING, () -> "Rod luck multiplier at " + path + " clamped from "
                 + configuredValue + " to " + clamped);

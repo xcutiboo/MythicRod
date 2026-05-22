@@ -35,6 +35,27 @@ import lombok.NonNull;
  * readers iterate over the list.
  */
 public class DropManager implements DropCatalog {
+    private static final String KEY_AMOUNT = "amount";
+    private static final String KEY_CUSTOM_MODEL_DATA = "custom_model_data";
+    private static final String KEY_CUSTOM_MODEL_DATA_LEGACY = "customModelData";
+    private static final String KEY_CUSTOM_NAME = "custom_name";
+    private static final String KEY_NAME = "name";
+    private static final String KEY_LORE = "lore";
+    private static final String KEY_GLOW = "glow";
+    private static final String KEY_GLOWING = "glowing";
+    private static final String KEY_PERMISSION = "permission";
+    private static final String KEY_BIOMES = "biomes";
+    private static final String KEY_NEXO_ITEM = "nexo-item";
+    private static final String KEY_NEXO_ITEM_LEGACY = "nexo_item";
+    private static final String KEY_IDENTIFIER = "identifier";
+    private static final String KEY_MATERIAL = "material";
+    private static final String KEY_ENCHANTMENTS = "enchantments";
+    private static final String KEY_ITEM_FLAGS = "item_flags";
+    private static final String KEY_WEIGHT = "weight";
+    private static final String KEY_CHANCE_LEGACY = "chance";
+    private static final String NEXO_PREFIX = "nexo:";
+    private static final String BIOME_CATEGORY_PREFIX = "biome_";
+
     @NonNull
     private final String loggerName;
 
@@ -166,11 +187,11 @@ public class DropManager implements DropCatalog {
     }
 
     private List<String> implicitBiomesForCategory(String categoryKey) {
-        if (!categoryKey.startsWith("biome_")) {
+        if (!categoryKey.startsWith(BIOME_CATEGORY_PREFIX)) {
             return List.of();
         }
 
-        String biomeKey = categoryKey.substring("biome_".length());
+        String biomeKey = categoryKey.substring(BIOME_CATEGORY_PREFIX.length());
         if (biomeKey.isBlank()) {
             return List.of();
         }
@@ -304,7 +325,7 @@ public class DropManager implements DropCatalog {
         if (namespaceSeparator >= 0 && namespaceSeparator < normalized.length() - 1) {
             normalized = normalized.substring(namespaceSeparator + 1);
         }
-        return "biome_" + normalized.replace('-', '_');
+        return BIOME_CATEGORY_PREFIX + normalized.replace('-', '_');
     }
 
     private List<CustomDrop> loadCategory(
@@ -363,35 +384,35 @@ public class DropManager implements DropCatalog {
 
         try {
             int weight = readConfiguredWeight(dropSection, key, 100, report);
-            int amount = dropSection.getInt("amount", 1);
-            int customModelData = dropSection.getInt("custom_model_data", dropSection.getInt("customModelData", 0));
+            int amount = dropSection.getInt(KEY_AMOUNT, 1);
+            int customModelData = dropSection.getInt(KEY_CUSTOM_MODEL_DATA, dropSection.getInt(KEY_CUSTOM_MODEL_DATA_LEGACY, 0));
             String name = firstNonBlank(
-                dropSection.getString("custom_name", null),
-                dropSection.getString("name", null)
+                dropSection.getString(KEY_CUSTOM_NAME, null),
+                dropSection.getString(KEY_NAME, null)
             );
-            List<String> lore = dropSection.getStringList("lore");
-            boolean glowing = dropSection.getBoolean("glow", dropSection.getBoolean("glowing", false));
-            String permission = dropSection.getString("permission", null);
-            List<String> biomes = dropSection.getStringList("biomes");
+            List<String> lore = dropSection.getStringList(KEY_LORE);
+            boolean glowing = dropSection.getBoolean(KEY_GLOW, dropSection.getBoolean(KEY_GLOWING, false));
+            String permission = dropSection.getString(KEY_PERMISSION, null);
+            List<String> biomes = dropSection.getStringList(KEY_BIOMES);
 
             String nexoItemId = firstNonBlank(
-                dropSection.getString("nexo-item", null),
-                dropSection.getString("nexo_item", null)
+                dropSection.getString(KEY_NEXO_ITEM, null),
+                dropSection.getString(KEY_NEXO_ITEM_LEGACY, null)
             );
             String material = firstNonBlank(
-                dropSection.getString("identifier", null),
-                dropSection.getString("material", null)
+                dropSection.getString(KEY_IDENTIFIER, null),
+                dropSection.getString(KEY_MATERIAL, null)
             );
             if ((material == null || material.isEmpty()) && (nexoItemId == null || nexoItemId.isEmpty())) {
                 warning(() -> "Missing identifier/material for drop: " + key);
                 return null;
             }
 
-            Map<String, Integer> enchantments = loadEnchantments(dropSection.getSection("enchantments"));
+            Map<String, Integer> enchantments = loadEnchantments(dropSection.getSection(KEY_ENCHANTMENTS));
             List<String> flags = readFlagList(dropSection);
 
             String identifier = (nexoItemId != null && !nexoItemId.isEmpty())
-                ? "nexo:" + nexoItemId
+                ? NEXO_PREFIX + nexoItemId
                 : material;
 
             return createDrop(identifier, weight, amount, name, lore, customModelData, enchantments, flags,
@@ -406,12 +427,12 @@ public class DropManager implements DropCatalog {
     private CustomDrop parseMappedDrop(Map<?, ?> mappedDrop, String category, DropLoadReport report) {
         try {
             String nexoItemId = firstNonBlank(
-                asString(mappedDrop.get("nexo-item")),
-                asString(mappedDrop.get("nexo_item"))
+                asString(mappedDrop.get(KEY_NEXO_ITEM)),
+                asString(mappedDrop.get(KEY_NEXO_ITEM_LEGACY))
             );
             String identifier = firstNonBlank(
-                asString(mappedDrop.get("identifier")),
-                asString(mappedDrop.get("material"))
+                asString(mappedDrop.get(KEY_IDENTIFIER)),
+                asString(mappedDrop.get(KEY_MATERIAL))
             );
 
             if ((identifier == null || identifier.isBlank()) && (nexoItemId == null || nexoItemId.isBlank())) {
@@ -420,29 +441,29 @@ public class DropManager implements DropCatalog {
             }
 
             if (nexoItemId != null && !nexoItemId.isBlank()) {
-                identifier = "nexo:" + nexoItemId;
+                identifier = NEXO_PREFIX + nexoItemId;
             }
 
             int weight = readMappedWeight(mappedDrop, category, identifier, 100, report);
-            int amount = asInt(mappedDrop.get("amount"), 1);
+            int amount = asInt(mappedDrop.get(KEY_AMOUNT), 1);
             int customModelData = asInt(
-                firstMappedValue(mappedDrop, "custom_model_data", "customModelData"),
+                firstMappedValue(mappedDrop, KEY_CUSTOM_MODEL_DATA, KEY_CUSTOM_MODEL_DATA_LEGACY),
                 0
             );
             String customName = firstNonBlank(
-                asString(mappedDrop.get("custom_name")),
-                asString(mappedDrop.get("name"))
+                asString(mappedDrop.get(KEY_CUSTOM_NAME)),
+                asString(mappedDrop.get(KEY_NAME))
             );
-            List<String> lore = asStringList(mappedDrop.get("lore"));
+            List<String> lore = asStringList(mappedDrop.get(KEY_LORE));
             boolean glowing = asBoolean(
-                firstMappedValue(mappedDrop, "glow", "glowing"),
+                firstMappedValue(mappedDrop, KEY_GLOW, KEY_GLOWING),
                 false
             );
-            String permission = asString(mappedDrop.get("permission"));
-            List<String> biomes = asStringList(mappedDrop.get("biomes"));
-            Map<String, Integer> enchantments = asIntMap(mappedDrop.get("enchantments"));
+            String permission = asString(mappedDrop.get(KEY_PERMISSION));
+            List<String> biomes = asStringList(mappedDrop.get(KEY_BIOMES));
+            Map<String, Integer> enchantments = asIntMap(mappedDrop.get(KEY_ENCHANTMENTS));
             List<String> flags = firstNonEmpty(
-                asStringList(mappedDrop.get("item_flags")),
+                asStringList(mappedDrop.get(KEY_ITEM_FLAGS)),
                 asStringList(mappedDrop.get("item-flags")),
                 asStringList(mappedDrop.get("flags"))
             );
@@ -470,13 +491,13 @@ public class DropManager implements DropCatalog {
 
         try {
             String trimmed = dropString.trim();
-            if (trimmed.startsWith("nexo:")) {
-                String remainder = trimmed.substring(5);
+            if (trimmed.startsWith(NEXO_PREFIX)) {
+                String remainder = trimmed.substring(NEXO_PREFIX.length());
                 String[] parts = remainder.contains(",") ? remainder.split(",") : remainder.split(":");
                 String nexoId = parts[0].trim();
                 int weight = parts.length > 1 ? Integer.parseInt(parts[1]) : 100;
                 int amount = parts.length > 2 ? Integer.parseInt(parts[2]) : 1;
-                return createDrop("nexo:" + nexoId, weight, amount, null, null, 0, Map.of(), List.of(), false, null, List.of(), nexoId);
+                return createDrop(NEXO_PREFIX + nexoId, weight, amount, null, null, 0, Map.of(), List.of(), false, null, List.of(), nexoId);
             }
 
             String[] parts = trimmed.contains(",") ? trimmed.split(",") : trimmed.split(":");
@@ -1115,12 +1136,12 @@ public class DropManager implements DropCatalog {
         int defaultValue,
         DropLoadReport report
     ) {
-        if (dropSection.contains("weight")) {
-            return dropSection.getInt("weight", defaultValue);
+        if (dropSection.contains(KEY_WEIGHT)) {
+            return dropSection.getInt(KEY_WEIGHT, defaultValue);
         }
-        if (dropSection.contains("chance")) {
+        if (dropSection.contains(KEY_CHANCE_LEGACY)) {
             report.migratedWeightAliases++;
-            return dropSection.getInt("chance", defaultValue);
+            return dropSection.getInt(KEY_CHANCE_LEGACY, defaultValue);
         }
         warning(() -> "Drop '" + dropKey + "' is missing 'weight'; using " + defaultValue + ".");
         return defaultValue;
@@ -1133,12 +1154,12 @@ public class DropManager implements DropCatalog {
         int defaultValue,
         DropLoadReport report
     ) {
-        Object configuredWeight = mappedDrop.get("weight");
+        Object configuredWeight = mappedDrop.get(KEY_WEIGHT);
         if (configuredWeight != null) {
             return asInt(configuredWeight, defaultValue);
         }
 
-        Object migratedWeight = mappedDrop.get("chance");
+        Object migratedWeight = mappedDrop.get(KEY_CHANCE_LEGACY);
         if (migratedWeight != null) {
             report.migratedWeightAliases++;
             return asInt(migratedWeight, defaultValue);

@@ -367,11 +367,6 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     }
 
     @Override
-    public void saveDefaultConfig() {
-        super.saveDefaultConfig();
-    }
-
-    @Override
     public PlatformConfiguration loadConfig(File file) {
         return platformServer.loadConfiguration(file);
     }
