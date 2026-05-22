@@ -9,7 +9,7 @@ junit-platform = "6.0.3"
 shadow = "9.4.1"
 run-paper = "3.0.2"
 hangar-publish = "0.1.2"
-sonarqube = "5.1.0.4882"
+sonarqube = "7.3.0.8198"
 
 # Dependencies
 lombok = "1.18.46"
