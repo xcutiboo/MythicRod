@@ -598,7 +598,7 @@ public class DropsMenu extends BaseMenu {
     }
 
     private void clampPage(int itemCount) {
-        page = Math.max(0, Math.min(page, getMaxPage(itemCount)));
+        page = Math.clamp(page, 0, getMaxPage(itemCount));
     }
 
     private int getMaxPage(int itemCount) {
@@ -613,7 +613,7 @@ public class DropsMenu extends BaseMenu {
             return 0;
         }
         int startIndex = page * CONTENT_SLOTS.length;
-        return Math.max(0, Math.min(CONTENT_SLOTS.length, itemCount - startIndex));
+        return Math.clamp(itemCount - startIndex, 0, CONTENT_SLOTS.length);
     }
 
     private Material getCategoryIcon(String category) {

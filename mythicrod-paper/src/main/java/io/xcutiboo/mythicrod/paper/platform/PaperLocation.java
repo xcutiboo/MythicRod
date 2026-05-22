@@ -4,7 +4,11 @@ import org.bukkit.Location;
 
 import io.xcutiboo.mythicrod.api.platform.PlatformLocation;
 
-public class PaperLocation {
+public final class PaperLocation {
+
+    private PaperLocation() {
+        throw new AssertionError("Utility class");
+    }
 
     public static PlatformLocation fromBukkit(Location location) {
         if (location == null || location.getWorld() == null) {

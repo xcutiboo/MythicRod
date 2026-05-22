@@ -405,7 +405,10 @@ public class GUIManager implements Listener {
     }
 
     private void cancelPendingTextInput(Player player, UUID playerId, TextInputSession session, boolean notifyWithCancelMessage) {
-        UUID resolvedPlayerId = playerId != null ? playerId : player != null ? player.getUniqueId() : null;
+        UUID resolvedPlayerId = playerId;
+        if (resolvedPlayerId == null && player != null) {
+            resolvedPlayerId = player.getUniqueId();
+        }
         if (resolvedPlayerId == null) {
             return;
         }

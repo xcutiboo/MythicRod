@@ -146,9 +146,7 @@ public class DropSelector {
     }
 
     private boolean isEligible(CustomDrop drop, PlatformPlayer player, String biomeName) {
-        if (!hasPermission(player, drop)) return false;
-        if (!matchesBiome(drop, biomeName)) return false;
-        return true;
+        return hasPermission(player, drop) && matchesBiome(drop, biomeName);
     }
 
     private boolean hasPermission(PlatformPlayer player, CustomDrop drop) {
@@ -217,7 +215,8 @@ public class DropSelector {
         }
 
         // Manual binary search for the smallest cumulative[i] >= roll.
-        int lo = 0, hi = n - 1;
+        int lo = 0;
+        int hi = n - 1;
         while (lo < hi) {
             final int mid = (lo + hi) >>> 1;
             if (cumulative[mid] < roll) {

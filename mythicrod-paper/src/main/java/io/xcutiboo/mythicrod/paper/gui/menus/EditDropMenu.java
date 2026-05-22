@@ -107,7 +107,10 @@ public class EditDropMenu extends BaseMenu {
     @Override
     protected String getTitle() {
         CustomDrop d = getContext(CTX_DROP, CustomDrop.class);
-        String id = currentIdentifier != null ? currentIdentifier : (d != null ? d.getIdentifier() : "?");
+        String id = currentIdentifier;
+        if (id == null) {
+            id = d != null ? d.getIdentifier() : "?";
+        }
         return tr("gui.edit_drop.title", Map.of(CTX_IDENTIFIER, id));
     }
 

@@ -244,7 +244,7 @@ public class PaperMythicRodAPI implements MythicRodAPI {
     public CompletableFuture<List<PlayerStatSnapshot>> getTopPlayers(
             @NotNull PlayerStatSnapshot.StatType statType,
             int limit) {
-        int clampedLimit = Math.max(1, Math.min(100, limit));
+        int clampedLimit = Math.clamp(limit, 1, 100);
         return supplyAsync(() -> {
             Map<UUID, PlayerStats> allStats = statisticsManager.getAllStats();
             List<PlayerStatSnapshot> snapshots = new ArrayList<>(allStats.size());

@@ -7,8 +7,11 @@ package io.xcutiboo.mythicrod.api.platform;
 /// platform state. Resolving the world must happen on the platform side.
 public final class PlatformLocation {
     private final String worldName;
-    private final double x, y, z;
-    private final float yaw, pitch;
+    private final double x;
+    private final double y;
+    private final double z;
+    private final float yaw;
+    private final float pitch;
 
     /// Creates a platform-neutral location snapshot.
     ///

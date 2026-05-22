@@ -35,7 +35,7 @@ public class ItemBuilder {
         if (material == null) {
             throw new IllegalArgumentException("Material cannot be null");
         }
-        this.item = new ItemStack(material, Math.max(1, Math.min(amount, material.getMaxStackSize())));
+        this.item = new ItemStack(material, Math.clamp(amount, 1, material.getMaxStackSize()));
     }
 
     private ItemBuilder(ItemStack item) {
@@ -101,7 +101,7 @@ public class ItemBuilder {
     }
 
     public ItemBuilder amount(int amount) {
-        item.setAmount(Math.max(1, Math.min(amount, item.getMaxStackSize())));
+        item.setAmount(Math.clamp(amount, 1, item.getMaxStackSize()));
         return this;
     }
 

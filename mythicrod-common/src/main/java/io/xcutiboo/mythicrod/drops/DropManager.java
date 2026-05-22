@@ -750,7 +750,7 @@ public class DropManager implements DropCatalog {
         for (int i = 0; i < drops.size(); i++) {
             CustomDrop existing = drops.get(i);
             if (existing.getIdentifier().equals(dropId)) {
-                drops.set(i, copyDropWithEdits(
+                drops.set(i, copyDropWithEdits(new EditableDropFields(
                     existing.getIdentifier(),
                     weight,
                     amount,
@@ -762,7 +762,7 @@ public class DropManager implements DropCatalog {
                     glowing,
                     existing.getPermission(),
                     existing.getBiomes()
-                ));
+                )));
                 info(() -> "Updated drop: " + dropId + " in category: " + category);
                 return;
             }
@@ -949,7 +949,7 @@ public class DropManager implements DropCatalog {
         for (int i = 0; i < drops.size(); i++) {
             CustomDrop existing = drops.get(i);
             if (existing == targetDrop) {
-                CustomDrop editedDrop = copyDropWithEdits(
+                CustomDrop editedDrop = copyDropWithEdits(new EditableDropFields(
                     normalizedIdentifier,
                     fields.weight(),
                     fields.amount(),
@@ -961,7 +961,7 @@ public class DropManager implements DropCatalog {
                     fields.glowing(),
                     normalizedPermission,
                     safeBiomes
-                );
+                ));
                 drops.set(i, editedDrop);
                 info(() -> "Updated drop: " + existing.getIdentifier()
                     + " -> " + editedDrop.getIdentifier()
@@ -1014,20 +1014,8 @@ public class DropManager implements DropCatalog {
         return removed;
     }
 
-    private CustomDrop copyDropWithEdits(
-        String identifier,
-        int weight,
-        int amount,
-        String customName,
-        List<String> lore,
-        int customModelData,
-        Map<String, Integer> enchantments,
-        List<String> itemFlags,
-        boolean glowing,
-        String permission,
-        List<String> biomes
-    ) {
-        String trimmedIdentifier = identifier;
+    private CustomDrop copyDropWithEdits(EditableDropFields fields) {
+        String trimmedIdentifier = fields.identifier();
         String nexoItemId = null;
         if (trimmedIdentifier.regionMatches(true, 0, NEXO_PREFIX, 0, NEXO_PREFIX.length())) {
             nexoItemId = trimmedIdentifier.substring(NEXO_PREFIX.length());
@@ -1036,16 +1024,16 @@ public class DropManager implements DropCatalog {
 
         DropConfigurationRecord newConfig = new DropConfigurationRecord(
             trimmedIdentifier,
-            weight,
-            amount,
-            customName,
-            lore,
-            customModelData,
-            enchantments,
-            itemFlags,
-            glowing,
-            permission,
-            biomes,
+            fields.weight(),
+            fields.amount(),
+            fields.customName(),
+            fields.lore(),
+            fields.customModelData(),
+            fields.enchantments(),
+            fields.itemFlags(),
+            fields.glowing(),
+            fields.permission(),
+            fields.biomes(),
             nexoItemId
         );
         return new CustomDrop(newConfig);

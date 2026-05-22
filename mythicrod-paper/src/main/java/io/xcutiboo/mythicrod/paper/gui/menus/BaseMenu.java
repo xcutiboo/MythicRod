@@ -82,12 +82,10 @@ public abstract class BaseMenu {
         }
 
         String permission = getRequiredPermission();
-        if (permission != null && !permission.isEmpty()) {
-            if (!player.hasPermission(permission)) {
-                sendMessage(tr("general.no_permission"));
-                playErrorSound();
-                return;
-            }
+        if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
+            sendMessage(tr("general.no_permission"));
+            playErrorSound();
+            return;
         }
 
         try {

@@ -140,9 +140,7 @@ public class RodMenu extends BaseMenu {
                         tr("gui.rod.effects.lore1"),
                         tr("gui.rod.effects.lore2"),
                         "",
-                        globalEffectsEnabled
-                            ? reducedEffects ? tr("gui.rod.effects.reduced") : tr("gui.rod.effects.full")
-                            : tr("gui.rod.effects.globally_disabled"),
+                        effectsStateLine(globalEffectsEnabled, reducedEffects),
                         "",
                         globalEffectsEnabled ? tr("gui.rod.effects.click") : tr("gui.rod.effects.disabled_click")
                 )
@@ -180,6 +178,13 @@ public class RodMenu extends BaseMenu {
             playClickSound();
             player.closeInventory();
         });
+    }
+
+    private String effectsStateLine(boolean globalEffectsEnabled, boolean reducedEffects) {
+        if (!globalEffectsEnabled) {
+            return tr("gui.rod.effects.globally_disabled");
+        }
+        return reducedEffects ? tr("gui.rod.effects.reduced") : tr("gui.rod.effects.full");
     }
 
     private String getCurrentRodTier(Player player) {
