@@ -562,8 +562,12 @@ public class DropManager implements DropCatalog {
         int sanitizedWeight = sanitizeWeight(id, weight);
         int sanitizedAmount = sanitizeAmount(id, amount);
         int sanitizedModelData = Math.max(0, customModelData);
-        return new CustomDrop(new DropConfigurationRecord(id, sanitizedWeight, sanitizedAmount, name, lore,
+        return createDrop(new DropConfigurationRecord(id, sanitizedWeight, sanitizedAmount, name, lore,
             sanitizedModelData, enchantments, flags, glowing, permission, biomes, nexoItemId));
+    }
+
+    private CustomDrop createDrop(DropConfigurationRecord config) {
+        return new CustomDrop(config);
     }
 
     private static final String DROP_LABEL = "Drop '";
@@ -783,39 +787,50 @@ public class DropManager implements DropCatalog {
         String permission,
         List<String> biomes
     ) {
-        if (category == null || category.isBlank() || identifier == null || identifier.isBlank()) {
+        return addDrop(category, new EditableDropFields(
+            identifier, weight, amount, customName, lore,
+            customModelData, enchantments, itemFlags, glowing, permission, biomes
+        ));
+    }
+
+    /**
+     * Adds a drop to a category from a {@link EditableDropFields} value object.
+     *
+     * <p>Returns {@code null} when the category or fields are invalid.
+     */
+    public CustomDrop addDrop(String category, EditableDropFields fields) {
+        if (category == null || category.isBlank() || fields == null) {
             return null;
         }
-        if (weight <= 0 || amount <= 0 || customModelData < 0) {
+        String normalizedIdentifier = normalizeEditedIdentifier(fields.identifier());
+        if (normalizedIdentifier == null) {
+            return null;
+        }
+        if (fields.weight() <= 0 || fields.amount() <= 0 || fields.customModelData() < 0) {
             return null;
         }
 
         String categoryKey = category.toLowerCase(Locale.ROOT);
-        String normalizedIdentifier = normalizeEditedIdentifier(identifier);
-        if (normalizedIdentifier == null) {
-            return null;
-        }
-
         String nexoItemId = null;
         if (normalizedIdentifier.regionMatches(true, 0, NEXO_PREFIX, 0, NEXO_PREFIX.length())) {
             nexoItemId = normalizedIdentifier.substring(NEXO_PREFIX.length());
         }
-        String normalizedPermission = permission == null || permission.isBlank()
+        String normalizedPermission = fields.permission() == null || fields.permission().isBlank()
             ? null
-            : permission.trim();
+            : fields.permission().trim();
 
         CustomDrop drop = new CustomDrop(new DropConfigurationRecord(
             normalizedIdentifier,
-            weight,
-            amount,
-            customName,
-            lore,
-            customModelData,
-            enchantments,
-            itemFlags,
-            glowing,
+            fields.weight(),
+            fields.amount(),
+            fields.customName(),
+            fields.lore(),
+            fields.customModelData(),
+            fields.enchantments(),
+            fields.itemFlags(),
+            fields.glowing(),
             normalizedPermission,
-            biomes,
+            fields.biomes(),
             nexoItemId
         ));
         CustomDrop scopedDrop = applyImplicitCategoryConditions(categoryKey, List.of(drop)).get(0);
@@ -896,26 +911,39 @@ public class DropManager implements DropCatalog {
         String permission,
         List<String> biomes
     ) {
-        if (targetDrop == null || category == null || category.isBlank()) {
+        return updateDrop(targetDrop, category, new EditableDropFields(
+            identifier, weight, amount, customName, lore,
+            customModelData, enchantments, itemFlags, glowing, permission, biomes
+        ));
+    }
+
+    /**
+     * Replaces the selected drop instance with the supplied {@link EditableDropFields}.
+     *
+     * @return {@code true} when the target was still present and the new fields validated
+     */
+    public boolean updateDrop(CustomDrop targetDrop, String category, EditableDropFields fields) {
+        if (targetDrop == null || category == null || category.isBlank() || fields == null) {
             return false;
         }
-        if (identifier == null || identifier.isBlank()) {
+        if (fields.identifier() == null || fields.identifier().isBlank()) {
             return false;
         }
-        if (weight <= 0 || amount <= 0 || customModelData < 0) {
+        if (fields.weight() <= 0 || fields.amount() <= 0 || fields.customModelData() < 0) {
             return false;
         }
-        String normalizedIdentifier = normalizeEditedIdentifier(identifier);
+        String normalizedIdentifier = normalizeEditedIdentifier(fields.identifier());
         if (normalizedIdentifier == null) {
             return false;
         }
-        String normalizedPermission = permission == null || permission.isBlank()
+        String normalizedPermission = fields.permission() == null || fields.permission().isBlank()
             ? null
-            : permission.trim();
-        List<String> safeLore = lore == null ? List.of() : List.copyOf(lore);
-        Map<String, Integer> safeEnchantments = enchantments == null ? Map.of() : Map.copyOf(enchantments);
-        List<String> safeItemFlags = itemFlags == null ? List.of() : List.copyOf(itemFlags);
-        List<String> safeBiomes = biomes == null ? List.of() : List.copyOf(biomes);
+            : fields.permission().trim();
+        List<String> safeLore = fields.lore() == null ? List.of() : List.copyOf(fields.lore());
+        Map<String, Integer> safeEnchantments = fields.enchantments() == null
+            ? Map.of() : Map.copyOf(fields.enchantments());
+        List<String> safeItemFlags = fields.itemFlags() == null ? List.of() : List.copyOf(fields.itemFlags());
+        List<String> safeBiomes = fields.biomes() == null ? List.of() : List.copyOf(fields.biomes());
 
         List<CustomDrop> drops = dropCategories().get(category.toLowerCase(Locale.ROOT));
         if (drops == null) {
@@ -927,14 +955,14 @@ public class DropManager implements DropCatalog {
             if (existing == targetDrop) {
                 CustomDrop editedDrop = copyDropWithEdits(
                     normalizedIdentifier,
-                    weight,
-                    amount,
-                    customName,
+                    fields.weight(),
+                    fields.amount(),
+                    fields.customName(),
                     safeLore,
-                    customModelData,
+                    fields.customModelData(),
                     safeEnchantments,
                     safeItemFlags,
-                    glowing,
+                    fields.glowing(),
                     normalizedPermission,
                     safeBiomes
                 );
