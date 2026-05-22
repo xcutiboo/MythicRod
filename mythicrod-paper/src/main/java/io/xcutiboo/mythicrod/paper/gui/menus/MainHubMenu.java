@@ -32,10 +32,20 @@ public class MainHubMenu extends BaseMenu {
 
         Player p = getPlayer();
         boolean hasAdminPerm = p != null && p.hasPermission(PermissionNodes.ADMIN_CONFIG);
+        boolean hasReloadPerm = p != null && p.hasPermission(PermissionNodes.ADMIN_RELOAD);
 
-        String serverVersion = plugin.getServer().getName() + " " + plugin.getServer().getMinecraftVersion();
+        placeDropsButton();
+        placeRodButton();
+        placeStatsButton();
+        if (hasAdminPerm) placeConfigButton();
+        placeInfoButton();
+        if (hasReloadPerm) placeReloadButton();
+        placeCloseButton();
+        placeHelpButton();
+    }
 
-        ItemStack dropsItem = new ItemBuilder(Material.CHEST)
+    private void placeDropsButton() {
+        ItemStack item = new ItemBuilder(Material.CHEST)
                 .name(tr("gui.main.drops.name"))
                 .lore(
                         tr("gui.main.drops.lore1"),
@@ -48,9 +58,11 @@ public class MainHubMenu extends BaseMenu {
                 )
                 .glow(true)
                 .build();
-        setNavigationItem(22, dropsItem, "drops");
+        setNavigationItem(22, item, "drops");
+    }
 
-        ItemStack rodItem = new ItemBuilder(Material.FISHING_ROD)
+    private void placeRodButton() {
+        ItemStack item = new ItemBuilder(Material.FISHING_ROD)
                 .name(tr("gui.main.rod.name"))
                 .lore(
                         tr("gui.main.rod.lore1"),
@@ -59,10 +71,12 @@ public class MainHubMenu extends BaseMenu {
                         tr("gui.main.rod.lore5")
                 )
                 .build();
-        setNavigationItem(20, rodItem, "rod");
+        setNavigationItem(20, item, "rod");
+    }
 
+    private void placeStatsButton() {
         boolean statsEnabled = plugin.getConfigManager().trackStatistics();
-        ItemStack statsItem = new ItemBuilder(statsEnabled ? Material.FILLED_MAP : Material.MAP)
+        ItemStack item = new ItemBuilder(statsEnabled ? Material.FILLED_MAP : Material.MAP)
                 .name(tr("gui.main.stats.name"))
                 .lore(
                         tr("gui.main.stats.lore1"),
@@ -75,7 +89,7 @@ public class MainHubMenu extends BaseMenu {
                 )
                 .glow(statsEnabled)
                 .build();
-        setItem(24, statsItem, () -> {
+        setItem(24, item, () -> {
             playClickSound();
             if (!statsEnabled) {
                 playErrorSound();
@@ -84,23 +98,26 @@ public class MainHubMenu extends BaseMenu {
             }
             plugin.getGUIManager().openMenu(getPlayer(), "stats");
         });
+    }
 
-        if (hasAdminPerm) {
-            ItemStack configItem = new ItemBuilder(Material.COMPARATOR)
-                    .name(tr("gui.main.config.name"))
-                    .lore(
-                            tr("gui.main.config.lore1"),
-                            tr("gui.main.config.lore2"),
-                            "",
-                            tr("gui.main.config.lore8"),
-                            tr("gui.main.config.lore9")
-                    )
-                    .glow(true)
-                    .build();
-            setNavigationItem(29, configItem, "config");
-        }
+    private void placeConfigButton() {
+        ItemStack item = new ItemBuilder(Material.COMPARATOR)
+                .name(tr("gui.main.config.name"))
+                .lore(
+                        tr("gui.main.config.lore1"),
+                        tr("gui.main.config.lore2"),
+                        "",
+                        tr("gui.main.config.lore8"),
+                        tr("gui.main.config.lore9")
+                )
+                .glow(true)
+                .build();
+        setNavigationItem(29, item, "config");
+    }
 
-        ItemStack infoItem = new ItemBuilder(Material.KNOWLEDGE_BOOK)
+    private void placeInfoButton() {
+        String serverVersion = plugin.getServer().getName() + " " + plugin.getServer().getMinecraftVersion();
+        ItemStack item = new ItemBuilder(Material.KNOWLEDGE_BOOK)
                 .name(tr("gui.main.info.name"))
                 .lore(
                         tr("gui.main.info.lore1"),
@@ -111,56 +128,59 @@ public class MainHubMenu extends BaseMenu {
                         tr("gui.main.info.lore6")
                 )
                 .build();
-        setItem(31, infoItem);
+        setItem(31, item);
+    }
 
-        if (p != null && p.hasPermission(PermissionNodes.ADMIN_RELOAD)) {
-            ItemStack reloadItem = new ItemBuilder(Material.RECOVERY_COMPASS)
-                    .name(tr("gui.main.reload.name"))
-                    .lore(
-                            tr("gui.main.reload.lore1"),
-                            tr("gui.main.reload.lore2"),
-                            tr("gui.main.reload.lore3"),
-                            tr("gui.main.reload.lore4"),
-                            tr("gui.main.reload.lore5"),
-                            tr("gui.main.reload.lore6"),
-                            tr("gui.main.reload.lore7")
-                    )
-                    .build();
-            setItem(33, reloadItem, event -> {
-                if (!event.isShiftClick()) {
-                    playErrorSound();
-                    sendMessage(tr("gui.main.reload_confirm"));
-                    return;
-                }
+    private void placeReloadButton() {
+        ItemStack item = new ItemBuilder(Material.RECOVERY_COMPASS)
+                .name(tr("gui.main.reload.name"))
+                .lore(
+                        tr("gui.main.reload.lore1"),
+                        tr("gui.main.reload.lore2"),
+                        tr("gui.main.reload.lore3"),
+                        tr("gui.main.reload.lore4"),
+                        tr("gui.main.reload.lore5"),
+                        tr("gui.main.reload.lore6"),
+                        tr("gui.main.reload.lore7")
+                )
+                .build();
+        setItem(33, item, this::onReloadClick);
+    }
 
-                playClickSound();
-                if (getPlayer() != null) getPlayer().closeInventory();
-                try {
-                    if (!plugin.reload()) {
-                        playErrorSound();
-                        if (plugin.isReloadInProgress()) {
-                            sendMessage(tr("gui.main.reload_busy"));
-                            return;
-                        }
-                        sendMessage(tr("gui.main.reload_failed"));
-                        return;
-                    }
-                    playSuccessSound();
-                    sendMessage(tr("gui.main.reload_success"));
-                } catch (Exception e) {
-                    playErrorSound();
-                    sendMessage(tr("gui.main.reload_failed"));
-                    plugin.getLogger().log(java.util.logging.Level.SEVERE, "Error reloading from GUI", e);
-                }
-            });
+    private void onReloadClick(org.bukkit.event.inventory.InventoryClickEvent event) {
+        if (!event.isShiftClick()) {
+            playErrorSound();
+            sendMessage(tr("gui.main.reload_confirm"));
+            return;
         }
+        playClickSound();
+        if (getPlayer() != null) getPlayer().closeInventory();
+        try {
+            if (!plugin.reload()) {
+                playErrorSound();
+                sendMessage(plugin.isReloadInProgress()
+                    ? tr("gui.main.reload_busy")
+                    : tr("gui.main.reload_failed"));
+                return;
+            }
+            playSuccessSound();
+            sendMessage(tr("gui.main.reload_success"));
+        } catch (Exception e) {
+            playErrorSound();
+            sendMessage(tr("gui.main.reload_failed"));
+            plugin.getLogger().log(java.util.logging.Level.SEVERE, "Error reloading from GUI", e);
+        }
+    }
 
+    private void placeCloseButton() {
         ItemStack closeItem = new ItemBuilder(Material.BARRIER)
                 .name(tr("gui.main.close.name"))
                 .lore(tr("gui.main.close.lore"))
                 .build();
         setCloseButton(49, closeItem);
+    }
 
+    private void placeHelpButton() {
         ItemStack helpItem = new ItemBuilder(Material.BOOK)
                 .name(tr("gui.main.help.name"))
                 .lore(

@@ -43,6 +43,15 @@ public class RodMenu extends BaseMenu {
         boolean globalEffectsEnabled = plugin.getConfigManager().useParticles();
         boolean reducedEffects = plugin.getPlayerDataService().hasReducedEffects(player);
 
+        placeBasicTier(player, currentTier);
+        placeAdvancedTier(player, currentTier);
+        placeLegendaryTier(player, currentTier);
+        placeVisualEffectsToggle(player, globalEffectsEnabled, reducedEffects);
+        placeBackButton(player);
+        placeCloseButton(player);
+    }
+
+    private void placeBasicTier(Player player, String currentTier) {
         ItemStack basicRod = new ItemBuilder(Material.FISHING_ROD)
                 .name(tr("gui.rod.basic.name"))
                 .lore(
@@ -56,19 +65,22 @@ public class RodMenu extends BaseMenu {
                 )
                 .glow(currentTier.equals(TIER_BASIC))
                 .build();
-        setItem(10, basicRod, () -> {
-            if (currentTier.equals(TIER_BASIC)) {
-                playClickSound();
-                sendMessage(tr(TR_ALREADY_SELECTED, Map.of("tier", tr("gui.rod.basic.label"))));
-                return;
-            }
-            playClickSound();
-            setRodTier(player, TIER_BASIC);
-            playSuccessSound();
-            sendMessage(tr("gui.rod.basic.selected"));
-            refresh();
-        });
+        setItem(10, basicRod, () -> selectBasicTier(player, currentTier));
+    }
 
+    private void selectBasicTier(Player player, String currentTier) {
+        playClickSound();
+        if (currentTier.equals(TIER_BASIC)) {
+            sendMessage(tr(TR_ALREADY_SELECTED, Map.of("tier", tr("gui.rod.basic.label"))));
+            return;
+        }
+        setRodTier(player, TIER_BASIC);
+        playSuccessSound();
+        sendMessage(tr("gui.rod.basic.selected"));
+        refresh();
+    }
+
+    private void placeAdvancedTier(Player player, String currentTier) {
         ItemStack advancedRod = new ItemBuilder(Material.FISHING_ROD)
                 .name(tr("gui.rod.advanced.name"))
                 .glow(currentTier.equals(TIER_ADVANCED))
@@ -83,24 +95,12 @@ public class RodMenu extends BaseMenu {
                         currentTier.equals(TIER_ADVANCED) ? tr("gui.rod.advanced.equipped") : tr("gui.rod.advanced.click")
                 )
                 .build();
-        setItem(12, advancedRod, () -> {
-            if (currentTier.equals(TIER_ADVANCED)) {
-                playClickSound();
-                sendMessage(tr(TR_ALREADY_SELECTED, Map.of("tier", tr("gui.rod.advanced.label"))));
-                return;
-            }
-            if (player.hasPermission(PermissionNodes.ROD_ADVANCED)) {
-                playClickSound();
-                setRodTier(player, TIER_ADVANCED);
-                playSuccessSound();
-                sendMessage(tr("gui.rod.advanced.selected"));
-                refresh();
-            } else {
-                playErrorSound();
-                sendMessage(tr("gui.rod.advanced.locked"));
-            }
-        });
+        setItem(12, advancedRod, () -> selectGatedTier(
+            player, currentTier, TIER_ADVANCED, PermissionNodes.ROD_ADVANCED,
+            "gui.rod.advanced.label", "gui.rod.advanced.selected", "gui.rod.advanced.locked"));
+    }
 
+    private void placeLegendaryTier(Player player, String currentTier) {
         ItemStack legendaryRod = new ItemBuilder(Material.FISHING_ROD)
                 .name(tr("gui.rod.legendary.name"))
                 .glow(currentTier.equals(TIER_LEGENDARY))
@@ -116,24 +116,31 @@ public class RodMenu extends BaseMenu {
                         currentTier.equals(TIER_LEGENDARY) ? tr("gui.rod.legendary.equipped") : tr("gui.rod.legendary.click")
                 )
                 .build();
-        setItem(14, legendaryRod, () -> {
-            if (currentTier.equals(TIER_LEGENDARY)) {
-                playClickSound();
-                sendMessage(tr(TR_ALREADY_SELECTED, Map.of("tier", tr("gui.rod.legendary.label"))));
-                return;
-            }
-            if (player.hasPermission(PermissionNodes.ROD_LEGENDARY)) {
-                playClickSound();
-                setRodTier(player, TIER_LEGENDARY);
-                playSuccessSound();
-                sendMessage(tr("gui.rod.legendary.selected"));
-                refresh();
-            } else {
-                playErrorSound();
-                sendMessage(tr("gui.rod.legendary.locked"));
-            }
-        });
+        setItem(14, legendaryRod, () -> selectGatedTier(
+            player, currentTier, TIER_LEGENDARY, PermissionNodes.ROD_LEGENDARY,
+            "gui.rod.legendary.label", "gui.rod.legendary.selected", "gui.rod.legendary.locked"));
+    }
 
+    private void selectGatedTier(Player player, String currentTier, String targetTier,
+                                  String permission, String labelKey, String selectedKey, String lockedKey) {
+        if (currentTier.equals(targetTier)) {
+            playClickSound();
+            sendMessage(tr(TR_ALREADY_SELECTED, Map.of("tier", tr(labelKey))));
+            return;
+        }
+        if (!player.hasPermission(permission)) {
+            playErrorSound();
+            sendMessage(tr(lockedKey));
+            return;
+        }
+        playClickSound();
+        setRodTier(player, targetTier);
+        playSuccessSound();
+        sendMessage(tr(selectedKey));
+        refresh();
+    }
+
+    private void placeVisualEffectsToggle(Player player, boolean globalEffectsEnabled, boolean reducedEffects) {
         ItemStack visualEffects = new ItemBuilder(globalEffectsEnabled && !reducedEffects ? Material.AMETHYST_SHARD : Material.GRAY_DYE)
                 .name(tr("gui.rod.effects.name"))
                 .lore(
@@ -160,7 +167,9 @@ public class RodMenu extends BaseMenu {
             playSuccessSound();
             refresh();
         });
+    }
 
+    private void placeBackButton(Player player) {
         ItemStack backItem = new ItemBuilder(Material.ARROW)
                 .name(tr("gui.rod.back.name"))
                 .lore(tr("gui.rod.back.lore"))
@@ -169,7 +178,9 @@ public class RodMenu extends BaseMenu {
             playClickSound();
             plugin.getGUIManager().openMenu(player, "main");
         });
+    }
 
+    private void placeCloseButton(Player player) {
         ItemStack closeItem = new ItemBuilder(Material.BARRIER)
                 .name(tr("gui.rod.close.name"))
                 .lore(tr("gui.rod.close.lore"))
