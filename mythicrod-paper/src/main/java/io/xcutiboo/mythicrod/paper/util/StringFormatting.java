@@ -19,7 +19,7 @@ public final class StringFormatting {
         StringBuilder result = new StringBuilder();
         for (String part : parts) {
             if (part.isEmpty()) continue;
-            if (result.length() > 0) {
+            if (!result.isEmpty()) {
                 result.append(" ");
             }
             result.append(part.substring(0, 1).toUpperCase(Locale.ROOT))
@@ -49,7 +49,7 @@ public final class StringFormatting {
         StringBuilder result = new StringBuilder();
         for (String part : parts) {
             if (part.isEmpty()) continue;
-            if (result.length() > 0) {
+            if (!result.isEmpty()) {
                 result.append(" ");
             }
             result.append(part.substring(0, 1).toUpperCase(Locale.ROOT))

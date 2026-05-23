@@ -303,7 +303,9 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         scheduler.runAsync(() -> {
             try {
                 future.complete(supplier.get());
-            } catch (Throwable throwable) {
+            } catch (@SuppressWarnings("java:S1181") Throwable throwable) {
+                // Intentionally catches Throwable so OOM/StackOverflowError surface to the caller
+                // via CompletableFuture instead of disappearing into the scheduler thread.
                 future.completeExceptionally(throwable);
             }
         });
@@ -316,7 +318,8 @@ public class PaperMythicRodAPI implements MythicRodAPI {
             try {
                 runnable.run();
                 future.complete(null);
-            } catch (Throwable throwable) {
+            } catch (@SuppressWarnings("java:S1181") Throwable throwable) {
+                // Intentional Throwable catch: see supplyAsync for the same rationale.
                 future.completeExceptionally(throwable);
             }
         });
