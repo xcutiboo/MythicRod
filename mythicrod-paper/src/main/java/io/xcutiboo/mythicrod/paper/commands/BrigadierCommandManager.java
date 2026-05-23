@@ -1035,43 +1035,39 @@ public class BrigadierCommandManager {
         sendMessage(sender, tr(sender, "command.help.header"));
         sendMessage(sender, tr(sender, "command.help.help"));
         if (sender instanceof Player player) {
-            if (player.hasPermission(PermissionNodes.GUI)) {
-                sendMessage(sender, tr(sender, "command.help.gui"));
-                sendMessage(sender, tr(sender, "command.help.rod"));
-            }
-            if (player.hasPermission(PermissionNodes.STATS_VIEW)) {
-                sendMessage(sender, tr(sender, "command.help.stats"));
-            }
-            if (player.hasPermission(PermissionNodes.STATS_LEADERBOARD)) {
-                sendMessage(sender, tr(sender, "command.help.top"));
-            }
-            if (player.hasPermission(PermissionNodes.DROPS_VIEW)) {
-                sendMessage(sender, tr(sender, "command.help.drops"));
-            }
-            if (player.hasPermission(PermissionNodes.ADMIN_RELOAD)) {
-                sendMessage(sender, tr(sender, "command.help.reload"));
-            }
-            if (player.hasPermission(PermissionNodes.ADMIN_GIVE)) {
-                sendMessage(sender, tr(sender, "command.help.give"));
-            }
-            if (player.hasPermission(PermissionNodes.ADMIN_DEBUG)) {
-                sendMessage(sender, tr(sender, "command.help.debug"));
-            }
-            if (player.hasPermission(PermissionNodes.ADMIN_CONFIG)) {
-                sendMessage(sender, tr(sender, "command.help.config"));
-                sendMessage(sender, tr(sender, "command.help.particle"));
-            }
+            sendPlayerHelp(sender, player);
         } else {
-            sendMessage(sender, tr(sender, "command.help.reload"));
-            sendMessage(sender, tr(sender, "command.help.stats"));
-            sendMessage(sender, tr(sender, "command.help.top"));
-            sendMessage(sender, tr(sender, "command.help.drops"));
-            sendMessage(sender, tr(sender, "command.help.give"));
-            sendMessage(sender, tr(sender, "command.help.debug"));
-            sendMessage(sender, tr(sender, "command.help.config"));
-            sendMessage(sender, tr(sender, "command.help.particle"));
+            sendConsoleHelp(sender);
         }
         sendMessage(sender, tr(sender, "command.help.footer"));
+    }
+
+    private void sendPlayerHelp(CommandSender sender, Player player) {
+        sendIfHasPermission(sender, player, PermissionNodes.GUI, "command.help.gui");
+        sendIfHasPermission(sender, player, PermissionNodes.GUI, "command.help.rod");
+        sendIfHasPermission(sender, player, PermissionNodes.STATS_VIEW, "command.help.stats");
+        sendIfHasPermission(sender, player, PermissionNodes.STATS_LEADERBOARD, "command.help.top");
+        sendIfHasPermission(sender, player, PermissionNodes.DROPS_VIEW, "command.help.drops");
+        sendIfHasPermission(sender, player, PermissionNodes.ADMIN_RELOAD, "command.help.reload");
+        sendIfHasPermission(sender, player, PermissionNodes.ADMIN_GIVE, "command.help.give");
+        sendIfHasPermission(sender, player, PermissionNodes.ADMIN_DEBUG, "command.help.debug");
+        sendIfHasPermission(sender, player, PermissionNodes.ADMIN_CONFIG, "command.help.config");
+        sendIfHasPermission(sender, player, PermissionNodes.ADMIN_CONFIG, "command.help.particle");
+    }
+
+    private void sendIfHasPermission(CommandSender sender, Player player, String permission, String key) {
+        if (player.hasPermission(permission)) {
+            sendMessage(sender, tr(sender, key));
+        }
+    }
+
+    private void sendConsoleHelp(CommandSender sender) {
+        for (String key : List.of(
+            "command.help.reload", "command.help.stats", "command.help.top",
+            "command.help.drops", "command.help.give", "command.help.debug",
+            "command.help.config", "command.help.particle")) {
+            sendMessage(sender, tr(sender, key));
+        }
     }
 
     private void sendMessage(CommandSender sender, String message) {
@@ -1220,49 +1216,21 @@ public class BrigadierCommandManager {
             Map<String, List<CustomDrop>> categories = plugin.getDropManager().getDropCategories();
             boolean nexoAvailable = plugin.getPlatformServer() != null && plugin.getPlatformServer().isNexoEnabled();
 
-            int problems = 0;
-            int dropsChecked = 0;
-            int categoriesChecked = 0;
-            int duplicateIds = 0;
-
+            ValidationCounts counts = new ValidationCounts();
             sendMessage(sender, "<gold><st>            </st> <bold>MythicRod Validate</bold> <st>            </st>");
 
             for (Map.Entry<String, List<CustomDrop>> entry : categories.entrySet()) {
-                String categoryKey = entry.getKey();
-                List<CustomDrop> drops = entry.getValue();
-                if (drops == null || drops.isEmpty()) {
-                    continue;
-                }
-                categoriesChecked++;
-
-                Map<String, Integer> identifierCounts = new HashMap<>();
-                for (CustomDrop drop : drops) {
-                    dropsChecked++;
-                    String identifier = drop.getIdentifier();
-                    identifierCounts.merge(identifier == null ? "<null>" : identifier, 1, Integer::sum);
-
-                    problems += validateDrop(sender, categoryKey, drop, nexoAvailable);
-                }
-
-                for (Map.Entry<String, Integer> idCount : identifierCounts.entrySet()) {
-                    if (idCount.getValue() > 1) {
-                        duplicateIds++;
-                        sendMessage(sender, "<yellow>⚠ Duplicate identifier <white>" + idCount.getKey()
-                            + "</white> appears " + idCount.getValue() + " times in category <white>"
-                            + categoryKey + CLOSE_WHITE);
-                    }
-                }
+                validateCategory(sender, entry.getKey(), entry.getValue(), nexoAvailable, counts);
             }
-
-            problems += duplicateIds;
+            int problems = counts.problems + counts.duplicates;
 
             if (problems == 0) {
-                sendMessage(sender, "<green>✓ Validated " + dropsChecked + " drops across "
-                    + categoriesChecked + " categories - no problems found.");
+                sendMessage(sender, "<green>✓ Validated " + counts.dropsChecked + " drops across "
+                    + counts.categoriesChecked + " categories - no problems found.");
                 playSuccessSound(sender);
             } else {
                 sendMessage(sender, "<red>✗ Found " + problems + " problem(s) across "
-                    + dropsChecked + " drops in " + categoriesChecked + " categories.");
+                    + counts.dropsChecked + " drops in " + counts.categoriesChecked + " categories.");
                 sendMessage(sender, "<gray>Fix entries above, then run <yellow>/mythicrod reload</yellow>.");
                 playErrorSound(sender);
             }
@@ -1275,46 +1243,88 @@ public class BrigadierCommandManager {
         }
     }
 
-    private int validateDrop(CommandSender sender, String category, CustomDrop drop, boolean nexoAvailable) {
-        int problems = 0;
-        String identifier = drop.getIdentifier();
+    private static final class ValidationCounts {
+        int problems;
+        int dropsChecked;
+        int categoriesChecked;
+        int duplicates;
+    }
 
+    private void validateCategory(CommandSender sender, String categoryKey, List<CustomDrop> drops,
+                                   boolean nexoAvailable, ValidationCounts counts) {
+        if (drops == null || drops.isEmpty()) return;
+        counts.categoriesChecked++;
+
+        Map<String, Integer> identifierCounts = new HashMap<>();
+        for (CustomDrop drop : drops) {
+            counts.dropsChecked++;
+            String identifier = drop.getIdentifier();
+            identifierCounts.merge(identifier == null ? "<null>" : identifier, 1, Integer::sum);
+            counts.problems += validateDrop(sender, categoryKey, drop, nexoAvailable);
+        }
+        for (Map.Entry<String, Integer> idCount : identifierCounts.entrySet()) {
+            if (idCount.getValue() > 1) {
+                counts.duplicates++;
+                sendMessage(sender, "<yellow>⚠ Duplicate identifier <white>" + idCount.getKey()
+                    + "</white> appears " + idCount.getValue() + " times in category <white>"
+                    + categoryKey + CLOSE_WHITE);
+            }
+        }
+    }
+
+    private int validateDrop(CommandSender sender, String category, CustomDrop drop, boolean nexoAvailable) {
+        String identifier = drop.getIdentifier();
         if (identifier == null || identifier.isBlank()) {
             sendMessage(sender, ERR_PREFIX + category + "</white>: drop has no identifier");
             return 1;
         }
+        int problems = validateBasicFields(sender, category, drop, identifier);
+        problems += validateItemSource(sender, category, drop, identifier, nexoAvailable);
+        problems += validateEnchantments(sender, drop, identifier);
+        problems += validateBiomes(sender, drop, identifier);
+        problems += validatePermission(sender, drop, identifier);
+        return problems;
+    }
 
+    private int validateBasicFields(CommandSender sender, String category, CustomDrop drop, String identifier) {
+        int problems = 0;
         if (drop.getWeight() <= 0) {
             sendMessage(sender, ERR_PREFIX + category + PATH_SEP_WHITE + identifier
                 + "</white>: weight must be >= 1 (was " + drop.getWeight() + ")");
             problems++;
         }
-
         if (drop.getAmount() <= 0) {
             sendMessage(sender, ERR_PREFIX + category + PATH_SEP_WHITE + identifier
                 + "</white>: amount must be >= 1 (was " + drop.getAmount() + ")");
             problems++;
         }
+        return problems;
+    }
 
+    private int validateItemSource(CommandSender sender, String category, CustomDrop drop,
+                                    String identifier, boolean nexoAvailable) {
         if (drop.isNexoItem()) {
-            if (!nexoAvailable) {
-                sendMessage(sender, WARN_PREFIX + category + PATH_SEP_WHITE + identifier
-                    + "</white>: Nexo item but Nexo plugin is not enabled");
-                problems++;
-            }
-        } else {
-            Material material = Material.matchMaterial(identifier);
-            if (material == null) {
-                sendMessage(sender, ERR_PREFIX + category + PATH_SEP_WHITE + identifier
-                    + "</white>: unknown material");
-                problems++;
-            } else if (!material.isItem()) {
-                sendMessage(sender, ERR_PREFIX + category + PATH_SEP_WHITE + identifier
-                    + "</white>: material is not an obtainable item");
-                problems++;
-            }
+            if (nexoAvailable) return 0;
+            sendMessage(sender, WARN_PREFIX + category + PATH_SEP_WHITE + identifier
+                + "</white>: Nexo item but Nexo plugin is not enabled");
+            return 1;
         }
+        Material material = Material.matchMaterial(identifier);
+        if (material == null) {
+            sendMessage(sender, ERR_PREFIX + category + PATH_SEP_WHITE + identifier
+                + "</white>: unknown material");
+            return 1;
+        }
+        if (!material.isItem()) {
+            sendMessage(sender, ERR_PREFIX + category + PATH_SEP_WHITE + identifier
+                + "</white>: material is not an obtainable item");
+            return 1;
+        }
+        return 0;
+    }
 
+    private int validateEnchantments(CommandSender sender, CustomDrop drop, String identifier) {
+        int problems = 0;
         for (Map.Entry<String, Integer> enchant : drop.getEnchantments().entrySet()) {
             if (enchant.getValue() == null || enchant.getValue() < 1) {
                 sendMessage(sender, WARN_PREFIX + identifier + "</white>: enchantment '"
@@ -1330,11 +1340,13 @@ public class BrigadierCommandManager {
                 problems++;
             }
         }
+        return problems;
+    }
 
+    private int validateBiomes(CommandSender sender, CustomDrop drop, String identifier) {
+        int problems = 0;
         for (String biome : drop.getBiomes()) {
-            if (biome == null || biome.isBlank()) {
-                continue;
-            }
+            if (biome == null || biome.isBlank()) continue;
             NamespacedKey biomeKey = parseRegistryKey(biome);
             if (biomeKey == null
                     || RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME).get(biomeKey) == null) {
@@ -1343,15 +1355,15 @@ public class BrigadierCommandManager {
                 problems++;
             }
         }
-
-        String permission = drop.getPermission();
-        if (permission != null && !permission.isBlank() && !permission.startsWith("mythicrod.")) {
-            sendMessage(sender, WARN_PREFIX + identifier
-                + "</white>: permission '" + permission + "' is outside the mythicrod.* namespace");
-            problems++;
-        }
-
         return problems;
+    }
+
+    private int validatePermission(CommandSender sender, CustomDrop drop, String identifier) {
+        String permission = drop.getPermission();
+        if (permission == null || permission.isBlank() || permission.startsWith("mythicrod.")) return 0;
+        sendMessage(sender, WARN_PREFIX + identifier
+            + "</white>: permission '" + permission + "' is outside the mythicrod.* namespace");
+        return 1;
     }
 
     private NamespacedKey parseRegistryKey(String raw) {
