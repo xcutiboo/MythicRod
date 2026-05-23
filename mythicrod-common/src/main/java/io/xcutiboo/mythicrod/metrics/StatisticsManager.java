@@ -115,8 +115,10 @@ public final class StatisticsManager {
 
     /**
      * Live reference to the statistics YAML configuration.
-     * Guarded by {@code this} for write access.
+     * Guarded by {@code this} for write access; readers see either the old
+     * reference or the new one swapped during reload, never a half-built object.
      */
+    @SuppressWarnings("java:S3077")
     private volatile PlatformConfiguration statsConfig;
 
     public void initialize() {
