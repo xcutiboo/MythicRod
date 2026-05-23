@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import io.xcutiboo.mythicrod.paper.MythicRod;
 import io.xcutiboo.mythicrod.constants.PermissionNodes;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
+import io.xcutiboo.mythicrod.drops.EditableDropFields;
 import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
 import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import io.xcutiboo.mythicrod.paper.util.StringFormatting;
@@ -388,17 +389,19 @@ public class DropsMenu extends BaseMenu {
                 try {
                     CustomDrop addedDrop = plugin.getDropManager().addDrop(
                         category,
-                        normalizedIdentifier,
-                        DEFAULT_NEW_DROP_WEIGHT,
-                        DEFAULT_NEW_DROP_AMOUNT,
-                        null,
-                        List.of(),
-                        0,
-                        Map.of(),
-                        List.of(),
-                        false,
-                        null,
-                        List.of()
+                        new EditableDropFields(
+                            normalizedIdentifier,
+                            DEFAULT_NEW_DROP_WEIGHT,
+                            DEFAULT_NEW_DROP_AMOUNT,
+                            null,
+                            List.of(),
+                            0,
+                            Map.of(),
+                            List.of(),
+                            false,
+                            null,
+                            List.of()
+                        )
                     );
                     if (addedDrop == null) {
                         runForPlayerIfOnline(player, () -> {

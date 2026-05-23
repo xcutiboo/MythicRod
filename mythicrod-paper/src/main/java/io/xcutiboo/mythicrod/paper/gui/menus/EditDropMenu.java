@@ -27,6 +27,7 @@ import io.papermc.paper.registry.RegistryKey;
 import io.xcutiboo.mythicrod.paper.MythicRod;
 import io.xcutiboo.mythicrod.constants.PermissionNodes;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
+import io.xcutiboo.mythicrod.drops.EditableDropFields;
 import io.xcutiboo.mythicrod.paper.item.ItemBuilder;
 import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import io.xcutiboo.mythicrod.paper.util.StringFormatting;
@@ -1315,9 +1316,10 @@ public class EditDropMenu extends BaseMenu {
                 try {
                     boolean updated = plugin.getDropManager().updateDrop(
                             finalDrop, finalCategory,
-                            finalIdentifier, finalWeight, finalAmount, finalName, finalLore,
-                            finalCustomModelData, finalEnchantments, finalItemFlags,
-                            finalGlow, finalPermission, finalBiomes);
+                            new EditableDropFields(
+                                finalIdentifier, finalWeight, finalAmount, finalName, finalLore,
+                                finalCustomModelData, finalEnchantments, finalItemFlags,
+                                finalGlow, finalPermission, finalBiomes));
                     if (!updated) {
                         plugin.getLogger().info(() -> EDITOR_LOG_PREFIX + finalDrop.getIdentifier()
                             + IN_CATEGORY_FRAGMENT + finalCategory + "' was already changed before "

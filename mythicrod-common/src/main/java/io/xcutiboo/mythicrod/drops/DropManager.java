@@ -418,8 +418,8 @@ public class DropManager implements DropCatalog {
                 ? NEXO_PREFIX + nexoItemId
                 : material;
 
-            return createDrop(identifier, weight, amount, name, lore, customModelData, enchantments, flags,
-                          glowing, permission, biomes, null);
+            return createDrop(new DropConfigurationRecord(identifier, weight, amount, name, lore,
+                customModelData, enchantments, flags, glowing, permission, biomes, null));
 
         } catch (IllegalArgumentException e) {
             log(Level.SEVERE, e, () -> "Failed to parse drop: " + key);
@@ -471,8 +471,8 @@ public class DropManager implements DropCatalog {
                 asStringList(mappedDrop.get("flags"))
             );
 
-            return createDrop(identifier, weight, amount, customName, lore, customModelData, enchantments, flags,
-                glowing, permission, biomes, nexoItemId);
+            return createDrop(new DropConfigurationRecord(identifier, weight, amount, customName, lore,
+                customModelData, enchantments, flags, glowing, permission, biomes, nexoItemId));
         } catch (IllegalArgumentException e) {
             log(Level.WARNING, e, () -> "Failed to parse mapped drop in category '" + category + "'");
             return null;
@@ -500,7 +500,8 @@ public class DropManager implements DropCatalog {
                 String nexoId = parts[0].trim();
                 int weight = parts.length > 1 ? Integer.parseInt(parts[1]) : 100;
                 int amount = parts.length > 2 ? Integer.parseInt(parts[2]) : 1;
-                return createDrop(NEXO_PREFIX + nexoId, weight, amount, null, null, 0, Map.of(), List.of(), false, null, List.of(), nexoId);
+                return createDrop(new DropConfigurationRecord(NEXO_PREFIX + nexoId, weight, amount, null, null,
+                    0, Map.of(), List.of(), false, null, List.of(), nexoId));
             }
 
             String[] parts = trimmed.contains(",") ? trimmed.split(",") : trimmed.split(":");
@@ -547,23 +548,33 @@ public class DropManager implements DropCatalog {
     }
 
     private CustomDrop createDrop(String id, int weight, int amount) {
-        return createDrop(id, weight, amount, null, null, 0, null, null, false, null, null, null);
-    }
-
-    private CustomDrop createDrop(String id, int weight, int amount, String name,
-                      List<String> lore, int customModelData,
-                      Map<String, Integer> enchantments,
-                                  List<String> flags, boolean glowing, String permission,
-                                  List<String> biomes, String nexoItemId) {
-        int sanitizedWeight = sanitizeWeight(id, weight);
-        int sanitizedAmount = sanitizeAmount(id, amount);
-        int sanitizedModelData = Math.max(0, customModelData);
-        return createDrop(new DropConfigurationRecord(id, sanitizedWeight, sanitizedAmount, name, lore,
-            sanitizedModelData, enchantments, flags, glowing, permission, biomes, nexoItemId));
+        return createDrop(new DropConfigurationRecord(id, weight, amount, null, null,
+            0, null, null, false, null, null, null));
     }
 
     private CustomDrop createDrop(DropConfigurationRecord config) {
-        return new CustomDrop(config);
+        int sanitizedWeight = sanitizeWeight(config.identifier(), config.weight());
+        int sanitizedAmount = sanitizeAmount(config.identifier(), config.amount());
+        int sanitizedModelData = Math.max(0, config.customModelData());
+        if (sanitizedWeight == config.weight()
+                && sanitizedAmount == config.amount()
+                && sanitizedModelData == config.customModelData()) {
+            return new CustomDrop(config);
+        }
+        return new CustomDrop(new DropConfigurationRecord(
+            config.identifier(),
+            sanitizedWeight,
+            sanitizedAmount,
+            config.customName(),
+            config.lore(),
+            sanitizedModelData,
+            config.enchantments(),
+            config.itemFlags(),
+            config.glowing(),
+            config.permission(),
+            config.biomes(),
+            config.nexoItemId()
+        ));
     }
 
     private static final String DROP_LABEL = "Drop '";
@@ -769,26 +780,6 @@ public class DropManager implements DropCatalog {
         }
     }
 
-    public CustomDrop addDrop(
-        String category,
-        String identifier,
-        int weight,
-        int amount,
-        String customName,
-        List<String> lore,
-        int customModelData,
-        Map<String, Integer> enchantments,
-        List<String> itemFlags,
-        boolean glowing,
-        String permission,
-        List<String> biomes
-    ) {
-        return addDrop(category, new EditableDropFields(
-            identifier, weight, amount, customName, lore,
-            customModelData, enchantments, itemFlags, glowing, permission, biomes
-        ));
-    }
-
     /**
      * Adds a drop to a category from a {@link EditableDropFields} value object.
      *
@@ -854,62 +845,19 @@ public class DropManager implements DropCatalog {
      */
     public boolean updateDrop(CustomDrop targetDrop, String category, int weight, int amount,
                               String customName, List<String> lore, boolean glowing) {
-        return updateDrop(targetDrop, category, targetDrop != null ? targetDrop.getIdentifier() : null,
-            weight, amount, customName, lore, glowing);
-    }
-
-    /**
-     * Updates the exact drop instance selected by the GUI, including its item identifier.
-     *
-     * <p>The identifier overload lets the editor change a vanilla material or Nexo id while
-     * preserving the existing model data, enchantments, permission gate, and biome filters.
-     *
-     * @return {@code true} when the selected drop was still present
-     */
-    public boolean updateDrop(CustomDrop targetDrop, String category, String identifier, int weight, int amount,
-                              String customName, List<String> lore, boolean glowing) {
-        return updateDrop(
-            targetDrop,
-            category,
-            identifier,
+        if (targetDrop == null) return false;
+        return updateDrop(targetDrop, category, new EditableDropFields(
+            targetDrop.getIdentifier(),
             weight,
             amount,
             customName,
             lore,
-            targetDrop != null ? targetDrop.getCustomModelData() : 0,
-            targetDrop != null ? targetDrop.getEnchantments() : Map.of(),
-            targetDrop != null ? targetDrop.getItemFlags() : List.of(),
+            targetDrop.getCustomModelData(),
+            targetDrop.getEnchantments(),
+            targetDrop.getItemFlags(),
             glowing,
-            targetDrop != null ? targetDrop.getPermission() : null,
-            targetDrop != null ? targetDrop.getBiomes() : List.of()
-        );
-    }
-
-    /**
-     * Updates the exact drop instance selected by the GUI, including optional
-     * gates and item metadata.
-     *
-     * @return {@code true} when the selected drop was still present and the
-     *     replacement config was valid
-     */
-    public boolean updateDrop(
-        CustomDrop targetDrop,
-        String category,
-        String identifier,
-        int weight,
-        int amount,
-        String customName,
-        List<String> lore,
-        int customModelData,
-        Map<String, Integer> enchantments,
-        List<String> itemFlags,
-        boolean glowing,
-        String permission,
-        List<String> biomes
-    ) {
-        return updateDrop(targetDrop, category, new EditableDropFields(
-            identifier, weight, amount, customName, lore,
-            customModelData, enchantments, itemFlags, glowing, permission, biomes
+            targetDrop.getPermission(),
+            targetDrop.getBiomes()
         ));
     }
 

@@ -59,7 +59,10 @@ class DropManagerTest {
         CustomDrop firstDiamond = originalDrops.get(0);
         CustomDrop secondDiamond = originalDrops.get(1);
 
-        assertTrue(manager.updateDrop(secondDiamond, "fish", "EMERALD", 50, 3, "<aqua>Edited Emerald", List.of(), true));
+        assertTrue(manager.updateDrop(secondDiamond, "fish", new EditableDropFields(
+            "EMERALD", 50, 3, "<aqua>Edited Emerald", List.of(), 0,
+            Map.of(), List.of(), true, null, List.of()
+        )));
 
         List<CustomDrop> updatedDrops = manager.getDrops("fish");
         assertEquals(10, updatedDrops.get(0).getWeight());
@@ -83,7 +86,10 @@ class DropManagerTest {
         manager.loadDrops(duplicateDropConfig());
 
         CustomDrop targetDrop = manager.getDrops("fish").get(0);
-        assertTrue(manager.updateDrop(targetDrop, "fish", "nexo:ancient_pearl", 25, 1, null, List.of(), false));
+        assertTrue(manager.updateDrop(targetDrop, "fish", new EditableDropFields(
+            "nexo:ancient_pearl", 25, 1, null, List.of(), 0,
+            Map.of(), List.of(), false, null, List.of()
+        )));
 
         CustomDrop updatedDrop = manager.getDrops("fish").get(0);
         assertEquals("nexo:ancient_pearl", updatedDrop.getIdentifier());
@@ -97,9 +103,7 @@ class DropManagerTest {
         manager.loadDrops(duplicateDropConfig());
 
         CustomDrop targetDrop = manager.getDrops("fish").get(0);
-        assertTrue(manager.updateDrop(
-            targetDrop,
-            "fish",
+        assertTrue(manager.updateDrop(targetDrop, "fish", new EditableDropFields(
             "EMERALD",
             6,
             2,
@@ -111,7 +115,7 @@ class DropManagerTest {
             true,
             "mythicrod.drops.test",
             List.of("minecraft:ocean")
-        ));
+        )));
 
         CustomDrop updatedDrop = manager.getDrops("fish").get(0);
         assertEquals("EMERALD", updatedDrop.getIdentifier());
@@ -132,34 +136,12 @@ class DropManagerTest {
         DropManager manager = new DropManager(Logger.getLogger(DropManagerTest.class.getName()));
         manager.loadDrops(duplicateDropConfig());
 
-        CustomDrop rareDrop = manager.addDrop(
-            "rare",
-            "EMERALD",
-            4,
-            1,
-            null,
-            List.of(),
-            0,
-            Map.of(),
-            List.of(),
-            false,
-            null,
-            List.of()
-        );
-        CustomDrop oceanDrop = manager.addDrop(
-            "biome_ocean",
-            "TROPICAL_FISH",
-            20,
-            1,
-            null,
-            List.of(),
-            0,
-            Map.of(),
-            List.of(),
-            false,
-            null,
-            List.of()
-        );
+        CustomDrop rareDrop = manager.addDrop("rare", new EditableDropFields(
+            "EMERALD", 4, 1, null, List.of(), 0, Map.of(), List.of(), false, null, List.of()
+        ));
+        CustomDrop oceanDrop = manager.addDrop("biome_ocean", new EditableDropFields(
+            "TROPICAL_FISH", 20, 1, null, List.of(), 0, Map.of(), List.of(), false, null, List.of()
+        ));
 
         assertEquals("mythicrod.drops.rare", rareDrop.getPermission());
         assertEquals(List.of("minecraft:ocean"), oceanDrop.getBiomes());
