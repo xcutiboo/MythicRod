@@ -108,6 +108,14 @@ public class FishingListener implements Listener {
 
     private record ResolvedReward(CustomDrop drop, ItemStack item) {}
 
+    private ResolvedReward useForcedDrop(CustomDrop drop, boolean debugMode) {
+        if (debugMode) {
+            info(() -> "Drop forced by external plugin: " + (drop != null ? drop.getIdentifier() : "null"));
+        }
+        if (drop == null) return null;
+        return new ResolvedReward(drop, createItemStack(drop));
+    }
+
     private HookContext resolveHookContext(PlayerFishEvent event, boolean debugMode) {
         try {
             Location hookLoc = event.getHook().getLocation();
@@ -136,16 +144,11 @@ public class FishingListener implements Listener {
         MythicRodRewardRollEvent rollEvent = new MythicRodRewardRollEvent(player, hook.biomeName(), baseWeight);
         plugin.getServer().getPluginManager().callEvent(rollEvent);
 
-        final double luckMultiplier = combineLuckMultipliers(rodLuckMultiplier, rollEvent.getLuckMultiplier());
         if (rollEvent.hasForcedDrop()) {
-            CustomDrop drop = rollEvent.getForcedDrop();
-            if (debugMode) {
-                info(() -> "Drop forced by external plugin: " + (drop != null ? drop.getIdentifier() : "null"));
-            }
-            if (drop == null) return null;
-            return new ResolvedReward(drop, createItemStack(drop));
+            return useForcedDrop(rollEvent.getForcedDrop(), debugMode);
         }
 
+        double luckMultiplier = combineLuckMultipliers(rodLuckMultiplier, rollEvent.getLuckMultiplier());
         PaperMythicRodAPI.RewardResolution resolution = plugin.getApiFacade().resolveReward(
             platformPlayer, hook.biomeName(), luckMultiplier);
         if (resolution == null) {

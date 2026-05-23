@@ -760,17 +760,8 @@ public class BrigadierCommandManager {
                     Map.of(KEY_LIMIT, String.valueOf(MAX_LIMIT))));
             }
 
-            List<PlayerStats> topFishers;
-            try {
-                topFishers = plugin.getStatisticsManager().getTopFishers(limit);
-            } catch (RuntimeException statsError) {
-                sendMessage(source.getSender(), tr(source.getSender(), "stats.retrieve-failed",
-                    Map.of(KEY_ERROR, statsError.getMessage())));
-                playErrorSound(source.getSender());
-                plugin.getLogger().log(Level.WARNING, "Failed to read top fishers", statsError);
-                return 0;
-            }
-
+            List<PlayerStats> topFishers = readTopFishers(source.getSender(), limit);
+            if (topFishers == null) return 0;
             if (topFishers.isEmpty()) {
                 sendMessage(source.getSender(), tr(source.getSender(), "stats.no-stats"));
                 return 0;
@@ -781,16 +772,8 @@ public class BrigadierCommandManager {
 
             int rank = 1;
             for (PlayerStats ps : topFishers) {
-                try {
-                    String name = ps.getPlayerName().isEmpty() ? resolveOfflineName(ps) : ps.getPlayerName();
-                    sendMessage(source.getSender(), tr(source.getSender(), "stats.top-entry",
-                        Map.of("rank", String.valueOf(rank), KEY_PLAYER, name, "catches", String.valueOf(ps.getTotalCaught()))));
-                    rank++;
-                } catch (RuntimeException entryError) {
-                    plugin.getLogger().log(Level.WARNING, entryError,
-                        () -> "Failed to format leaderboard entry: " + entryError.getMessage());
-                    // Continue to next entry rather than failing entire command
-                }
+                renderLeaderboardEntry(source.getSender(), ps, rank);
+                rank++;
             }
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
@@ -798,6 +781,56 @@ public class BrigadierCommandManager {
             plugin.getLogger().log(Level.SEVERE, "Error executing top command", e);
             return 0;
         }
+    }
+
+    private List<PlayerStats> readTopFishers(CommandSender sender, int limit) {
+        try {
+            return plugin.getStatisticsManager().getTopFishers(limit);
+        } catch (RuntimeException statsError) {
+            sendMessage(sender, tr(sender, "stats.retrieve-failed",
+                Map.of(KEY_ERROR, statsError.getMessage())));
+            playErrorSound(sender);
+            plugin.getLogger().log(Level.WARNING, "Failed to read top fishers", statsError);
+            return null;
+        }
+    }
+
+    private void renderLeaderboardEntry(CommandSender sender, PlayerStats ps, int rank) {
+        try {
+            String name = ps.getPlayerName().isEmpty() ? resolveOfflineName(ps) : ps.getPlayerName();
+            sendMessage(sender, tr(sender, "stats.top-entry",
+                Map.of("rank", String.valueOf(rank), KEY_PLAYER, name, "catches", String.valueOf(ps.getTotalCaught()))));
+        } catch (RuntimeException entryError) {
+            plugin.getLogger().log(Level.WARNING, entryError,
+                () -> "Failed to format leaderboard entry: " + entryError.getMessage());
+        }
+    }
+
+    private String resolveTestRollBiome(Player player, String biomeArg) {
+        if (biomeArg == null || biomeArg.isBlank()) {
+            return player.getWorld().getComputedBiome(
+                player.getLocation().getBlockX(),
+                player.getLocation().getBlockY(),
+                player.getLocation().getBlockZ()
+            ).getKey().asString();
+        }
+        NamespacedKey biomeKey = parseRegistryKey(biomeArg);
+        return biomeKey != null ? biomeKey.asString() : biomeArg;
+    }
+
+    private int runTestRolls(PaperPlayer platformPlayer, String biome, int count,
+                              Map<String, Integer> tierCounts, Map<String, Integer> identifierCounts) {
+        int nullRolls = 0;
+        for (int i = 0; i < count; i++) {
+            CustomDrop drop = plugin.getDropManager().getRandomDrop(platformPlayer, biome, 1.0D);
+            if (drop == null) {
+                nullRolls++;
+                continue;
+            }
+            tierCounts.merge(drop.getTier(), 1, Integer::sum);
+            identifierCounts.merge(drop.getIdentifier(), 1, Integer::sum);
+        }
+        return nullRolls;
     }
 
     private String optionalStringArg(CommandContext<CommandSourceStack> context, String name) {
@@ -1392,20 +1425,7 @@ public class BrigadierCommandManager {
 
             String biomeArg = optionalStringArg(context, "biome");
             int count = Math.clamp(optionalIntArg(context, KEY_COUNT, 100), 1, 10000);
-
-            String biome = biomeArg;
-            if (biome == null || biome.isBlank()) {
-                biome = player.getWorld().getComputedBiome(
-                    player.getLocation().getBlockX(),
-                    player.getLocation().getBlockY(),
-                    player.getLocation().getBlockZ()
-                ).getKey().asString();
-            } else {
-                NamespacedKey biomeKey = parseRegistryKey(biome);
-                if (biomeKey != null) {
-                    biome = biomeKey.asString();
-                }
-            }
+            String biome = resolveTestRollBiome(player, biomeArg);
 
             PaperPlayer platformPlayer = new PaperPlayer(player);
             Map<String, Integer> tierCounts = new LinkedHashMap<>();
@@ -1414,17 +1434,7 @@ public class BrigadierCommandManager {
             tierCounts.put("uncommon", 0);
             tierCounts.put("common", 0);
             Map<String, Integer> identifierCounts = new HashMap<>();
-            int nullRolls = 0;
-
-            for (int i = 0; i < count; i++) {
-                CustomDrop drop = plugin.getDropManager().getRandomDrop(platformPlayer, biome, 1.0D);
-                if (drop == null) {
-                    nullRolls++;
-                    continue;
-                }
-                tierCounts.merge(drop.getTier(), 1, Integer::sum);
-                identifierCounts.merge(drop.getIdentifier(), 1, Integer::sum);
-            }
+            int nullRolls = runTestRolls(platformPlayer, biome, count, tierCounts, identifierCounts);
 
             sendMessage(sender, "<gold><st>            </st> <bold>Test Roll</bold> <st>            </st>");
             sendMessage(sender, "<gray>Biome: <white>" + biome + "</white> · Rolls: <white>"
