@@ -571,7 +571,7 @@ public class BrigadierCommandManager {
 
         return switch (normalizedMode) {
             case "vanilla", "retrieve" -> RewardDeliveryMode.VANILLA_RETRIEVE;
-            case "player", "drop", "drop_player" -> RewardDeliveryMode.DROP_AT_PLAYER;
+            case KEY_PLAYER, "drop", "drop_player" -> RewardDeliveryMode.DROP_AT_PLAYER;
             default -> null;
         };
     }

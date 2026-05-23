@@ -454,6 +454,7 @@ public class FishingListener implements Listener {
     }
 
     private boolean dropAtPlayerLocation(Player player, ItemStack rewardItem) {
+        if (rewardItem == null) return false;
         try {
             Item droppedItem = player.getWorld().dropItemNaturally(player.getLocation(), rewardItem);
             droppedItem.setOwner(player.getUniqueId());

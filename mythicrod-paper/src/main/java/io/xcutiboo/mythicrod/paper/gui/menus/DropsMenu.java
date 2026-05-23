@@ -71,7 +71,7 @@ public class DropsMenu extends BaseMenu {
 
     private void applyViewContext() {
         Boolean requestedCategoryView = getContext("viewing_category", Boolean.class);
-        String requestedCategory = getContext("category", String.class);
+        String requestedCategory = getContext(CTX_CATEGORY, String.class);
         Integer requestedPage = getContext(CTX_PAGE, Integer.class);
         if (requestedPage != null) {
             page = Math.max(0, requestedPage);
