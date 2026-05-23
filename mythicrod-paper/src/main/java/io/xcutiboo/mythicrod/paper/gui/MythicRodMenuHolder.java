@@ -5,12 +5,7 @@ import org.bukkit.inventory.InventoryHolder;
 
 import io.xcutiboo.mythicrod.paper.gui.menus.BaseMenu;
 
-public final class MythicRodMenuHolder implements InventoryHolder {
-    private final BaseMenu menu;
-
-    public MythicRodMenuHolder(BaseMenu menu) {
-        this.menu = menu;
-    }
+public record MythicRodMenuHolder(BaseMenu menu) implements InventoryHolder {
 
     public BaseMenu getMenu() {
         return menu;

@@ -422,7 +422,7 @@ public class DropsMenu extends BaseMenu {
                             Map.of("identifier", addedDrop.getIdentifier())));
                         playSuccessSound();
                         plugin.getGUIManager().openMenu(player, "editdrop",
-                            Map.of(CTX_DROP, addedDrop, "category", category, CTX_PAGE, page));
+                            Map.of(CTX_DROP, addedDrop, CTX_CATEGORY, category, CTX_PAGE, page));
                     });
                 } catch (Exception e) {
                     plugin.getLogger().log(Level.WARNING, e,
@@ -615,8 +615,9 @@ public class DropsMenu extends BaseMenu {
         if (itemCount <= 0) {
             return 0;
         }
-        int startIndex = page * CONTENT_SLOTS.length;
-        return Math.clamp(itemCount - startIndex, 0, CONTENT_SLOTS.length);
+        long startIndex = (long) page * CONTENT_SLOTS.length;
+        long visible = Math.clamp(itemCount - startIndex, 0L, (long) CONTENT_SLOTS.length);
+        return (int) visible;
     }
 
     private Material getCategoryIcon(String category) {

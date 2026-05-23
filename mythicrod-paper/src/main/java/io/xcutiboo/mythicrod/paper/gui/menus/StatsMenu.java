@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -132,7 +131,7 @@ public class StatsMenu extends BaseMenu {
         List<Map.Entry<String, Integer>> topTiers = tierCounts.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .limit(5)
-                .collect(Collectors.toList());
+                .toList();
 
         ItemStack title = new ItemBuilder(Material.EXPERIENCE_BOTTLE)
                 .name(tr("gui.stats.tier_breakdown"))

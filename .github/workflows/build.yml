@@ -91,10 +91,10 @@ jobs:
         working-directory: build/libs
         run: |
           set -euo pipefail
-          for jar in *.jar; do
+          for jar in ./*.jar; do
             sha256sum "$jar" > "$jar.sha256"
           done
-          cat *.sha256
+          cat ./*.sha256
 
       - name: Mark pre-release for rc / beta / alpha tags
         id: channel

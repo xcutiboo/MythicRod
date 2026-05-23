@@ -256,17 +256,17 @@ public class DropManager implements DropCatalog {
             return 0;
         }
 
-        List<CustomDrop> existingDrops = target.get(categoryKey);
-        if (existingDrops == null) {
-            target.put(categoryKey, new CopyOnWriteArrayList<>(categoryDrops));
-            return categoryDrops.size();
-        }
-
-        CopyOnWriteArrayList<CustomDrop> mergedDrops = new CopyOnWriteArrayList<>(existingDrops);
-        mergedDrops.addAll(categoryDrops);
-        target.put(categoryKey, mergedDrops);
-        warning(() -> "Merging duplicate drop category '" + categoryKey + "' from multiple configuration sections.");
-
+        target.merge(
+            categoryKey,
+            new CopyOnWriteArrayList<>(categoryDrops),
+            (existing, incoming) -> {
+                warning(() -> "Merging duplicate drop category '" + categoryKey
+                    + "' from multiple configuration sections.");
+                CopyOnWriteArrayList<CustomDrop> mergedDrops = new CopyOnWriteArrayList<>(existing);
+                mergedDrops.addAll(incoming);
+                return mergedDrops;
+            }
+        );
         return categoryDrops.size();
     }
 

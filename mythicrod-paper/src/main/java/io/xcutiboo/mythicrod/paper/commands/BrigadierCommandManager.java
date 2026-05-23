@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -760,8 +761,9 @@ public class BrigadierCommandManager {
                     Map.of(KEY_LIMIT, String.valueOf(MAX_LIMIT))));
             }
 
-            List<PlayerStats> topFishers = readTopFishers(source.getSender(), limit);
-            if (topFishers == null) return 0;
+            Optional<List<PlayerStats>> topFishersOpt = readTopFishers(source.getSender(), limit);
+            if (topFishersOpt.isEmpty()) return 0;
+            List<PlayerStats> topFishers = topFishersOpt.get();
             if (topFishers.isEmpty()) {
                 sendMessage(source.getSender(), tr(source.getSender(), "stats.no-stats"));
                 return 0;
@@ -783,15 +785,15 @@ public class BrigadierCommandManager {
         }
     }
 
-    private List<PlayerStats> readTopFishers(CommandSender sender, int limit) {
+    private Optional<List<PlayerStats>> readTopFishers(CommandSender sender, int limit) {
         try {
-            return plugin.getStatisticsManager().getTopFishers(limit);
+            return Optional.of(plugin.getStatisticsManager().getTopFishers(limit));
         } catch (RuntimeException statsError) {
             sendMessage(sender, tr(sender, "stats.retrieve-failed",
                 Map.of(KEY_ERROR, statsError.getMessage())));
             playErrorSound(sender);
             plugin.getLogger().log(Level.WARNING, "Failed to read top fishers", statsError);
-            return null;
+            return Optional.empty();
         }
     }
 

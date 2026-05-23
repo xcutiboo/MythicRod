@@ -34,8 +34,12 @@ public class PlayerPreferences {
         this.file = new File(dir, "players.yml");
         if (!file.exists()) {
             try {
-                file.getParentFile().mkdirs();
-                file.createNewFile();
+                if (!file.getParentFile().mkdirs() && !file.getParentFile().isDirectory()) {
+                    runtime.getLogger().warning("Could not create parent directory for players.yml");
+                }
+                if (!file.createNewFile() && !file.exists()) {
+                    runtime.getLogger().warning("Could not create players.yml");
+                }
             } catch (IOException e) {
                 runtime.getLogger().log(Level.SEVERE, "Failed to create players.yml", e);
             }

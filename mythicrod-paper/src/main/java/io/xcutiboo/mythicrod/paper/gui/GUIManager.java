@@ -301,13 +301,11 @@ public class GUIManager implements Listener {
             Player player = event.getPlayer();
             pendingTextInputs.remove(player.getUniqueId());
 
-            if (player.getOpenInventory() != null) {
-                Inventory topInventory = player.getOpenInventory().getTopInventory();
-                if (topInventory.getHolder() instanceof MythicRodMenuHolder holder) {
-                    BaseMenu menu = holder.getMenu();
-                    if (menu != null) {
-                        menu.onClose();
-                    }
+            Inventory topInventory = player.getOpenInventory().getTopInventory();
+            if (topInventory.getHolder() instanceof MythicRodMenuHolder holder) {
+                BaseMenu menu = holder.getMenu();
+                if (menu != null) {
+                    menu.onClose();
                 }
             }
         } catch (Exception e) {
@@ -328,7 +326,7 @@ public class GUIManager implements Listener {
     }
 
     private void closePlayerMenuQuietly(Player player) {
-        if (player == null || player.getOpenInventory() == null) return;
+        if (player == null) return;
         try {
             Inventory topInventory = player.getOpenInventory().getTopInventory();
             if (topInventory.getHolder() instanceof MythicRodMenuHolder holder) {
