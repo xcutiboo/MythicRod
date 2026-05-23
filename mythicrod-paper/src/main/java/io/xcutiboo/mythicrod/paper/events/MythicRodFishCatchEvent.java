@@ -83,6 +83,7 @@ public final class MythicRodFishCatchEvent extends Event implements Cancellable 
     /// Prefer this accessor when your plugin only needs read-only metadata and
     /// should not depend on `CustomDrop`-specific methods.
     @NotNull
+    @SuppressWarnings("java:S4144")
     public PlatformDrop getDropView() {
         return drop;
     }
@@ -136,6 +137,7 @@ public final class MythicRodFishCatchEvent extends Event implements Cancellable 
     }
 
     @NotNull
+    @SuppressWarnings("java:S4144")
     public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }

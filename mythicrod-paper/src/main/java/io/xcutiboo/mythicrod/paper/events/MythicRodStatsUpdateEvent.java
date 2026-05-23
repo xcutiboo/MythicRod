@@ -68,6 +68,7 @@ public final class MythicRodStatsUpdateEvent extends Event {
     }
 
     @NotNull
+    @SuppressWarnings("java:S4144")
     public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }

@@ -123,6 +123,7 @@ public final class MythicRodRewardRollEvent extends Event {
     ///
     /// @return forced drop as `PlatformDrop`, or `null` when no override is set
     @Nullable
+    @SuppressWarnings("java:S4144")
     public PlatformDrop getForcedDropView() {
         return forcedDrop;
     }
@@ -141,6 +142,7 @@ public final class MythicRodRewardRollEvent extends Event {
     }
 
     @NotNull
+    @SuppressWarnings("java:S4144")
     public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }

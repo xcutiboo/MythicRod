@@ -350,6 +350,10 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     public boolean isReloadInProgress() { return reloadInProgress.get(); }
     public PlayerDataService getPlayerDataService() { return playerDataService; }
     public MythicRodAPI getAPI() { return api; }
+
+    // Paper-internal access: same instance, narrower static type, so plugin
+    // code can call PaperMythicRodAPI-only helpers without casting.
+    @SuppressWarnings("java:S4144")
     public PaperMythicRodAPI getApiFacade() { return api; }
 
     public boolean isFoliaRuntime() {
@@ -366,6 +370,9 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
         return platformServer.createEmptyConfiguration();
     }
 
+    // Paper-internal access: identical body to getPlatform() but kept under a
+    // different name for symmetry with other manager getters on this class.
+    @SuppressWarnings("java:S4144")
     public PlatformServer getPlatformServer() {
         return platformServer;
     }

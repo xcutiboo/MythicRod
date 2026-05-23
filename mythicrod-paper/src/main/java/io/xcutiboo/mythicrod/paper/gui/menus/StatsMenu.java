@@ -311,13 +311,7 @@ public class StatsMenu extends BaseMenu {
     }
 
     private void renderLeaderboardCloseButton() {
-        ItemStack item = new ItemBuilder(Material.BARRIER)
-                .name(tr("gui.stats.close"))
-                .build();
-        setItem(53, item, () -> {
-            playClickSound();
-            getPlayer().closeInventory();
-        });
+        renderPersonalCloseButton();
     }
 
     private Material iconForTier(String tier) {
