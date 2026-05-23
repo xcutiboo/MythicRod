@@ -158,12 +158,6 @@ public class FishingListener implements Listener {
             return null;
         }
         CustomDrop drop = resolution.drop();
-        if (drop == null) {
-            if (debugMode) {
-                plugin.getLogger().info("Reward roll did not return a drop; preserving vanilla catch");
-            }
-            return null;
-        }
         ItemStack item = resolution.isExternal()
             ? unwrapPlatformItem(resolution.externalItem(), drop.getIdentifier())
             : createItemStack(drop);

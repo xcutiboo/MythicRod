@@ -63,7 +63,6 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     private DropManager dropManager;
     private StatisticsManager statisticsManager;
 
-    private BrigadierCommandManager commandManager;
     private FishingListener fishingListener;
     private GUIManager guiManager;
     private PlayerDataService playerDataService;
@@ -71,7 +70,6 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     private LanguageFileLoader languageFileLoader;
 
     private PaperMythicRodAPI api;
-    private MetricsReporter metricsReporter;
     private PlatformTask statisticsSaveTask;
     private final AtomicBoolean reloadInProgress = new AtomicBoolean(false);
 
@@ -151,8 +149,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     }
 
     private void bootstrapCommandsAndListeners() {
-        this.commandManager = new BrigadierCommandManager(this);
-        commandManager.initialize();
+        new BrigadierCommandManager(this).initialize();
         this.fishingListener = new FishingListener(this);
     }
 
@@ -391,8 +388,7 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
     }
 
     private void initializeMetrics() {
-        this.metricsReporter = new MetricsReporter(this);
-        metricsReporter.start();
+        new MetricsReporter(this).start();
     }
 
     private void validateConfiguredParticles() {

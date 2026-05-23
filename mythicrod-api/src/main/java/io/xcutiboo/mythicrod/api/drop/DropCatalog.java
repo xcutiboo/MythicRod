@@ -24,12 +24,16 @@ public interface DropCatalog {
     /// @param category category key as reported by `getCategories()`
     /// @return immutable snapshot of drops for that category, or an empty list
     @NotNull
+    @SuppressWarnings("java:S1452")
+    // The wildcard lets MythicRod return its concrete CustomDrop list without
+    // forcing a defensive copy on every catalog query.
     List<? extends PlatformDrop> getDrops(@NotNull String category);
 
     /// Returns every currently loaded drop across all categories.
     ///
     /// @return immutable snapshot of all loaded drops
     @NotNull
+    @SuppressWarnings("java:S1452")
     List<? extends PlatformDrop> getAllDrops();
 
     /// Returns the number of currently loaded drops.

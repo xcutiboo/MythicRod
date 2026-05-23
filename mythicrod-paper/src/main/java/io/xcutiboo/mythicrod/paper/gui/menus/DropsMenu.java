@@ -264,7 +264,7 @@ public class DropsMenu extends BaseMenu {
         if (p != null && p.hasPermission(PermissionNodes.ADMIN_CONFIG)) {
             playClickSound();
             plugin.getGUIManager().openMenu(p, "editdrop",
-                Map.of(CTX_DROP, drop, "category", selectedCategory, CTX_PAGE, page));
+                Map.of(CTX_DROP, drop, CTX_CATEGORY, selectedCategory, CTX_PAGE, page));
         } else {
             playErrorSound();
             sendMessage(tr("gui.drops.edit_locked"));
