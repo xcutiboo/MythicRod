@@ -210,6 +210,40 @@ class DropManagerTest {
         )));
     }
 
+    @Test
+    void updateDropByIdReplacesMatchingCategoryEntry() {
+        DropManager manager = new DropManager(Logger.getLogger(DropManagerTest.class.getName()));
+        manager.loadDrops(dropConfig("COD"));
+
+        manager.updateDrop("COD", "fish", 99, 7, "<gold>Bigger COD", List.of("<gray>Lore"), true);
+
+        CustomDrop updated = manager.getDrops("fish").get(0);
+        assertEquals(99, updated.getWeight());
+        assertEquals(7, updated.getAmount());
+        assertEquals("<gold>Bigger COD", updated.getCustomName());
+        assertTrue(updated.isGlowing());
+    }
+
+    @Test
+    void deleteDropByIdRemovesEntryFromCategory() {
+        DropManager manager = new DropManager(Logger.getLogger(DropManagerTest.class.getName()));
+        manager.loadDrops(dropConfig("COD"));
+        assertEquals(1, manager.getDrops("fish").size());
+
+        manager.deleteDrop("COD", "fish");
+
+        assertTrue(manager.getDrops("fish").isEmpty());
+    }
+
+    @Test
+    void getAvailableDropsReturnsCategoryNames() {
+        DropManager manager = new DropManager(Logger.getLogger(DropManagerTest.class.getName()));
+        manager.loadDrops(dropConfig("COD"));
+
+        Set<String> categories = manager.getCategories();
+        assertTrue(categories.contains("fish"));
+    }
+
     private static EditableDropFields validFields(String identifier) {
         return new EditableDropFields(
             identifier, 10, 1, null, List.of(), 0,
