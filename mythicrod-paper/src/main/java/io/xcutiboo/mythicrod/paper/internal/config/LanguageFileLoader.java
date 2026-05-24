@@ -18,7 +18,7 @@ import io.xcutiboo.mythicrod.config.LanguageManager;
 import io.xcutiboo.mythicrod.paper.util.PrettyLogger;
 
 public final class LanguageFileLoader {
-    private static final String[] BUNDLED_LANGS = {"en_US", "en_GB", "ja_JP"};
+    private static final String[] BUNDLED_LANGS = {"en_US", "ja_JP"};
 
     private final JavaPlugin plugin;
     private final Logger logger;

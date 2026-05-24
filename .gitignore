@@ -52,3 +52,4 @@ hs_err_pid*
 run/
 server/
 test-server/
+site/
