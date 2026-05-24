@@ -670,6 +670,11 @@ public class FishingListener implements Listener {
 
         if (shouldShowParticles(player)) {
             spawnRarityParticles(player, effectLocation, weight);
+            // Tier-coded celebration on top of the legacy weight-based
+            // effects. Palette follows the loot-tier convention every
+            // RPG player has learned: white-common, green-uncommon,
+            // blue-rare, purple-legendary, orange-mythic.
+            io.xcutiboo.mythicrod.paper.util.TierVisualEffects.playCatch(player, drop.getTier());
         }
 
         if (plugin.getConfigManager().useSounds()) {
