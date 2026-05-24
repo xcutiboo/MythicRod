@@ -79,7 +79,7 @@ an issue.
   swaps the live drop table after the parse succeeds. A bad file leaves the
   previous state in place and prints the parse error to console.
 - `/mythicrod config language` only accepts locales whose YAML file is on
-  disk inside the plugin's `lang/` directory (`en_US`, `en_GB`, `ja_JP`, and
+  disk inside the plugin's `lang/` directory (`en_US`, `ja_JP`, and
   any Crowdin-synced files).
 
 ---

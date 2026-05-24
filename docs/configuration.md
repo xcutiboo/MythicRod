@@ -20,7 +20,7 @@ Four runtime files live in `plugins/MythicRod/`:
 
 ```yaml
 language:
-  default: en_US   # en_US | en_GB | ja_JP (or any locale present in lang/)
+  default: en_US   # en_US | ja_JP (or any locale present in lang/)
 
 features:
   sounds:

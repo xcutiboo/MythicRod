@@ -56,7 +56,7 @@ Full walkthrough: [Installation](installation.md).
 | API | Paper `26.1.2` (Minecraft `26.1.2`) |
 | Java | 25+ |
 | Optional integration | Nexo (`nexo:*` identifiers) |
-| Bundled languages | `en_US`, `en_GB`, `ja_JP` (rest sync from Crowdin) |
+| Bundled languages | `en_US`, `ja_JP` (rest sync from Crowdin) |
 | Scheduler | Paper-first, Folia owner-thread handoffs verified |
 
 ![divider]({{ site.baseurl }}/assets/divider.svg)
@@ -65,6 +65,6 @@ Full walkthrough: [Installation](installation.md).
 
 - SonarCloud: 0 bugs / 0 vulnerabilities / 0 code smells / 0 hotspots.
 - bStats: pluginId `31484` with 15 custom charts on top of the bStats defaults ([dashboard](https://bstats.org/plugin/bukkit/MythicRod/31484)).
-- Crowdin: [crowdin.com/project/mythicrod](https://crowdin.com/project/mythicrod) (en_US source, en_GB + ja_JP imported, 13 other targets open).
+- Crowdin: [crowdin.com/project/mythicrod](https://crowdin.com/project/mythicrod) (en_US source, ja_JP imported, 9 other targets open).
 - Releases: [github.com/xcutiboo/MythicRod/releases](https://github.com/xcutiboo/MythicRod/releases).
 - Folia 26.1.2 build 8: smoke test passed; runtime reports as `Folia` from `/mythicrod status`.

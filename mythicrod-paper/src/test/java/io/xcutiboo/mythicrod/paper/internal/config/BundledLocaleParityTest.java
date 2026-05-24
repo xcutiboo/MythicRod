@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BundledLocaleParityTest {
 
     private static final String SOURCE_LOCALE = "en_US";
-    private static final List<String> BUNDLED_TARGETS = List.of("en_GB", "ja_JP");
+    private static final List<String> BUNDLED_TARGETS = List.of("ja_JP");
     private static final Pattern PLACEHOLDER = Pattern.compile("%[a-zA-Z0-9_]+%");
 
     @Test

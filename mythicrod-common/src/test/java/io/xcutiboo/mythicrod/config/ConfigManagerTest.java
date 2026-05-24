@@ -188,8 +188,8 @@ class ConfigManagerTest {
         assertTrue(manager.setLanguage("ja_JP"));
         assertEquals("ja_JP", manager.getLanguage());
 
-        assertTrue(manager.setLanguage("en_GB"));
-        assertEquals("en_GB", manager.getLanguage());
+        assertTrue(manager.setLanguage("en_US"));
+        assertEquals("en_US", manager.getLanguage());
     }
 
     @Test

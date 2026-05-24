@@ -35,8 +35,7 @@ Hand-checkable list. Run top to bottom before tagging.
 - [ ] `BundledLocaleParityTest` green
 - [ ] `LanguageFileLoader.BUNDLED_LANGS` lists every bundled locale
 - [ ] Crowdin shows en_US as source
-- [ ] Crowdin shows ja_JP (and en_GB once the target language is
-      enabled on the Crowdin project) under translations
+- [ ] Crowdin shows ja_JP under translations
 
 ## Docs
 
