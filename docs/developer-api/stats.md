@@ -1,9 +1,3 @@
----
-title: Stats
-parent: Developer API
-nav_order: 8
----
-
 # Stats API
 
 MythicRod tracks per-player fishing statistics in
@@ -62,13 +56,13 @@ plugin shutdown and on the configured cadence
 If you need a push notification rather than a poll, listen for
 `MythicRodStatsUpdateEvent`. It carries the updated snapshot and the
 catch tier that triggered the update. See
-[events]({{ site.baseurl }}/developer-api/events.html).
+[events](events.md).
 
 ## Thread contract
 
 All three methods complete on a MythicRod-owned async thread. Schedule
 back to the right owner before touching Bukkit state. See
-[Folia threading]({{ site.baseurl }}/developer-api/folia-threading.html).
+[Folia threading](folia-threading.md).
 
 ## What `statistics: false` does
 
@@ -84,4 +78,4 @@ Treat statistics as opt-in for admins. Plugins that rely on them should
 either degrade gracefully or warn the operator when statistics are
 disabled.
 
-[← Developer API]({{ site.baseurl }}/developer-api/)
+[← Developer API](../developer-api.md)

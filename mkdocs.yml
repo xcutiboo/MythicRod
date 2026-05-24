@@ -1,0 +1,125 @@
+site_name: MythicRod
+site_description: Weighted fishing drops, biome rules, rod tiers, and a small Paper API.
+site_url: https://xcutiboo.github.io/MythicRod/
+repo_url: https://github.com/xcutiboo/MythicRod
+repo_name: xcutiboo/MythicRod
+edit_uri: edit/master/docs/
+
+docs_dir: docs
+
+theme:
+  name: material
+  language: en
+  logo: assets/logo.svg
+  favicon: assets/favicon.ico
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: amber
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: amber
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      reconfigure_material: true
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: ja
+          name: 日本語
+          build: true
+          nav_translations:
+            Home: ホーム
+            Installation: インストール
+            Commands: コマンド
+            Permissions: 権限
+            Configuration: 設定
+            Rods: ロッド
+            Loot tables: ルートテーブル
+            Localization: ローカライズ
+            Troubleshooting: トラブルシューティング
+            Developer API: 開発者 API
+            Release: リリース
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Commands: commands.md
+  - Permissions: permissions.md
+  - Configuration: configuration.md
+  - Rods: rods.md
+  - Loot tables: loot-tables.md
+  - Troubleshooting: troubleshooting.md
+  - Localization:
+      - Overview: localization.md
+      - Crowdin workflow: localization/crowdin.md
+      - Style guide: localization/style-guide.md
+      - Sync runbook: localization/sync-runbook.md
+  - Developer API:
+      - Overview: developer-api.md
+      - Setup: developer-api/setup.md
+      - Service access: developer-api/service-access.md
+      - Events: developer-api/events.md
+      - Drop providers: developer-api/drop-providers.md
+      - Folia threading: developer-api/folia-threading.md
+      - Rods: developer-api/rods.md
+      - Stats: developer-api/stats.md
+      - Examples: developer-api/examples.md
+      - Compatibility policy: developer-api/compatibility-policy.md
+  - Release:
+      - Overview: release.md
+      - Checklist: release/checklist.md
+      - Hangar: release/hangar.md
+      - Modrinth: release/modrinth.md
+      - GitHub Actions: release/github-actions.md
+  - Testing: testing.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/xcutiboo/MythicRod
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/MDwtUgxX9U

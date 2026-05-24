@@ -1,9 +1,3 @@
----
-title: Setup
-parent: Developer API
-nav_order: 1
----
-
 # Setup
 
 ## Gradle (Kotlin DSL)
@@ -78,4 +72,4 @@ Patch releases never break the API. Minor releases add methods with
 default implementations only. Year roll-overs may rename or remove API
 only when the changelog calls it out explicitly.
 
-[← Developer API]({{ site.baseurl }}/developer-api/)
+[← Developer API](../developer-api.md)

@@ -1,29 +1,22 @@
----
-title: Localization
-nav_order: 12
-has_children: true
----
-
 # Localization
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## Children
 
-- [Crowdin]({{ site.baseurl }}/localization/crowdin.html)
-- [Translation style guide]({{ site.baseurl }}/localization/style-guide.html)
-- [Sync runbook]({{ site.baseurl }}/localization/sync-runbook.html)
+- [Crowdin](localization/crowdin.md)
+- [Translation style guide](localization/style-guide.md)
+- [Sync runbook](localization/sync-runbook.md)
 
-MythicRod ships English (`en_US`), British English (`en_GB`), and Japanese
-(`ja_JP`) out of the box. Every other language is community-driven through
-Crowdin and arrives in the repository as l10n PRs.
+MythicRod ships English (`en_US`) and Japanese (`ja_JP`) out of the box.
+Every other language is community-driven through Crowdin and arrives in
+the repository as l10n PRs.
 
 ## Source of truth
 
 | File                                                  | Role                          |
 | ----------------------------------------------------- | ----------------------------- |
 | `mythicrod-paper/src/main/resources/lang/en_US.yml`   | Source. All other locales mirror this key tree. |
-| `mythicrod-paper/src/main/resources/lang/en_GB.yml`   | Bundled British English.       |
 | `mythicrod-paper/src/main/resources/lang/ja_JP.yml`   | Bundled Japanese.              |
 | `mythicrod-paper/src/main/resources/lang/<locale>.yml`| Downloaded by `crowdin.yml`.   |
 
@@ -45,8 +38,8 @@ files:
     update_option: update_as_unapproved
     languages_mapping:
       locale_with_underscore:
-        en-GB: en_GB
         ja: ja_JP
+        de: de_DE
         ...
 ```
 
@@ -58,7 +51,7 @@ unapproved so translators have a chance to review them.
 | Workflow                              | Trigger                          | What it does                                                                |
 | ------------------------------------- | -------------------------------- | --------------------------------------------------------------------------- |
 | `.github/workflows/crowdin.yml`       | push to `master`, weekly cron, manual | Uploads the latest `en_US.yml` to Crowdin and opens a PR on `l10n_master` when translations change. |
-| `.github/workflows/crowdin-seed.yml`  | manual only                      | One-shot. Uploads bundled translations (en_GB, ja_JP) into Crowdin so they appear in the project. |
+| `.github/workflows/crowdin-seed.yml`  | manual only                      | One-shot. Uploads bundled `ja_JP.yml` into Crowdin so it appears in the project. |
 
 Both workflows are no-ops unless the Crowdin project is configured. They
 read these GitHub config values:

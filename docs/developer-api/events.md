@@ -1,9 +1,3 @@
----
-title: Events
-parent: Developer API
-nav_order: 3
----
-
 # Paper events
 
 MythicRod publishes four Paper events. All live under
@@ -105,4 +99,4 @@ and logged by MythicRod.
 - Do not call `Bukkit.getScheduler()` to move entity-bound work back to
   the main thread on Folia. Use the Folia entity or region scheduler.
 
-[← Developer API]({{ site.baseurl }}/developer-api/)
+[← Developer API](../developer-api.md)

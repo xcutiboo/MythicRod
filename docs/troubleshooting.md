@@ -1,11 +1,6 @@
----
-title: Troubleshooting
-nav_order: 10
----
-
 # Troubleshooting
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## Custom catches do nothing
 
@@ -53,7 +48,7 @@ nav_order: 10
   `Runtime: Paper` while booted on Folia, the detection failed and is the
   bug to report.
 - The first place to look on a Folia-only crash is the schedulers list in
-  the developer docs at [Folia threading]({{ site.baseurl }}/developer-api/folia-threading.html).
+  the developer docs at [Folia threading](developer-api/folia-threading.md).
   A common cause is third-party code touching Bukkit state inside a
   MythicRod async callback.
 

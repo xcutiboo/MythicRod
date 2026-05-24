@@ -1,9 +1,3 @@
----
-title: Sync runbook
-parent: Localization
-nav_order: 3
----
-
 # Crowdin sync runbook
 
 Use this when adding a new bundled locale, recovering after a Crowdin
@@ -72,6 +66,6 @@ Likely causes:
 3. `gh secret set CROWDIN_PERSONAL_TOKEN --body '<token>'`
 4. Re-run **Crowdin seed translations** to confirm it works.
 
-[← Localization]({{ site.baseurl }}/localization/) ·
-[Crowdin]({{ site.baseurl }}/localization/crowdin.html) ·
-[Style guide]({{ site.baseurl }}/localization/style-guide.html)
+[← Localization](../localization.md) ·
+[Crowdin](crowdin.md) ·
+[Style guide](style-guide.md)

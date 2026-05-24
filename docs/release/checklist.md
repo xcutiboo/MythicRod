@@ -1,9 +1,3 @@
----
-title: Release checklist
-parent: Release guide
-nav_order: 4
----
-
 # Release checklist
 
 Hand-checkable list. Run top to bottom before tagging.
@@ -35,8 +29,7 @@ Hand-checkable list. Run top to bottom before tagging.
 - [ ] `BundledLocaleParityTest` green
 - [ ] `LanguageFileLoader.BUNDLED_LANGS` lists every bundled locale
 - [ ] Crowdin shows en_US as source
-- [ ] Crowdin shows ja_JP (and en_GB once the target language is
-      enabled on the Crowdin project) under translations
+- [ ] Crowdin shows ja_JP under translations
 
 ## Docs
 
@@ -75,4 +68,4 @@ Three workflows fire in parallel:
 - [ ] Update `docs/index.md` version-targets table to the next planned
       version
 
-[← Release guide]({{ site.baseurl }}/release/)
+[← Release guide](../release.md)

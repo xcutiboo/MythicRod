@@ -1,11 +1,5 @@
----
-title: Home
-nav_order: 1
-permalink: /
----
-
 <p align="center">
-  <img src="{{ site.baseurl }}/assets/banner.svg" alt="MythicRod banner" width="720" />
+  <img src="assets/banner.svg" alt="MythicRod banner" width="720" />
 </p>
 
 <p align="center" markdown="1">
@@ -21,7 +15,7 @@ statistics, and a small public API. Paper-first, Folia-verified.
   <a href="https://ko-fi.com/xcutiboo"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-0b1320?style=flat-square&labelColor=0b1320&color=b87924" /></a>
 </p>
 
-![divider]({{ site.baseurl }}/assets/divider-feature.svg)
+![divider](assets/divider-feature.svg)
 
 ## Pick a path
 
@@ -30,11 +24,11 @@ statistics, and a small public API. Paper-first, Folia-verified.
 | Running a server and want to install MythicRod | [Installation](installation.md) then [Quick start](commands.md) |
 | Tuning drops, rods, or messages | [Configuration](configuration.md) and [Loot tables](loot-tables.md) |
 | Debugging a live server | [Troubleshooting](troubleshooting.md), `/mythicrod status`, `/mythicrod validate` |
-| Translating MythicRod | [Localization]({{ site.baseurl }}/localization/), [Crowdin]({{ site.baseurl }}/localization/crowdin.html) |
+| Translating MythicRod | [Localization](localization.md), [Crowdin](localization/crowdin.md) |
 | Building another plugin against the API | [Developer API](developer-api.md) |
-| Tagging a public release | [Release guide]({{ site.baseurl }}/release/) and the [Checklist]({{ site.baseurl }}/release/checklist.html) |
+| Tagging a public release | [Release guide](release.md) and the [Checklist](release/checklist.md) |
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## Five-minute setup
 
@@ -46,7 +40,7 @@ statistics, and a small public API. Paper-first, Folia-verified.
 
 Full walkthrough: [Installation](installation.md).
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## Version targets
 
@@ -56,15 +50,15 @@ Full walkthrough: [Installation](installation.md).
 | API | Paper `26.1.2` (Minecraft `26.1.2`) |
 | Java | 25+ |
 | Optional integration | Nexo (`nexo:*` identifiers) |
-| Bundled languages | `en_US`, `en_GB`, `ja_JP` (rest sync from Crowdin) |
+| Bundled languages | `en_US`, `ja_JP` (rest sync from Crowdin) |
 | Scheduler | Paper-first, Folia owner-thread handoffs verified |
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## Status
 
 - SonarCloud: 0 bugs / 0 vulnerabilities / 0 code smells / 0 hotspots.
 - bStats: pluginId `31484` with 15 custom charts on top of the bStats defaults ([dashboard](https://bstats.org/plugin/bukkit/MythicRod/31484)).
-- Crowdin: [crowdin.com/project/mythicrod](https://crowdin.com/project/mythicrod) (en_US source, en_GB + ja_JP imported, 13 other targets open).
+- Crowdin: [crowdin.com/project/mythicrod](https://crowdin.com/project/mythicrod) (en_US source, ja_JP imported, 9 other targets open).
 - Releases: [github.com/xcutiboo/MythicRod/releases](https://github.com/xcutiboo/MythicRod/releases).
 - Folia 26.1.2 build 8: smoke test passed; runtime reports as `Folia` from `/mythicrod status`.

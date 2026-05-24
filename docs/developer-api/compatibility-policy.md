@@ -1,9 +1,3 @@
----
-title: Compatibility policy
-parent: Developer API
-nav_order: 6
----
-
 # Compatibility policy
 
 MythicRod uses CalVer: `<year>.<release>.<patch>`.
@@ -55,4 +49,4 @@ Pin against the stable surfaces:
 A Paper API generation bump always lands in a year roll-over or a
 clearly-flagged minor release. Patch releases never raise the floor.
 
-[← Developer API]({{ site.baseurl }}/developer-api/)
+[← Developer API](../developer-api.md)

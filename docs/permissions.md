@@ -1,11 +1,6 @@
----
-title: Permissions
-nav_order: 4
----
-
 # Permissions
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 | Node | Default | Purpose |
 |---|---|---|

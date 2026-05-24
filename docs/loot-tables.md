@@ -1,11 +1,6 @@
----
-title: Loot tables
-nav_order: 6
----
-
 # Loot tables
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 `drops.yml` holds every reward MythicRod can deliver. Drops live inside
 named categories. Three category names get implicit defaults; anything else

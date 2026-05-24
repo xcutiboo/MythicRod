@@ -1,11 +1,6 @@
----
-title: Commands
-nav_order: 3
----
-
 # Commands
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 Aliases: `/mr`, `/mrod`. Brigadier-registered, so tab completion hides
 branches the sender can't run.
@@ -53,7 +48,7 @@ branches the sender can't run.
    live table.
 
 If anything in this sequence does not behave as described, check
-[troubleshooting]({{ site.baseurl }}/troubleshooting.html) before opening
+[troubleshooting](troubleshooting.md) before opening
 an issue.
 
 ## Behaviour worth knowing
@@ -79,7 +74,7 @@ an issue.
   swaps the live drop table after the parse succeeds. A bad file leaves the
   previous state in place and prints the parse error to console.
 - `/mythicrod config language` only accepts locales whose YAML file is on
-  disk inside the plugin's `lang/` directory (`en_US`, `en_GB`, `ja_JP`, and
+  disk inside the plugin's `lang/` directory (`en_US`, `ja_JP`, and
   any Crowdin-synced files).
 
 ---

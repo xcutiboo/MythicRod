@@ -1,15 +1,10 @@
----
-title: Installation
-nav_order: 2
----
-
 # Installation
 
 Drop-in install for a stock Paper server. Everything else (config, drops,
 languages) is generated on first start and editable while the server is
 live.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## What you need
 
@@ -19,7 +14,7 @@ live.
 - Optional: [Nexo](https://polymart.org/resource/nexo) if you want
   `nexo:*` identifiers in `drops.yml`.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## From a release jar
 
@@ -31,7 +26,7 @@ live.
 4. Edit `config.yml` and `drops.yml`.
 5. `/mythicrod reload` after changes.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## From source
 
@@ -43,7 +38,7 @@ cd MythicRod
 
 Shaded jar lands at `mythicrod-paper/build/libs/MythicRod-Paper-<version>.jar`.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## Verifying release artefacts
 

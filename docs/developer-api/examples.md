@@ -1,9 +1,3 @@
----
-title: Examples
-parent: Developer API
-nav_order: 9
----
-
 # Working examples
 
 Snippets that compile against `mythicrod-api:2026.1.0`.
@@ -88,7 +82,7 @@ public final class LeaderboardListener implements Listener {
 
 `renderer::queueRefresh` must reschedule any Bukkit-touching work onto
 the correct owner thread. See
-[Folia threading]({{ site.baseurl }}/developer-api/folia-threading.html).
+[Folia threading](folia-threading.md).
 
 ## React to the language switch
 
@@ -126,4 +120,4 @@ public Optional<String> rodTier(ItemStack rod) {
 }
 ```
 
-[← Developer API]({{ site.baseurl }}/developer-api/)
+[← Developer API](../developer-api.md)

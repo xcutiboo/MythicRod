@@ -1,11 +1,6 @@
----
-title: Custom rods
-nav_order: 7
----
-
 # Custom rods
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 Three tiers ship in the box: `basic`, `advanced`, `legendary`. Each is a
 plain fishing rod with two PersistentDataContainer keys:

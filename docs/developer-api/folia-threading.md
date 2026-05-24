@@ -1,9 +1,3 @@
----
-title: Folia threading
-parent: Developer API
-nav_order: 5
----
-
 # Folia threading
 
 MythicRod is Folia-safe out of the box. Plugins that integrate with it
@@ -70,4 +64,4 @@ api.getTopPlayers(StatType.TOTAL_CAUGHT, 10).thenAccept(top -> {
   drop provider.
 - Do not assume one global tick thread on Folia. There is none.
 
-[← Developer API]({{ site.baseurl }}/developer-api/)
+[← Developer API](../developer-api.md)

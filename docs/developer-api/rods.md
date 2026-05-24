@@ -1,9 +1,3 @@
----
-title: Rods
-parent: Developer API
-nav_order: 7
----
-
 # Rod identity
 
 MythicRod rods are normal Paper `FISHING_ROD` items with two
@@ -79,4 +73,4 @@ MythicRod's namespace.
 - Do not assume the rod is always in main hand. Players may move it to
   off-hand or armor stand it.
 
-[← Developer API]({{ site.baseurl }}/developer-api/)
+[← Developer API](../developer-api.md)

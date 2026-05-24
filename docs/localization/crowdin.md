@@ -1,9 +1,3 @@
----
-title: Crowdin
-parent: Localization
-nav_order: 1
----
-
 # Crowdin
 
 ## What MythicRod uses Crowdin for
@@ -35,7 +29,6 @@ Both workflows skip silently when those are missing.
 | Bundled file | Crowdin language code |
 | --- | --- |
 | `en_US.yml` | source |
-| `en_GB.yml` | `en-GB` (must be enabled on the Crowdin project) |
 | `ja_JP.yml` | `ja` |
 
 Mappings for every other target locale live in `crowdin.yml` under
@@ -96,15 +89,15 @@ source pushes and translation pulls automatically.
 
 ## When a freshly enabled target language still shows nothing
 
-Symptom: en-GB (or any new target) was enabled in Crowdin settings, but
-the project dashboard still shows zero strings for it.
+Symptom: a new target was enabled in Crowdin settings, but the project
+dashboard still shows zero strings for it.
 
 Fix:
 1. Confirm the target language is checked under **Project settings →
    Languages → Target Languages** and the *section-local* Save button
    under that list was clicked.
 2. Verify the language code in `crowdin.yml` matches the Crowdin code.
-   For example `en-GB → en_GB`.
+   For example `pt-BR → pt_BR`.
 3. Trigger **Crowdin seed translations** from Actions. The action log
    should print `Importing translations for file '.../<locale>.yml'`
    followed by `✔ File '...'`.
@@ -127,6 +120,6 @@ change through Crowdin if you want it to stick.
 - MiniMessage tag names (`<gold>`, `<gray>`, `<bold>`)
 - `%placeholder%` tokens
 
-[← Localization]({{ site.baseurl }}/localization/) ·
-[Style guide]({{ site.baseurl }}/localization/style-guide.html) ·
-[Sync runbook]({{ site.baseurl }}/localization/sync-runbook.html)
+[← Localization](../localization.md) ·
+[Style guide](style-guide.md) ·
+[Sync runbook](sync-runbook.md)

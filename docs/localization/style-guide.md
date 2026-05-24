@@ -1,9 +1,3 @@
----
-title: Style guide
-parent: Localization
-nav_order: 2
----
-
 # Translation style guide
 
 Keep MythicRod messages short, calm, and easy to skim. The plugin sends
@@ -69,5 +63,5 @@ You cannot rename them.
 | Material keys (`DIAMOND`, `NETHER_STAR`, ...) | code identifiers |
 | Locale codes (`en_US`, `ja_JP`) | machine-readable |
 
-[← Localization]({{ site.baseurl }}/localization/) ·
-[Crowdin]({{ site.baseurl }}/localization/crowdin.html)
+[← Localization](../localization.md) ·
+[Crowdin](crowdin.md)

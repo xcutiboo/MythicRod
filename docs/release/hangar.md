@@ -1,9 +1,3 @@
----
-title: Hangar
-parent: Release guide
-nav_order: 1
----
-
 # Hangar publishing
 
 ## What this does
@@ -59,4 +53,4 @@ configured.` when the secret is missing. That is the safe failure mode.
   but a `runs-on` change or cache regression can cause a stale build.
   Re-run from a clean workflow trigger.
 
-[← Release guide]({{ site.baseurl }}/release/)
+[← Release guide](../release.md)

@@ -1,15 +1,10 @@
----
-title: Testing checklist
-nav_order: 9
----
-
 # Testing checklist
 
 A runbook for verifying a MythicRod install end-to-end on a fresh Paper
 server. Follow top-to-bottom on a clean datapack so nothing leaks from a
 previous run.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 0. Build & deploy
 
@@ -29,7 +24,7 @@ MythicRod-Paper v2026.1.0 | Paper 26.1.2 | Brigadier ✓ | <Nms>ms
 If the plugin disabled itself, copy the stack trace and head to
 [Troubleshooting](./troubleshooting.md).
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 1. Permissions sanity
 
@@ -44,7 +39,7 @@ Run as **OP** in a test world:
 Switch to a **non-OP** alt and re-run `/mr help`. Only base, GUI, stats, drop
 view, and leaderboard entries should appear.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 2. Drop tables
 
@@ -56,7 +51,7 @@ view, and leaderboard entries should appear.
 5. Cast a rod and catch fish 20+ times. Watch for varied catches, including
    tiered messages (common / uncommon / rare / legendary).
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 3. Biome filters
 
@@ -67,7 +62,7 @@ view, and leaderboard entries should appear.
 4. Move to `minecraft:plains` and repeat. Ocean-only drops should drop out
    of the rotation.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 4. Permission gates
 
@@ -76,7 +71,7 @@ view, and leaderboard entries should appear.
 3. `/mythicrod testroll 5000`, `legendary` count should hit zero.
 4. Grant the node, repeat, legendary catches return.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 5. Custom rods
 
@@ -86,7 +81,7 @@ view, and leaderboard entries should appear.
    (`mythicrod:rod_tier`, `mythicrod:rod_id`).
 4. Catch with the legendary rod; rare/legendary tier rates should rise.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 6. Stats + leaderboard
 
@@ -100,7 +95,7 @@ The default save cadence is 600 s; bump
 fish, wait, then check `plugins/MythicRod/statistics.yml`, your UUID block
 should have a fresh `last_fished`.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 7. In-game drop editor
 
@@ -111,7 +106,7 @@ should have a fresh `last_fished`.
 4. Add a new drop in the menu, save, restart the server, confirm it
    persisted.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 8. Configuration GUI
 
@@ -121,7 +116,7 @@ should have a fresh `last_fished`.
 3. Cycle `delivery_mode` between `vanilla_retrieve`, `inventory`, and
    `drop_at_player`. Re-cast; reward delivery should respect the new mode.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 9. Localization
 
@@ -129,7 +124,7 @@ should have a fresh `last_fished`.
 2. `/mr help`, entries render in Japanese.
 3. `/mythicrod gui` → Language menu, per-player override picker opens.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 10. Reload safety
 
@@ -138,7 +133,7 @@ should have a fresh `last_fished`.
    console.
 3. Confirm `DropManager` published the new table (run `/mythicrod debug`).
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 11. API smoke test
 
@@ -168,7 +163,7 @@ Catch a few fish, `demo:gold` should appear in catches.
 Listen for `MythicRodRewardRollEvent` / `MythicRodFishCatchEvent` /
 `MythicRodStatsUpdateEvent` to confirm the event pipeline fires.
 
-![divider]({{ site.baseurl }}/assets/divider.svg)
+![divider](assets/divider.svg)
 
 ## 12. Folia validation (when available)
 

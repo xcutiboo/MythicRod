@@ -1,9 +1,3 @@
----
-title: Modrinth
-parent: Release guide
-nav_order: 2
----
-
 # Modrinth publishing
 
 ## What this does
@@ -58,4 +52,4 @@ skipping Modrinth publish.` when the secret is missing.
 - Missing jar: `shadowJar` did not run. Re-trigger the workflow from a
   clean cache.
 
-[← Release guide]({{ site.baseurl }}/release/)
+[← Release guide](../release.md)

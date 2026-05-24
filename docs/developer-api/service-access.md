@@ -1,9 +1,3 @@
----
-title: Service access
-parent: Developer API
-nav_order: 2
----
-
 # Service access
 
 MythicRod registers a single `MythicRodAPI` service through Bukkit's
@@ -63,4 +57,4 @@ Declare `load: AFTER, required: false` on MythicRod in your plugin's
 `paper-plugin.yml`. That guarantees the service is registered before
 your `onEnable()` runs.
 
-[← Developer API]({{ site.baseurl }}/developer-api/)
+[← Developer API](../developer-api.md)

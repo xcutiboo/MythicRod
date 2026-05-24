@@ -1,9 +1,3 @@
----
-title: Drop providers
-parent: Developer API
-nav_order: 4
----
-
 # External drop providers
 
 `ExternalDropProvider` is how another plugin injects its own reward
@@ -111,4 +105,4 @@ provider; that bypasses MythicRod's compatibility wrapper.
 - Do not throw from `getWeight`. Any throwing provider is treated as
   inactive for that roll.
 
-[← Developer API]({{ site.baseurl }}/developer-api/)
+[← Developer API](../developer-api.md)

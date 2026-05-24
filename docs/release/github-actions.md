@@ -1,9 +1,3 @@
----
-title: GitHub Actions
-parent: Release guide
-nav_order: 3
----
-
 # GitHub Actions
 
 Every workflow lives in `.github/workflows/`. Each one is SHA-pinned to a
@@ -53,4 +47,4 @@ writes only the Pages artifact. CodeQL writes only security events.
 - Failed publish workflow: do not retag. Trigger the workflow manually
   from the Actions UI after fixing the underlying error.
 
-[← Release guide]({{ site.baseurl }}/release/)
+[← Release guide](../release.md)
