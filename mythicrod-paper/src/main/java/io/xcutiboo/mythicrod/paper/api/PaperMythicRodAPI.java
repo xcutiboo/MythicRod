@@ -18,14 +18,19 @@ import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
 import io.xcutiboo.mythicrod.api.ExternalDropProvider;
 import io.xcutiboo.mythicrod.api.MythicRodAPI;
 import io.xcutiboo.mythicrod.api.PlayerStatSnapshot;
 import io.xcutiboo.mythicrod.api.drop.DropCatalog;
+import io.xcutiboo.mythicrod.api.platform.PlatformDrop;
 import io.xcutiboo.mythicrod.api.platform.PlatformItem;
 import io.xcutiboo.mythicrod.api.platform.PlatformItemFactory;
 import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 import io.xcutiboo.mythicrod.api.platform.PlatformScheduler;
+import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
 import io.xcutiboo.mythicrod.drops.DropConfigurationRecord;
 import io.xcutiboo.mythicrod.drops.DropManager;
@@ -136,6 +141,18 @@ public class PaperMythicRodAPI implements MythicRodAPI {
     @NotNull
     public List<ExternalDropProvider> getExternalDropProviders() {
         return List.copyOf(externalProviders.values());
+    }
+
+    @Override
+    @NotNull
+    public List<? extends PlatformDrop> previewEligibleDrops(
+            @NotNull UUID playerId,
+            @Nullable String biomeKey) {
+        Player bukkitPlayer = Bukkit.getPlayer(playerId);
+        if (bukkitPlayer == null) {
+            return List.of();
+        }
+        return List.copyOf(dropManager.getEligibleDrops(new PaperPlayer(bukkitPlayer), biomeKey));
     }
 
     public double getBaseRewardWeight(@NotNull PlatformPlayer player, @Nullable String biomeName) {
