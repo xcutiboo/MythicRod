@@ -443,8 +443,9 @@ public final class StatisticsManager {
 
         String name = resolvePlayerName(savedName, fallbackName);
         PlayerStats playerStats = new PlayerStats(uuid, name);
-        playerStats.loadFromPersisted(total, common, uncommon, rare, legendary,
-            rodBasic, rodAdvanced, rodLegendary, lastFishedMs);
+        playerStats.loadFromPersisted(new PlayerStats.PersistedSnapshot(
+            total, common, uncommon, rare, legendary,
+            rodBasic, rodAdvanced, rodLegendary, lastFishedMs));
         return playerStats;
     }
 

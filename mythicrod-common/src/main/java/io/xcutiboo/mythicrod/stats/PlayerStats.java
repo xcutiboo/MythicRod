@@ -109,20 +109,33 @@ public final class PlayerStats {
      * <p>Call this while loading data, before the object is exposed to active
      * gameplay paths.
      */
-    public void loadFromPersisted(
-            int total, int common, int uncommon, int rare, int legendary,
-            int basic, int advanced, int legendaryRod,
-            long lastFishedMs) {
-        totalCaught.set(total);
-        commonCaught.set(common);
-        uncommonCaught.set(uncommon);
-        rareCaught.set(rare);
-        legendaryCaught.set(legendary);
-        basicRodUses.set(basic);
-        advancedRodUses.set(advanced);
-        legendaryRodUses.set(legendaryRod);
-        lastFished.set(lastFishedMs);
+    public void loadFromPersisted(PersistedSnapshot snapshot) {
+        totalCaught.set(snapshot.total());
+        commonCaught.set(snapshot.common());
+        uncommonCaught.set(snapshot.uncommon());
+        rareCaught.set(snapshot.rare());
+        legendaryCaught.set(snapshot.legendary());
+        basicRodUses.set(snapshot.basic());
+        advancedRodUses.set(snapshot.advanced());
+        legendaryRodUses.set(snapshot.legendaryRod());
+        lastFished.set(snapshot.lastFishedMs());
     }
+
+    /**
+     * Value object describing the persisted shape of a {@link PlayerStats}
+     * row as it appears on disk.
+     */
+    public record PersistedSnapshot(
+        int total,
+        int common,
+        int uncommon,
+        int rare,
+        int legendary,
+        int basic,
+        int advanced,
+        int legendaryRod,
+        long lastFishedMs
+    ) {}
 
     @Override
     public String toString() {

@@ -9,14 +9,12 @@ plugins {
 dependencies {
     implementation(project(":mythicrod-api"))
     implementation(project(":mythicrod-common"))
+    implementation(libs.bstats.bukkit)
 
     compileOnly(libs.paper.api)
-
-    // Code generation
     compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
 
-    implementation(libs.bstats.bukkit)
+    annotationProcessor(libs.lombok)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.paper.api)
