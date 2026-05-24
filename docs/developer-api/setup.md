@@ -82,7 +82,9 @@ dependencies:
       required: false
 ```
 
-Handle the missing-service case cleanly when MythicRod is optional.
+If MythicRod is an optional dependency, return early when the
+service lookup is null. A server admin may have removed MythicRod
+between restarts even when the declared load order says otherwise.
 
 ## Plugin version compatibility
 

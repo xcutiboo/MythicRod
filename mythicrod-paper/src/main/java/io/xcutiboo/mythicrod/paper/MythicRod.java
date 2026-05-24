@@ -386,8 +386,8 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
         return platformServer.createEmptyConfiguration();
     }
 
-    // Paper-internal access: identical body to getPlatform() but kept under a
-    // different name for symmetry with other manager getters on this class.
+    // Same body as getPlatform() but exposed under a manager-style name so
+    // callers reading the class don't have to remember which getter is which.
     @SuppressWarnings("java:S4144")
     public PlatformServer getPlatformServer() {
         return platformServer;
