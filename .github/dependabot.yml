@@ -1,25 +1,19 @@
 version: 2
 updates:
-  - package-ecosystem: gradle
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: weekly
-      day: monday
+      interval: "weekly"
+      day: "monday"
     open-pull-requests-limit: 5
-    labels:
-      - dependencies
-      - gradle
-    commit-message:
-      prefix: "deps"
-
-  - package-ecosystem: github-actions
+    labels: ["dependencies", "github-actions"]
+    groups:
+      github-actions:
+        patterns: ["*"]
+  - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: weekly
-      day: monday
-    open-pull-requests-limit: 3
-    labels:
-      - dependencies
-      - github-actions
-    commit-message:
-      prefix: "ci"
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "gradle"]

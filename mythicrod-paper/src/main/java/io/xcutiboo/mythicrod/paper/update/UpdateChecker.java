@@ -1,13 +1,16 @@
 package io.xcutiboo.mythicrod.paper.update;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.bukkit.scheduler.BukkitTask;
 import org.slf4j.Logger;
 
 import io.xcutiboo.mythicrod.paper.MythicRod;
@@ -83,7 +86,7 @@ public final class UpdateChecker {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        } catch (RuntimeException | java.io.IOException e) {
+        } catch (RuntimeException | IOException e) {
             log.debug("Update check failed: {}", e.getMessage());
         }
     }
@@ -115,7 +118,7 @@ public final class UpdateChecker {
     }
 
     private final class UpdateCheckTask {
-        private org.bukkit.scheduler.BukkitTask bukkitTask;
+        private BukkitTask bukkitTask;
         private volatile boolean cancelled;
 
         void schedule() {
@@ -130,7 +133,7 @@ public final class UpdateChecker {
                 plugin.getServer().getAsyncScheduler().runAtFixedRate(
                     plugin,
                     task -> { if (!cancelled) runCheck(); },
-                    INITIAL_DELAY_SECONDS, REPEAT_INTERVAL_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+                    INITIAL_DELAY_SECONDS, REPEAT_INTERVAL_SECONDS, TimeUnit.SECONDS);
             }
         }
 
