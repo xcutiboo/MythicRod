@@ -1,21 +1,39 @@
 # Setup
 
-## Gradle (Kotlin DSL)
+The cleanest way to depend on MythicRod is through JitPack, which
+builds the `mythicrod-api` artifact straight from the public GitHub
+tag. No file copies, no jar wrangling.
+
+## Gradle (Kotlin DSL) - JitPack
 
 ```kotlin
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://jitpack.io")
 }
 
+dependencies {
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.64-stable")
+    compileOnly("com.github.xcutiboo.MythicRod:mythicrod-api:v2026.1.0")
+}
+```
+
+The first build for a new MythicRod tag triggers a one-time JitPack
+build (1-5 minutes). Subsequent consumers get the cached artifact.
+
+## Gradle (Kotlin DSL) - jar drop
+
+If you cannot reach JitPack from your build host, drop the released
+MythicRod jar into your project's `libs/` folder and keep it
+`compileOnly`. Never shade or relocate it.
+
+```kotlin
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.1.2.build.64-stable")
     compileOnly(files("libs/MythicRod-Paper-2026.1.0.jar"))
 }
 ```
-
-Drop the released MythicRod jar into your project's `libs/` folder.
-Keep it `compileOnly`. Never shade or relocate it.
 
 ## Gradle (Groovy)
 
