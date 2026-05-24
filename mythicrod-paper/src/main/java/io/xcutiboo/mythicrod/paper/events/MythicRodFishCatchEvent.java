@@ -7,6 +7,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import io.xcutiboo.mythicrod.api.platform.PlatformDrop;
@@ -42,6 +43,7 @@ import io.xcutiboo.mythicrod.drops.CustomDrop;
 ///     }
 /// }
 /// ```
+@ApiStatus.AvailableSince("2026.1.0")
 public final class MythicRodFishCatchEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
@@ -72,8 +74,11 @@ public final class MythicRodFishCatchEvent extends Event implements Cancellable 
         return player;
     }
 
-    /// Returns the selected reward descriptor.
+    /// Returns the selected reward descriptor as the internal `CustomDrop`
+    /// type. Experimental: the internal representation may change. Use
+    /// `getDropView()` when you only need stable read-only metadata.
     @NotNull
+    @ApiStatus.Experimental
     public CustomDrop getDrop() {
         return drop;
     }

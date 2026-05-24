@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import io.xcutiboo.mythicrod.api.PlayerStatSnapshot;
@@ -21,6 +22,7 @@ import io.xcutiboo.mythicrod.api.PlayerStatSnapshot;
 /// event thread on ordinary Paper and the player's region thread on Folia.
 /// Asynchronous work scheduled from a handler must be re-dispatched to the
 /// correct owner before touching world or inventory state.
+@ApiStatus.AvailableSince("2026.1.0")
 public final class MythicRodStatsUpdateEvent extends Event {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();

@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +40,7 @@ import io.xcutiboo.mythicrod.drops.CustomDrop;
 /// Fired from the same player-owned execution path as the fishing event. On
 /// ordinary Paper this is the synchronous event thread. On Folia this is the
 /// owning region thread.
+@ApiStatus.AvailableSince("2026.1.0")
 public final class MythicRodRewardRollEvent extends Event {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
@@ -108,13 +110,26 @@ public final class MythicRodRewardRollEvent extends Event {
     ///
     /// MythicRod will use this drop if it is non-null after the event completes.
     ///
+    /// This entry point takes the internal `CustomDrop` type and is therefore
+    /// considered experimental. The signature may change when the internal
+    /// drop representation is refactored. Prefer `setLuckMultiplier(double)`
+    /// or the post-roll `MythicRodFishCatchEvent#setRewardItem(ItemStack)`
+    /// path when you only need to influence the reward and do not need to
+    /// pin a specific configured drop.
+    ///
     /// @param drop drop to force, or `null` to clear any forced drop
+    @ApiStatus.Experimental
     public void forceDrop(@Nullable CustomDrop drop) {
         this.forcedDrop = drop;
     }
 
+    /// Returns the forced drop as the internal `CustomDrop` type. Experimental
+    /// because it exposes the internal representation; for stable inspection,
+    /// use `getForcedDropView()`.
+    ///
     /// @return forced drop set by an external plugin, or `null` when normal selection should proceed
     @Nullable
+    @ApiStatus.Experimental
     public CustomDrop getForcedDrop() {
         return forcedDrop;
     }
