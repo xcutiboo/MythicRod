@@ -1,6 +1,7 @@
 package io.xcutiboo.mythicrod.paper.item;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -121,6 +122,6 @@ public class RodFactory {
         double multiplier = plugin.getConfigManager() != null
             ? plugin.getConfigManager().getRodLuckMultiplier(tier)
             : 1.0D;
-        return String.format(java.util.Locale.ROOT, "%.2f", multiplier);
+        return String.format(Locale.ROOT, "%.2f", multiplier);
     }
 }

@@ -1,5 +1,6 @@
 package io.xcutiboo.mythicrod.paper.platform;
 
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,7 +24,7 @@ public class PaperWorld implements PlatformWorld {
     public void dropItem(PlatformLocation location, PlatformItem item) {
         if (location == null || item == null) return;
         
-        org.bukkit.Location bukkitLoc = new org.bukkit.Location(
+        Location bukkitLoc = new Location(
             world,
             location.getX(), location.getY(), location.getZ(),
             location.getYaw(), location.getPitch()

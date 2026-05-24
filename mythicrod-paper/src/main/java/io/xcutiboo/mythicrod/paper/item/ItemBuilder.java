@@ -2,6 +2,7 @@ package io.xcutiboo.mythicrod.paper.item;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.bukkit.Material;
@@ -137,7 +138,7 @@ public class ItemBuilder {
                                        Registry<Enchantment> registry,
                                        Map.Entry<String, Integer> entry) {
         if (entry.getKey() == null || entry.getValue() == null) return;
-        String enchantName = entry.getKey().toLowerCase(java.util.Locale.ROOT);
+        String enchantName = entry.getKey().toLowerCase(Locale.ROOT);
         NamespacedKey key = enchantName.contains(":")
             ? NamespacedKey.fromString(enchantName)
             : NamespacedKey.minecraft(enchantName);
