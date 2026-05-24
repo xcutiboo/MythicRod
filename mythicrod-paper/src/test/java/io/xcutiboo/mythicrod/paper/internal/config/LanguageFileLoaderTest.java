@@ -1,5 +1,7 @@
 package io.xcutiboo.mythicrod.paper.internal.config;
 
+import java.util.List;
+
 import org.bukkit.configuration.file.YamlConfiguration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
@@ -53,7 +55,7 @@ class LanguageFileLoaderTest {
     @Test
     void flattenYamlJoinsStringListsIntoSingleTranslationValue() {
         YamlConfiguration bundledDefaults = new YamlConfiguration();
-        bundledDefaults.set("gui.lore.lines", java.util.List.of("<gray>First", "<yellow>Second"));
+        bundledDefaults.set("gui.lore.lines", List.of("<gray>First", "<yellow>Second"));
 
         LanguageFileLoader.MergeResult mergeResult = LanguageFileLoader.mergeTranslations(bundledDefaults, null);
 

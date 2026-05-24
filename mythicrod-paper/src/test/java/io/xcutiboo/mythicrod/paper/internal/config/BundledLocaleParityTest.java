@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -30,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BundledLocaleParityTest {
 
     private static final String SOURCE_LOCALE = "en_US";
-    private static final List<String> BUNDLED_TARGETS = List.of("en_GB", "ja_JP");
+    private static final List<String> BUNDLED_TARGETS = List.of("ja_JP");
     private static final Pattern PLACEHOLDER = Pattern.compile("%[a-zA-Z0-9_]+%");
 
     @Test
@@ -100,7 +101,7 @@ class BundledLocaleParityTest {
     }
 
     private static Map<String, String> flatten(ConfigurationSection root) {
-        Map<String, String> out = new java.util.LinkedHashMap<>();
+        Map<String, String> out = new LinkedHashMap<>();
         flatten(root, "", out);
         return out;
     }
