@@ -54,6 +54,11 @@ tasks {
         configurations = listOf(project.configurations.runtimeClasspath.get())
 
         exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+
+        minimize {
+            // Keep bStats; reflection means minimize cannot see the entry points.
+            exclude(dependency("org.bstats:.*:.*"))
+        }
     }
 
     assemble {
