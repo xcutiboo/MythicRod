@@ -205,6 +205,10 @@ public class DropSelector {
 
         // Roll in [1, total] so that ceilingEntry semantics are preserved:
         // the selected index is the first i where cumulative[i] >= roll.
+        // ThreadLocalRandom is intentional: drop selection is a gameplay roll, not
+        // a security-sensitive draw. Predictability of the next drop carries no
+        // security risk; SecureRandom would waste entropy on a hot fishing path.
+        @SuppressWarnings("java:S2245")
         final int roll = ThreadLocalRandom.current().nextInt(total) + 1;
 
         if (debugMode) {

@@ -165,6 +165,10 @@ public class PaperMythicRodAPI implements MythicRodAPI {
         if (totalWeight <= 0.0D) return null;
 
         while (totalWeight > 0.0D) {
+            // ThreadLocalRandom is intentional: reward selection is a gameplay roll
+            // not a security-sensitive draw. SecureRandom would waste entropy on a
+            // hot fishing path with no risk reduction.
+            @SuppressWarnings("java:S2245")
             double roll = ThreadLocalRandom.current().nextDouble(totalWeight);
             RewardResolution builtInPick = pickBuiltIn(builtInDrops, roll, luckMultiplier);
             if (builtInPick != null) return builtInPick;
