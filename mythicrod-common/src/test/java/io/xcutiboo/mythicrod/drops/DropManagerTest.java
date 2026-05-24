@@ -14,7 +14,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -169,6 +171,50 @@ class DropManagerTest {
         assertEquals("HEART_OF_THE_SEA", manager.getDrops("biome_ocean").get(0).getIdentifier());
         assertEquals("CACTUS", manager.getDrops("biome_desert").get(0).getIdentifier());
         assertEquals(List.of("minecraft:desert"), manager.getDrops("biome_desert").get(0).getBiomes());
+    }
+
+    @Test
+    void addDropRejectsBlankCategoryIdentifierAndNonPositiveFields() {
+        DropManager manager = new DropManager(Logger.getLogger(DropManagerTest.class.getName()));
+        manager.loadDrops(dropConfig("COD"));
+
+        assertNull(manager.addDrop(null, validFields("DIAMOND")));
+        assertNull(manager.addDrop("  ", validFields("DIAMOND")));
+        assertNull(manager.addDrop("fish", null));
+        assertNull(manager.addDrop("fish", new EditableDropFields(
+            "", 10, 1, null, List.of(), 0, Map.of(), List.of(), false, null, List.of()
+        )));
+        assertNull(manager.addDrop("fish", new EditableDropFields(
+            "DIAMOND", 0, 1, null, List.of(), 0, Map.of(), List.of(), false, null, List.of()
+        )));
+        assertNull(manager.addDrop("fish", new EditableDropFields(
+            "DIAMOND", 1, 0, null, List.of(), 0, Map.of(), List.of(), false, null, List.of()
+        )));
+        assertNull(manager.addDrop("fish", new EditableDropFields(
+            "DIAMOND", 1, 1, null, List.of(), -1, Map.of(), List.of(), false, null, List.of()
+        )));
+    }
+
+    @Test
+    void updateDropReturnsFalseWhenArgumentsInvalidOrTargetMissing() {
+        DropManager manager = new DropManager(Logger.getLogger(DropManagerTest.class.getName()));
+        manager.loadDrops(dropConfig("COD"));
+        CustomDrop existing = manager.getDrops("fish").get(0);
+
+        assertFalse(manager.updateDrop(null, "fish", validFields("EMERALD")));
+        assertFalse(manager.updateDrop(existing, null, validFields("EMERALD")));
+        assertFalse(manager.updateDrop(existing, "fish", null));
+        assertFalse(manager.updateDrop(existing, "missing-category", validFields("EMERALD")));
+        assertFalse(manager.updateDrop(existing, "fish", new EditableDropFields(
+            "", 10, 1, null, List.of(), 0, Map.of(), List.of(), false, null, List.of()
+        )));
+    }
+
+    private static EditableDropFields validFields(String identifier) {
+        return new EditableDropFields(
+            identifier, 10, 1, null, List.of(), 0,
+            Map.of(), List.of(), false, null, List.of()
+        );
     }
 
     @Test
