@@ -1,6 +1,6 @@
 [versions]
 paper = "26.1.2.build.64-stable"
-spigot = "1.21.11-R0.1-SNAPSHOT"
+spigot = "26.1.2-R0.1-SNAPSHOT"
 jetbrains-annotations = "26.1.0"
 junit = "6.1.0"
 junit-platform = "6.1.0"
