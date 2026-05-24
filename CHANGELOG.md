@@ -3,6 +3,15 @@
 Project history starts here. Earlier prototype builds are gone, so this file
 is just the timeline going forward.
 
+## [2026.2.0](https://github.com/xcutiboo/MythicRod/compare/v2026.1.0...v2026.2.0) (2026-05-24)
+
+
+### Features
+
+* add mythic rod tier above legendary ([8d787fd](https://github.com/xcutiboo/MythicRod/commit/8d787fd80664bf5224dccafb94bd53baee7c3a91))
+* **api:** createRod(tier) helper ([54c80ee](https://github.com/xcutiboo/MythicRod/commit/54c80eeaba91c933a0b2c8cb56b3e0fcda71e9d9))
+* **api:** preview eligible drops by player + biome ([612e935](https://github.com/xcutiboo/MythicRod/commit/612e935557e60a1478594f8de6f616d45e61c643))
+
 ## 2026.1.0
 
 Fresh start. The plugin was rebuilt from scratch as a multi-module project
