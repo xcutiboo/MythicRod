@@ -669,16 +669,13 @@ public class FishingListener implements Listener {
         int weight = drop.getWeight();
 
         if (shouldShowParticles(player)) {
-            spawnRarityParticles(player, effectLocation, weight);
-            // Tier-coded celebration on top of the legacy weight-based
-            // effects. Palette follows the loot-tier convention every
-            // RPG player has learned: white-common, green-uncommon,
-            // blue-rare, purple-legendary, orange-mythic.
+            spawnHookSplash(player, effectLocation);
             io.xcutiboo.mythicrod.paper.util.TierVisualEffects.playCatch(plugin, player, drop.getTier());
         }
 
         if (plugin.getConfigManager().useSounds()) {
-            playRaritySounds(player, effectLocation, weight);
+            player.playSound(effectLocation, Sound.ENTITY_FISHING_BOBBER_SPLASH,
+                SoundCategory.PLAYERS, 0.8F, 1.0F);
         }
 
         if (debugMode) {
@@ -694,83 +691,16 @@ public class FishingListener implements Listener {
                 || !plugin.getPlayerDataService().hasReducedEffects(player));
     }
 
-    private void spawnRarityParticles(Player player, Location hookLocation, int weight) {
-        spawnParticle(player, hookLocation, plugin.getConfigManager().getCatchParticle(), Particle.SPLASH, 30, 0.3D, 0.15D);
-        spawnParticle(player, hookLocation.clone().add(0.0D, 0.3D, 0.0D), plugin.getConfigManager().getBubbleParticle(), Particle.BUBBLE_POP, 15, 0.2D, 0.05D);
-
-        if (weight <= 1) {
-            Location playerLoc = player.getLocation().add(0.0D, 2.0D, 0.0D);
-            player.spawnParticle(Particle.TOTEM_OF_UNDYING, playerLoc, 50, 1.0D, 0.5D, 1.0D, 0.3D);
-            player.spawnParticle(Particle.END_ROD, playerLoc, 30, 0.8D, 0.3D, 0.8D, 0.1D);
-            player.spawnParticle(Particle.HAPPY_VILLAGER, playerLoc, 20, 0.5D, 0.3D, 0.5D, 0.1D);
-        } else if (weight <= 5) {
-            Location playerLoc = player.getLocation().add(0.0D, 1.5D, 0.0D);
-            player.spawnParticle(Particle.HAPPY_VILLAGER, playerLoc, 15, 0.4D, 0.3D, 0.4D, 0.05D);
-            player.spawnParticle(Particle.END_ROD, hookLocation, 10, 0.3D, 0.3D, 0.3D, 0.05D);
-        } else if (weight <= 15) {
-            spawnParticle(player, player.getLocation().add(0.0D, 1.5D, 0.0D), plugin.getConfigManager().getSuccessParticle(), Particle.HAPPY_VILLAGER, 10, 0.35D, 0.04D);
-        } else {
-            spawnParticle(player, player.getLocation().add(0.0D, 1.5D, 0.0D), plugin.getConfigManager().getSuccessParticle(), Particle.HAPPY_VILLAGER, 5, 0.3D, 0.02D);
-        }
-    }
-
-    private void playRaritySounds(Player player, Location hookLocation, int weight) {
-        player.playSound(hookLocation, Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.8F, 1.0F);
-        player.playSound(hookLocation, Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.6F, 1.1F);
-
-        if (weight <= 1) {
-            playLegendarySounds(player, hookLocation);
-        } else if (weight <= 5) {
-            playRareSounds(player, hookLocation);
-        } else if (weight <= 15) {
-            playUncommonSounds(player, hookLocation);
-        }
-    }
-
-    private void playLegendarySounds(Player player, Location hookLocation) {
-        player.playSound(hookLocation, Sound.BLOCK_BEACON_POWER_SELECT, SoundCategory.PLAYERS, 0.7F, 1.5F);
-        player.playSound(hookLocation, Sound.ENTITY_ENDER_DRAGON_GROWL, SoundCategory.PLAYERS, 0.3F, 1.8F);
-
-        plugin.getPlatformScheduler().runForPlayerDelayed(
-            new PaperPlayer(player),
-            () -> {
-                if (player.isOnline()) {
-                    player.playSound(player, Sound.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.PLAYERS, 0.8F, 1.0F);
-                    player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.6F, 1.2F);
-                    player.playSound(player, Sound.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.PLAYERS, 0.5F, 2.0F);
-                }
-            },
-            5L
-        );
-    }
-
-    private void playRareSounds(Player player, Location hookLocation) {
-        player.playSound(hookLocation, Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.PLAYERS, 0.6F, 2.0F);
-
-        plugin.getPlatformScheduler().runForPlayerDelayed(
-            new PaperPlayer(player),
-            () -> {
-                if (player.isOnline()) {
-                    player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.5F, 1.5F);
-                    player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BELL, SoundCategory.PLAYERS, 0.4F, 1.5F);
-                }
-            },
-            4L
-        );
-    }
-
-    private void playUncommonSounds(Player player, Location hookLocation) {
-        player.playSound(hookLocation, Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.PLAYERS, 0.4F, 1.8F);
-
-        plugin.getPlatformScheduler().runForPlayerDelayed(
-            new PaperPlayer(player),
-            () -> {
-                if (player.isOnline()) {
-                    player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.4F, 1.2F);
-                }
-            },
-            3L
-        );
+    /// Always-on splash + bubble cue at the bobber location. The
+    /// tier-specific feedback (color, helix, tier sound) is owned by
+    /// TierVisualEffects so the two cues never compete.
+    private void spawnHookSplash(Player player, Location hookLocation) {
+        spawnParticle(player, hookLocation,
+            plugin.getConfigManager().getCatchParticle(), Particle.SPLASH,
+            30, 0.3D, 0.15D);
+        spawnParticle(player, hookLocation.clone().add(0.0D, 0.3D, 0.0D),
+            plugin.getConfigManager().getBubbleParticle(), Particle.BUBBLE_POP,
+            15, 0.2D, 0.05D);
     }
 
     private void spawnParticle(Player player, Location location, String particleName, Particle fallback, int count, double offset, double extra) {
