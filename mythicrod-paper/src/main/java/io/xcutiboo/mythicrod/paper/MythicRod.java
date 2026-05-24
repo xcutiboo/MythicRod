@@ -22,6 +22,7 @@ import io.xcutiboo.mythicrod.config.LanguageManager;
 import io.xcutiboo.mythicrod.drops.DropManager;
 import io.xcutiboo.mythicrod.internal.runtime.MythicRodRuntime;
 import io.xcutiboo.mythicrod.metrics.StatisticsManager;
+import io.xcutiboo.mythicrod.paper.item.RodFactory;
 import io.xcutiboo.mythicrod.paper.api.PaperMythicRodAPI;
 import io.xcutiboo.mythicrod.paper.commands.BrigadierCommandManager;
 import io.xcutiboo.mythicrod.paper.data.PlayerDataService;
@@ -167,7 +168,8 @@ public final class MythicRod extends JavaPlugin implements MythicRodRuntime {
             dropManager,
             statisticsManager,
             platformScheduler,
-            platformServer.getItemFactory()
+            platformServer.getItemFactory(),
+            new RodFactory(this)
         );
         // Bukkit ServicesManager registration lets third-party plugins resolve
         // the API without compile-time dependency on our internal classes.
