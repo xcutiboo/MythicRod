@@ -23,6 +23,7 @@ dependencyLocking {
 
 subprojects {
     apply(plugin = "java-library")
+    apply(plugin = "jacoco")
 
     dependencyLocking {
         lockAllConfigurations()
@@ -79,5 +80,23 @@ subprojects {
 
     tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
         useJUnitPlatform()
+        finalizedBy(tasks.named("jacocoTestReport"))
+    }
+
+    tasks.withType<JacocoReport>().configureEach {
+        dependsOn(tasks.withType<org.gradle.api.tasks.testing.Test>())
+        reports {
+            xml.required.set(true)
+            html.required.set(false)
+        }
+    }
+}
+
+sonar {
+    properties {
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            subprojects.joinToString(",") { "${it.layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml" }
+        )
     }
 }
