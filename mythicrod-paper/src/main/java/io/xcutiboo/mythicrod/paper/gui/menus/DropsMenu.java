@@ -616,7 +616,7 @@ public class DropsMenu extends BaseMenu {
             return 0;
         }
         long startIndex = (long) page * CONTENT_SLOTS.length;
-        long visible = Math.clamp(itemCount - startIndex, 0L, (long) CONTENT_SLOTS.length);
+        long visible = Math.clamp(itemCount - startIndex, 0L, CONTENT_SLOTS.length);
         return (int) visible;
     }
 
