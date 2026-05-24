@@ -1,12 +1,14 @@
 package io.xcutiboo.mythicrod.paper.util;
 
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 /// Tier-coded particle and sound feedback for catch events.
@@ -15,8 +17,9 @@ import org.jetbrains.annotations.NotNull;
 /// learned across the last two decades of role-playing games:
 /// white-common, green-uncommon, blue-rare, purple-legendary,
 /// orange-mythic. Each tier pairs one hero particle with one short
-/// sound; nothing layers more than two so the cue reads cleanly
-/// even at full TPS.
+/// sound; legendary and mythic add a brief rising-helix animation
+/// for spectacle without breaking the budget (player-scoped packets
+/// only, capped at one second).
 ///
 /// Calls fire only at the player who caught the drop. Other players
 /// nearby never receive the packets, so the cost stays bounded no
@@ -29,21 +32,32 @@ public final class TierVisualEffects {
     private static final Color LEGENDARY  = Color.fromRGB(0xAA, 0x00, 0xAA);
     private static final Color MYTHIC     = Color.fromRGB(0xFF, 0xAA, 0x00);
 
-    private static final float DUST_SIZE  = 1.2f;
+    private static final float DUST_SIZE        = 1.2f;
+    private static final int   HELIX_TICKS      = 20;   // 1 second of spectacle.
+    private static final int   HELIX_POINTS     = 3;    // particles per tick.
+    private static final double HELIX_RADIUS    = 0.7;
+    private static final double HELIX_LIFT      = 0.12; // y rise per tick.
 
     private TierVisualEffects() {
     }
 
     /// Plays the catch celebration tied to the given tier at the
     /// player's current location. Falls back to the common cue when
-    /// the tier name is unknown.
-    public static void playCatch(@NotNull Player player, @NotNull String tier) {
+    /// the tier name is unknown. Legendary and mythic schedule a
+    /// short rising-helix animation on the player's owner thread.
+    public static void playCatch(@NotNull JavaPlugin plugin, @NotNull Player player, @NotNull String tier) {
         Location at = player.getLocation().add(0, 1.0, 0);
         switch (tier.toLowerCase(Locale.ROOT)) {
             case "uncommon" -> uncommon(player, at);
             case "rare"     -> rare(player, at);
-            case "legendary" -> legendary(player, at);
-            case "mythic", "mythical" -> mythic(player, at);
+            case "legendary" -> {
+                legendaryBurst(player, at);
+                helix(plugin, player, LEGENDARY, MYTHIC);
+            }
+            case "mythic", "mythical" -> {
+                mythicBurst(player, at);
+                helix(plugin, player, MYTHIC, COMMON);
+            }
             default -> common(player, at);
         }
     }
@@ -67,7 +81,7 @@ public final class TierVisualEffects {
         player.playSound(at, Sound.BLOCK_NOTE_BLOCK_BELL, 0.8f, 1.0f);
     }
 
-    private static void legendary(Player player, Location at) {
+    private static void legendaryBurst(Player player, Location at) {
         Particle.DustTransition transition =
             new Particle.DustTransition(LEGENDARY, MYTHIC, DUST_SIZE + 0.3f);
         player.spawnParticle(Particle.DUST_COLOR_TRANSITION, at, 30,
@@ -77,7 +91,7 @@ public final class TierVisualEffects {
         player.playSound(at, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
     }
 
-    private static void mythic(Player player, Location at) {
+    private static void mythicBurst(Player player, Location at) {
         Particle.DustTransition transition =
             new Particle.DustTransition(MYTHIC, COMMON, DUST_SIZE + 0.5f);
         player.spawnParticle(Particle.DUST_COLOR_TRANSITION, at, 40,
@@ -87,4 +101,41 @@ public final class TierVisualEffects {
         player.playSound(at, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
         player.playSound(at, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.35f, 0.8f);
     }
+
+    /// Schedules a rising-helix animation around the player on the
+    /// player's owner thread. Uses Particle.DUST_COLOR_TRANSITION so
+    /// the trail crossfades from start to end while it rises.
+    private static void helix(JavaPlugin plugin, Player player, Color from, Color to) {
+        Particle.DustTransition transition =
+            new Particle.DustTransition(from, to, DUST_SIZE);
+        AtomicInteger ticks = new AtomicInteger(0);
+        player.getScheduler().runAtFixedRate(plugin, task -> {
+            if (!player.isOnline()) {
+                task.cancel();
+                return;
+            }
+            int tick = ticks.getAndIncrement();
+            if (tick >= HELIX_TICKS) {
+                task.cancel();
+                return;
+            }
+            spawnHelixSlice(player, transition, tick);
+        }, () -> { }, 1L, 1L);
+    }
+
+    /// Spawns one slice of a rising helix around the player. Two
+    /// points per tick on opposite sides give the double-helix look
+    /// without doubling the particle count.
+    private static void spawnHelixSlice(Player player, Particle.DustTransition transition, int tick) {
+        Location base = player.getLocation();
+        for (int p = 0; p < HELIX_POINTS; p++) {
+            double angle = (tick * 0.45) + (p * (2 * Math.PI / HELIX_POINTS));
+            double x = base.getX() + HELIX_RADIUS * Math.cos(angle);
+            double z = base.getZ() + HELIX_RADIUS * Math.sin(angle);
+            double y = base.getY() + 0.2 + (tick * HELIX_LIFT);
+            player.spawnParticle(Particle.DUST_COLOR_TRANSITION, x, y, z,
+                1, 0, 0, 0, 0, transition);
+        }
+    }
+
 }

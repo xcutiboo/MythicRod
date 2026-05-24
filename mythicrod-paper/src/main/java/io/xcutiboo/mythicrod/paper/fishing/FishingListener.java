@@ -674,7 +674,7 @@ public class FishingListener implements Listener {
             // effects. Palette follows the loot-tier convention every
             // RPG player has learned: white-common, green-uncommon,
             // blue-rare, purple-legendary, orange-mythic.
-            io.xcutiboo.mythicrod.paper.util.TierVisualEffects.playCatch(player, drop.getTier());
+            io.xcutiboo.mythicrod.paper.util.TierVisualEffects.playCatch(plugin, player, drop.getTier());
         }
 
         if (plugin.getConfigManager().useSounds()) {
