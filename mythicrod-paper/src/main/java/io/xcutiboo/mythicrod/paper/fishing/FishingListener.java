@@ -879,9 +879,8 @@ public class FishingListener implements Listener {
     }
 
     private String normalizeCatchTemplate(String template) {
-        if (template == null || template.isEmpty()) {
-            return template;
-        }
+        if (template == null) return "";
+        if (template.isEmpty()) return template;
         return template
             .replace("{item}", "<item>")
             .replace("{amount}", "<amount>")

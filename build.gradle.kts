@@ -17,6 +17,10 @@ sonar {
 group = "io.xcutiboo"
 version = providers.gradleProperty("version").get()
 
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 subprojects {
     apply(plugin = "java-library")
 
