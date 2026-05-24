@@ -29,6 +29,85 @@ class StatisticsManagerTest {
     private Path dataFolder;
 
     @Test
+    void recordCatchIncrementsTierCountAndTotal() {
+        FakeRuntime runtime = new FakeRuntime(dataFolder.toFile());
+        StatisticsManager manager = new StatisticsManager(runtime);
+        manager.initialize();
+        UUID uuid = UUID.randomUUID();
+        manager.loadPlayer(uuid, "Daisy");
+
+        manager.recordCatch(uuid, "common");
+        manager.recordCatch(uuid, "common");
+        manager.recordCatch(uuid, "legendary");
+
+        PlayerStats stats = manager.getStats(uuid);
+        assertEquals(3, stats.getTotalCaught());
+        assertEquals(2, stats.getCommonCaught());
+        assertEquals(1, stats.getLegendaryCaught());
+    }
+
+    @Test
+    void recordRodUseIncrementsCorrectRodCounter() {
+        FakeRuntime runtime = new FakeRuntime(dataFolder.toFile());
+        StatisticsManager manager = new StatisticsManager(runtime);
+        manager.initialize();
+        UUID uuid = UUID.randomUUID();
+        manager.loadPlayer(uuid, "Daisy");
+
+        manager.recordRodUse(uuid, "basic");
+        manager.recordRodUse(uuid, "basic");
+        manager.recordRodUse(uuid, "advanced");
+        manager.recordRodUse(uuid, "legendary");
+
+        PlayerStats stats = manager.getStats(uuid);
+        assertEquals(2, stats.getBasicRodUses());
+        assertEquals(1, stats.getAdvancedRodUses());
+        assertEquals(1, stats.getLegendaryRodUses());
+    }
+
+    @Test
+    void resetStatsClearsLoadedCountersAndPersistsZeros() throws IOException {
+        FakeRuntime runtime = new FakeRuntime(dataFolder.toFile());
+        StatisticsManager manager = new StatisticsManager(runtime);
+        manager.initialize();
+        UUID uuid = UUID.randomUUID();
+        manager.loadPlayer(uuid, "Daisy");
+        manager.recordCatch(uuid, "rare");
+        manager.recordCatch(uuid, "rare");
+        manager.saveAll();
+
+        manager.resetStats(uuid);
+
+        PlayerStats stats = manager.getStats(uuid);
+        assertEquals(0, stats.getTotalCaught());
+        assertEquals(0, stats.getRareCaught());
+    }
+
+    @Test
+    void getTopFishersReturnsHighestTotalsFirst() {
+        FakeRuntime runtime = new FakeRuntime(dataFolder.toFile());
+        StatisticsManager manager = new StatisticsManager(runtime);
+        manager.initialize();
+        UUID a = UUID.randomUUID();
+        UUID b = UUID.randomUUID();
+        UUID c = UUID.randomUUID();
+        manager.loadPlayer(a, "A");
+        manager.loadPlayer(b, "B");
+        manager.loadPlayer(c, "C");
+        manager.recordCatch(a, "common");
+        manager.recordCatch(b, "common");
+        manager.recordCatch(b, "common");
+        manager.recordCatch(c, "common");
+        manager.recordCatch(c, "common");
+        manager.recordCatch(c, "common");
+
+        List<PlayerStats> top = manager.getTopFishers(2);
+        assertEquals(2, top.size());
+        assertEquals(c, top.get(0).getPlayerUuid());
+        assertEquals(b, top.get(1).getPlayerUuid());
+    }
+
+    @Test
     void persistsLastFishedTimestamp() {
         FakeRuntime runtime = new FakeRuntime(dataFolder.toFile());
         StatisticsManager manager = new StatisticsManager(runtime);
