@@ -30,6 +30,7 @@ tasks {
         archiveClassifier.set("")
         configurations = listOf(project.configurations.runtimeClasspath.get())
         exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+        minimize()
     }
 
     assemble {
