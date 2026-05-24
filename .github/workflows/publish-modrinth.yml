@@ -41,8 +41,13 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Build shadow jar
-        run: ./gradlew :mythicrod-paper:shadowJar --stacktrace --no-daemon
+      - name: Clear gradle build cache
+        run: |
+          rm -rf mythicrod-api/build mythicrod-common/build mythicrod-paper/build
+          ./gradlew --stop || true
+
+      - name: Build shadow jar (fresh)
+        run: ./gradlew :mythicrod-paper:shadowJar --rerun-tasks --stacktrace --no-daemon
 
       - name: Resolve release metadata
         id: meta
@@ -198,6 +203,39 @@ jobs:
               print(f"Modrinth body sync failed: HTTP {exc.code}", exc.read().decode("utf-8", "replace"))
               sys.exit(0)
           PY
+
+      - name: Verify Modrinth jar sha256 matches GitHub release asset
+        if: env.MODRINTH_TOKEN != '' && github.event_name == 'release' && steps.meta.outputs.jar_publish == 'true' && steps.dedupe.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          # Modrinth needs a moment for the CDN to point at the new file.
+          sleep 30
+          mkdir -p .verify
+          gh release download "$REF_NAME" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --pattern "MythicRod-Paper-${VERSION}.jar" \
+            --dir .verify
+          cdn=$(curl -fsSL -H "User-Agent: xcutiboo/MythicRod CI" \
+            "https://api.modrinth.com/v2/project/mythicrod/version/${VERSION}" \
+            | jq -r '.files[0].url')
+          if [[ -z "$cdn" || "$cdn" == "null" ]]; then
+            echo "Could not resolve Modrinth CDN url; skipping verify."
+            exit 0
+          fi
+          curl -fsSL -o .verify/modrinth.jar "$cdn"
+          release_sha=$(sha256sum ".verify/MythicRod-Paper-${VERSION}.jar" | awk '{print $1}')
+          modrinth_sha=$(sha256sum .verify/modrinth.jar | awk '{print $1}')
+          echo "release  sha256: $release_sha"
+          echo "modrinth sha256: $modrinth_sha"
+          if [[ "$release_sha" != "$modrinth_sha" ]]; then
+            echo "::error::Modrinth jar diverged from GitHub release. Likely stale gradle cache. Force-replace via workflow_dispatch with force_replace=true."
+            exit 1
+          fi
+          echo "Modrinth jar matches GitHub release."
 
       - name: Skip without Modrinth token
         if: env.MODRINTH_TOKEN == ''

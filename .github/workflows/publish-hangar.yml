@@ -41,9 +41,14 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Build shadow jar
+      - name: Clear gradle build cache
+        run: |
+          rm -rf mythicrod-api/build mythicrod-common/build mythicrod-paper/build
+          ./gradlew --stop || true
+
+      - name: Build shadow jar (fresh)
         if: env.HANGAR_API_TOKEN != ''
-        run: ./gradlew :mythicrod-paper:build --stacktrace --no-daemon
+        run: ./gradlew :mythicrod-paper:build --rerun-tasks --stacktrace --no-daemon
 
       - name: Replace existing Hangar version
         if: env.HANGAR_API_TOKEN != '' && github.event_name == 'workflow_dispatch' && inputs.force_replace
@@ -83,6 +88,33 @@ jobs:
         run: |
           set -euo pipefail
           echo "The version upload step finished with a non-zero exit. If the failure was 'duplicateNameAndPlatform', the version already exists on Hangar from an earlier build with the same tag; the resource-page sync above is the only useful work for this tag and the job is treated as a soft pass. Any other failure must be triaged from the previous step's log."
+
+      - name: Verify Hangar jar sha256 matches GitHub release asset
+        if: env.HANGAR_API_TOKEN != '' && github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="${REF_NAME#v}"
+          # Wait for Hangar CDN to settle after the upload.
+          sleep 30
+          mkdir -p .verify
+          gh release download "$REF_NAME" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --pattern "MythicRod-Paper-${version}.jar" \
+            --dir .verify
+          curl -fsSL -o .verify/hangar.jar \
+            "https://hangarcdn.papermc.io/plugins/xcutiboo/MythicRod/versions/${version}/PAPER/MythicRod-Paper-${version}.jar?cb=$(date +%s)"
+          release_sha=$(sha256sum ".verify/MythicRod-Paper-${version}.jar" | awk '{print $1}')
+          hangar_sha=$(sha256sum .verify/hangar.jar | awk '{print $1}')
+          echo "release sha256: $release_sha"
+          echo "hangar  sha256: $hangar_sha"
+          if [[ "$release_sha" != "$hangar_sha" ]]; then
+            echo "::error::Hangar jar diverged from GitHub release. Gradle cache likely served stale classes. Delete the version on Hangar (web UI) and re-upload the GitHub release asset manually."
+            exit 1
+          fi
+          echo "Hangar jar matches GitHub release."
 
       - name: Skip without Hangar token
         if: env.HANGAR_API_TOKEN == ''
