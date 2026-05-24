@@ -20,6 +20,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /// Compile-time guard that every bundled locale matches `en_US.yml` in
@@ -87,7 +88,7 @@ class BundledLocaleParityTest {
     private static YamlConfiguration loadBundledLocale(String locale) {
         URL url = BundledLocaleParityTest.class.getClassLoader()
             .getResource("lang/" + locale + ".yml");
-        assertTrue(url != null, () -> "bundled locale not on test classpath: " + locale);
+        assertNotNull(url, () -> "bundled locale not on test classpath: " + locale);
         Path path = toPath(url);
         return YamlConfiguration.loadConfiguration(path.toFile());
     }
@@ -95,7 +96,7 @@ class BundledLocaleParityTest {
     private static Path toPath(URL url) {
         try {
             return Paths.get(url.toURI());
-        } catch (Exception exception) {
+        } catch (Exception _) {
             return new File(url.getFile()).toPath();
         }
     }

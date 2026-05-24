@@ -22,7 +22,7 @@ import io.xcutiboo.mythicrod.stats.PlayerStats;
 /// for personal stats and falls back to a temporary zeroed view for first-time players,
 /// while using
 /// {@link io.xcutiboo.mythicrod.metrics.StatisticsManager#getTopFishers(int)}
-/// for the leaderboard (returns {@code List<PlayerStats>} sorted by totalCaught).
+/// for the leaderboard (returns `List<PlayerStats>` sorted by totalCaught).
 public class StatsMenu extends BaseMenu {
     private static final String CTX_COUNT = "count";
 

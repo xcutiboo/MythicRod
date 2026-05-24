@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 /// Thread-safe drop selector using weighted random selection.
 ///
 /// Thread safety: All methods are stateless with respect to mutable shared data.
-/// {@code ThreadLocalRandom.current()} is called per-invocation (never stored as a field)
+/// `ThreadLocalRandom.current()` is called per-invocation (never stored as a field)
 /// to guarantee correct behaviour across Folia region threads.
 @RequiredArgsConstructor
 public class DropSelector {
@@ -46,7 +46,7 @@ public class DropSelector {
 
     /// Selects a drop with luck-modified weights.
     ///
-    /// A {@code luckMultiplier} &gt; 1.0 scales up the effective weight of drops
+    /// A `luckMultiplier` &gt; 1.0 scales up the effective weight of drops
     /// whose base weight is &le; 5 (rare / legendary tier), making them relatively
     /// more probable without touching common or uncommon weights. A multiplier
     /// of 1.0 reproduces identical behaviour to the no-luck overload.
@@ -100,7 +100,7 @@ public class DropSelector {
     ///
     /// @param drops     Full drop pool.
     /// @param player    Player being evaluated.
-    /// @param biomeName Current biome key, or {@code null} if unavailable.
+    /// @param biomeName Current biome key, or `null` if unavailable.
     /// @return Immutable snapshot of eligible drops.
     public List<CustomDrop> getEligibleDrops(List<CustomDrop> drops, PlatformPlayer player, String biomeName) {
         if (drops == null || drops.isEmpty()) {
@@ -165,12 +165,12 @@ public class DropSelector {
     /// weights. It still builds short-lived arrays for each selection because
     /// the eligible set depends on player, biome and luck context.
     ///
-    /// Thread safety: {@code ThreadLocalRandom.current()} is called per
+    /// Thread safety: `ThreadLocalRandom.current()` is called per
     /// invocation so each Folia region thread uses its own random source.
     ///
     /// @param drops list of eligible drops
     /// @param luckMultiplier multiplier applied to rare drop weights
-    /// @return the selected drop, or {@code null} if all weights are zero
+    /// @return the selected drop, or `null` if all weights are zero
     private CustomDrop selectWeightedRandomOptimized(List<CustomDrop> drops, double luckMultiplier) {
         final int n = drops.size();
 

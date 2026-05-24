@@ -487,7 +487,7 @@ public class PaperMythicRodAPI implements MythicRodAPI {
     }
 
     /// Synchronous snapshot for the given player, suitable for event handlers
-    /// already running on the player's owner thread. Returns {@code null} when
+    /// already running on the player's owner thread. Returns `null` when
     /// no in-memory or on-disk entry exists.
     @Nullable
     public PlayerStatSnapshot snapshotFor(@NotNull UUID playerId) {

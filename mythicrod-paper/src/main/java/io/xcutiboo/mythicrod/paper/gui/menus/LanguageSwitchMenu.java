@@ -30,6 +30,8 @@ public class LanguageSwitchMenu extends BaseMenu {
         10, 11, 12, 14, 15, 16, 19, 20, 21, 23, 24, 25
     };
 
+    private static final String TR_LANG_PREFIX = "gui.language.languages.";
+
     public LanguageSwitchMenu(MythicRod plugin, Player player) {
         super(plugin, player);
     }
@@ -132,7 +134,7 @@ public class LanguageSwitchMenu extends BaseMenu {
     }
 
     private Component resolveDisplayName(String locale) {
-        String key = "gui.language.languages." + curatedKey(locale) + ".name";
+        String key = TR_LANG_PREFIX + curatedKey(locale) + ".name";
         String value = plugin.getLanguageManager().tr(key);
         if (value.equals(key)) {
             return Component.text(locale.toUpperCase(Locale.ROOT));
@@ -141,7 +143,7 @@ public class LanguageSwitchMenu extends BaseMenu {
     }
 
     private Component resolveDescription(String locale) {
-        String key = "gui.language.languages." + curatedKey(locale) + ".description";
+        String key = TR_LANG_PREFIX + curatedKey(locale) + ".description";
         String value = plugin.getLanguageManager().tr(key);
         if (value.equals(key)) {
             return Component.text(plugin.getLanguageManager().tr(
@@ -152,7 +154,7 @@ public class LanguageSwitchMenu extends BaseMenu {
     }
 
     private Component resolveRegion(String locale) {
-        String key = "gui.language.languages." + curatedKey(locale) + ".region";
+        String key = TR_LANG_PREFIX + curatedKey(locale) + ".region";
         String value = plugin.getLanguageManager().tr(key);
         if (value.equals(key)) {
             return Component.text(plugin.getLanguageManager().tr(
