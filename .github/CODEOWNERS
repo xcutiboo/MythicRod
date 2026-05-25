@@ -1,0 +1,13 @@
+# Default owner for any unclaimed area.
+*                                @xcutiboo
+
+# Public API surface - review carefully, breaking changes need a major version bump.
+/mythicrod-api/                  @xcutiboo
+/docs/developer-api.md           @xcutiboo
+
+# Spigot module is skeleton-only for now; flag if anything substantive lands here.
+/mythicrod-spigot/               @xcutiboo
+
+# Release plumbing.
+/.github/workflows/              @xcutiboo
+/CHANGELOG.md                    @xcutiboo

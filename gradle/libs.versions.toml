@@ -1,0 +1,49 @@
+[versions]
+paper = "26.1.2.build.64-stable"
+spigot = "1.21.11-R0.1-SNAPSHOT"
+jetbrains-annotations = "26.1.0"
+junit = "6.1.0"
+junit-platform = "6.1.0"
+
+# Gradle Plugins
+shadow = "9.4.1"
+run-paper = "3.0.2"
+hangar-publish = "0.1.2"
+sonarqube = "7.3.0.8198"
+
+# Dependencies
+lombok = "1.18.46"
+adventure-minimessage = "5.1.1"
+adventure-legacy = "5.1.1"
+bstats = "3.2.1"
+caffeine = "3.2.4"
+
+# Build
+java = "25"
+
+[libraries]
+# Paper Platform
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+
+# Spigot Platform (skeleton module; integration TBD)
+spigot-api = { module = "org.spigotmc:spigot-api", version.ref = "spigot" }
+
+# Code Generation
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
+
+# Runtime libraries
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+bstats-bukkit = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
+
+# Adventure test helpers
+adventure-text-minimessage = { module = "net.kyori:adventure-text-minimessage", version.ref = "adventure-minimessage" }
+adventure-text-serializer-legacy = { module = "net.kyori:adventure-text-serializer-legacy", version.ref = "adventure-legacy" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-platform" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
+hangar-publish = { id = "io.papermc.hangar-publish-plugin", version.ref = "hangar-publish" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
