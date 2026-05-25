@@ -78,7 +78,7 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
         run: |
           set -euo pipefail
-          existing=$(curl -fsSL "https://api.polymart.org/v1/getResourceUpdates?resource_id=${POLYMART_RESOURCE_ID}" \
+          existing=$(curl -fsSL "https://api.voxel.shop/v1/getResourceUpdates?resource_id=${POLYMART_RESOURCE_ID}" \
             | jq -r --arg v "$VERSION" '.response.updates[]? | select(.version == $v) | .id' | head -1)
           if [[ -n "$existing" ]]; then
             echo "Polymart already has update id $existing for version $VERSION; skipping upload."
@@ -104,7 +104,7 @@ jobs:
           if [[ -z "$message" ]]; then
             message="See https://github.com/xcutiboo/MythicRod/releases/tag/v${VERSION}"
           fi
-          response=$(curl -fsS -X POST "https://api.polymart.org/v1/postUpdate?api_key=${POLYMART_API_TOKEN}" \
+          response=$(curl -fsS -X POST "https://api.voxel.shop/v1/postUpdate" \
             -F "api_key=${POLYMART_API_TOKEN}" \
             -F "resource_id=${POLYMART_RESOURCE_ID}" \
             -F "version=${VERSION}" \
