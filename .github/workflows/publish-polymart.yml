@@ -1,0 +1,122 @@
+name: Publish to Polymart
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      POLYMART_API_TOKEN: ${{ secrets.POLYMART_API_TOKEN }}
+      POLYMART_RESOURCE_ID: ${{ vars.POLYMART_RESOURCE_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Skip when not configured
+        if: env.POLYMART_API_TOKEN == '' || env.POLYMART_RESOURCE_ID == ''
+        run: |
+          echo "POLYMART_API_TOKEN secret or POLYMART_RESOURCE_ID variable is not set; skipping Polymart publish."
+          exit 0
+
+      - name: Build shadow jar
+        if: env.POLYMART_API_TOKEN != '' && env.POLYMART_RESOURCE_ID != ''
+        run: ./gradlew :mythicrod-paper:shadowJar --stacktrace --no-daemon
+
+      - name: Resolve release metadata
+        if: env.POLYMART_API_TOKEN != '' && env.POLYMART_RESOURCE_ID != ''
+        id: meta
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="${REF_NAME#v}"
+          if [[ -z "$version" || "$version" == "$REF_NAME" ]]; then
+            version=$(./gradlew -q :mythicrod-paper:properties | awk -F': *' '/^version:/{print $2; exit}')
+          fi
+          jar=$(ls mythicrod-paper/build/libs/MythicRod-Paper-*.jar | grep -v -- '-dev' | head -1)
+          beta=0
+          snapshot=0
+          case "$version" in
+            *-rc*|*-beta*|*-alpha*) beta=1 ;;
+            *-snapshot*|*-SNAPSHOT*) snapshot=1 ;;
+          esac
+          {
+            echo "version=$version"
+            echo "jar=$jar"
+            echo "beta=$beta"
+            echo "snapshot=$snapshot"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check Polymart for an existing version
+        if: env.POLYMART_API_TOKEN != '' && env.POLYMART_RESOURCE_ID != ''
+        id: dedupe
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          existing=$(curl -fsSL "https://api.polymart.org/v1/getResourceUpdates?resource_id=${POLYMART_RESOURCE_ID}" \
+            | jq -r --arg v "$VERSION" '.response.updates[]? | select(.version == $v) | .id' | head -1)
+          if [[ -n "$existing" ]]; then
+            echo "Polymart already has update id $existing for version $VERSION; skipping upload."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload version to Polymart
+        if: |
+          env.POLYMART_API_TOKEN != ''
+          && env.POLYMART_RESOURCE_ID != ''
+          && steps.dedupe.outputs.skip == 'false'
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          JAR: ${{ steps.meta.outputs.jar }}
+          BETA: ${{ steps.meta.outputs.beta }}
+          SNAPSHOT: ${{ steps.meta.outputs.snapshot }}
+        run: |
+          set -euo pipefail
+          message=$(awk '/^## \['"$VERSION"'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md \
+            | sed '/./,$!d' | head -200)
+          if [[ -z "$message" ]]; then
+            message="See https://github.com/xcutiboo/MythicRod/releases/tag/v${VERSION}"
+          fi
+          response=$(curl -fsS -X POST "https://api.polymart.org/v1/postUpdate" \
+            -F "api_key=${POLYMART_API_TOKEN}" \
+            -F "resource_id=${POLYMART_RESOURCE_ID}" \
+            -F "version=${VERSION}" \
+            -F "title=MythicRod ${VERSION}" \
+            -F "message=${message}" \
+            -F "beta=${BETA}" \
+            -F "snapshot=${SNAPSHOT}" \
+            -F "file=@${JAR}")
+          echo "$response"
+          status=$(echo "$response" | jq -r '.response.success // false')
+          if [[ "$status" != "true" ]]; then
+            echo "Polymart rejected the upload."
+            echo "$response" | jq -r '.response.errors[]?' || true
+            exit 1
+          fi

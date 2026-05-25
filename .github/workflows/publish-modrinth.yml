@@ -73,8 +73,29 @@ jobs:
             echo "jar_publish=$jar_publish"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Publish to Modrinth
+      - name: Check Modrinth for an existing version
         if: env.MODRINTH_TOKEN != '' && steps.meta.outputs.jar_publish == 'true'
+        id: dedupe
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          existing=$(curl -fsSL \
+            -H "User-Agent: xcutiboo/MythicRod CI" \
+            "https://api.modrinth.com/v2/project/mythicrod/version/${VERSION}" \
+            -o /dev/null -w "%{http_code}" || true)
+          if [[ "$existing" == "200" ]]; then
+            echo "Modrinth already has version $VERSION; skipping upload."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to Modrinth
+        if: |
+          env.MODRINTH_TOKEN != ''
+          && steps.meta.outputs.jar_publish == 'true'
+          && steps.dedupe.outputs.skip == 'false'
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: mythicrod
