@@ -15,12 +15,16 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.1.2.build.64-stable")
-    compileOnly("com.github.xcutiboo.MythicRod:mythicrod-api:v2026.1.0")
+    // JitPack treats the api module as the project artifact, so pin
+    // the repo not a submodule. Available from v2026.1.1 onwards.
+    compileOnly("com.github.xcutiboo:MythicRod:v2026.1.1")
 }
 ```
 
-The first build for a new MythicRod tag triggers a one-time JitPack
-build (1-5 minutes). Subsequent consumers get the cached artifact.
+The first resolution for a new MythicRod tag triggers a one-time
+JitPack build (1-5 minutes). Subsequent consumers get the cached
+artifact. For development you can also pin
+`com.github.xcutiboo:MythicRod:master-SNAPSHOT`.
 
 ## Gradle (Kotlin DSL) - jar drop
 
