@@ -144,6 +144,42 @@ class ConfigManagerTest {
         assertContainsCatchPlaceholders(manager.getMsgUncommon());
     }
 
+    @Test
+    void settersRoundTripBooleanAndDeliveryFlags() {
+        ConfigManager manager = new ConfigManager(new FakeRuntime(), new MapPlatformConfiguration(Map.of()));
+        manager.setSoundsEnabled(false);
+        manager.setParticlesEnabled(false);
+        manager.setBiomeDropsEnabled(false);
+        manager.setStatisticsEnabled(false);
+        manager.setPermissionsEnabled(false);
+        manager.setDebugEnabled(true);
+        manager.setRewardDeliveryMode(RewardDeliveryMode.DROP_AT_PLAYER);
+        manager.setStatsSaveInterval(300);
+
+        assertEquals(false, manager.useSounds());
+        assertEquals(false, manager.useParticles());
+        assertEquals(false, manager.enableBiomeSpecificDrops());
+        assertEquals(false, manager.trackStatistics());
+        assertEquals(false, manager.usePermissions());
+        assertEquals(true, manager.isDebugMode());
+        assertEquals(RewardDeliveryMode.DROP_AT_PLAYER, manager.getRewardDeliveryMode());
+        assertEquals(300, manager.getStatsSaveInterval());
+    }
+
+    @Test
+    void particleSettersTakeWhitelistedValues() {
+        ConfigManager manager = new ConfigManager(new FakeRuntime(), new MapPlatformConfiguration(Map.of()));
+        manager.setCatchParticle("HEART");
+        manager.setBubbleParticle("BUBBLE_POP");
+        manager.setSuccessParticle("CRIT");
+        manager.setXpParticle("HAPPY_VILLAGER");
+
+        assertEquals("HEART", manager.getCatchParticle());
+        assertEquals("BUBBLE_POP", manager.getBubbleParticle());
+        assertEquals("CRIT", manager.getSuccessParticle());
+        assertEquals("HAPPY_VILLAGER", manager.getXpParticle());
+    }
+
     private static void assertContainsCatchPlaceholders(String template) {
         assertTrue(template.contains("{amount}"), () -> "Expected amount placeholder in: " + template);
         assertTrue(template.contains("{item}"), () -> "Expected item placeholder in: " + template);
@@ -344,7 +380,9 @@ class ConfigManagerTest {
 
         @Override
         public void set(String path, Object value) {
-            throw new UnsupportedOperationException("Not needed for ConfigManager tests");
+            // Test stub: setters in ConfigManager call back into the config; we
+            // accept the write silently so the cached state can still be asserted
+            // through getters.
         }
 
         @Override
