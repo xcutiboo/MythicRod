@@ -1922,11 +1922,23 @@ public class BrigadierCommandManager {
             long totalWeight = 0L;
             List<EligibleDrop> eligible = new ArrayList<>();
             Map<String, List<CustomDrop>> categories = plugin.getDropManager().getDropCategories();
+            // Filter by the viewer's permissions when the sender is a player and
+            // the global permission gate is on, so the preview reflects what
+            // they would actually see at the lake instead of every configured
+            // drop.
+            boolean filterByPermission = (sender instanceof Player)
+                    && plugin.getConfigManager().usePermissions();
             for (Map.Entry<String, List<CustomDrop>> entry : categories.entrySet()) {
                 for (CustomDrop drop : entry.getValue()) {
                     List<String> biomes = drop.getBiomes();
                     if (biomes != null && !biomes.isEmpty() && !biomes.contains(biomeId)) {
                         continue;
+                    }
+                    if (filterByPermission) {
+                        String required = drop.getPermission();
+                        if (required != null && !required.isEmpty() && !sender.hasPermission(required)) {
+                            continue;
+                        }
                     }
                     eligible.add(new EligibleDrop(entry.getKey(), drop));
                     totalWeight += Math.max(0, drop.getWeight());
