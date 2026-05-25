@@ -185,6 +185,9 @@ public interface MythicRodAPI {
     ///         offline or has no eligible drops.
     @ApiStatus.AvailableSince("2026.2.0")
     @NotNull
+    @SuppressWarnings("java:S1452")
+    // The wildcard mirrors DropCatalog#getDrops so MythicRod can return its
+    // concrete CustomDrop list without forcing a defensive copy on every call.
     List<? extends PlatformDrop> previewEligibleDrops(
             @NotNull UUID playerId,
             @Nullable String biomeKey);

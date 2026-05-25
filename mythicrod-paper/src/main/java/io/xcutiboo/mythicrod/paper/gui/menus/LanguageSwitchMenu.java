@@ -30,7 +30,7 @@ public class LanguageSwitchMenu extends BaseMenu {
         10, 11, 12, 14, 15, 16, 19, 20, 21, 23, 24, 25
     };
 
-    private static final String TR_LANG_PREFIX = TR_LANG_PREFIX;
+    private static final String TR_LANG_PREFIX = "gui.language.languages.";
 
     public LanguageSwitchMenu(MythicRod plugin, Player player) {
         super(plugin, player);

@@ -1943,18 +1943,10 @@ public class BrigadierCommandManager {
                     && plugin.getConfigManager().usePermissions();
             for (Map.Entry<String, List<CustomDrop>> entry : categories.entrySet()) {
                 for (CustomDrop drop : entry.getValue()) {
-                    List<String> biomes = drop.getBiomes();
-                    if (biomes != null && !biomes.isEmpty() && !biomes.contains(biomeId)) {
-                        continue;
+                    if (isEligibleForPreview(sender, drop, biomeId, filterByPermission)) {
+                        eligible.add(new EligibleDrop(entry.getKey(), drop));
+                        totalWeight += Math.max(0, drop.getWeight());
                     }
-                    if (filterByPermission) {
-                        String required = drop.getPermission();
-                        if (required != null && !required.isEmpty() && !sender.hasPermission(required)) {
-                            continue;
-                        }
-                    }
-                    eligible.add(new EligibleDrop(entry.getKey(), drop));
-                    totalWeight += Math.max(0, drop.getWeight());
                 }
             }
             eligible.sort(Comparator.comparingInt((EligibleDrop e) -> e.drop().getWeight()).reversed());
@@ -1993,6 +1985,24 @@ public class BrigadierCommandManager {
     }
 
     private record EligibleDrop(String category, CustomDrop drop) {}
+
+    private static boolean isEligibleForPreview(
+            CommandSender sender,
+            CustomDrop drop,
+            String biomeId,
+            boolean filterByPermission) {
+        List<String> biomes = drop.getBiomes();
+        if (biomes != null && !biomes.isEmpty() && !biomes.contains(biomeId)) {
+            return false;
+        }
+        if (filterByPermission) {
+            String required = drop.getPermission();
+            if (required != null && !required.isEmpty() && !sender.hasPermission(required)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     private int executeStatus(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
