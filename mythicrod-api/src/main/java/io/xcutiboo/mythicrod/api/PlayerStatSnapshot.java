@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 /// Immutable snapshot of a player's MythicRod fishing statistics.
@@ -27,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 /// @param lastFished timestamp of the player's most recent catch, or `Instant.EPOCH`
 ///                   if they have never fished
 /// @param snapshotTime when this snapshot was taken
+@ApiStatus.AvailableSince("2026.1.0")
 public record PlayerStatSnapshot(
         @NotNull UUID playerUuid,
         @NotNull String playerName,

@@ -1,5 +1,7 @@
 package io.xcutiboo.mythicrod.api;
 
+import org.jetbrains.annotations.ApiStatus;
+
 /// Small success/failure container used by MythicRod's public API.
 ///
 /// A successful result carries a value. A failed result carries a human-readable
@@ -7,6 +9,7 @@ package io.xcutiboo.mythicrod.api;
 /// value.
 ///
 /// @param <T> wrapped success value type
+@ApiStatus.AvailableSince("2026.1.0")
 public final class Result<T> {
     private final boolean success;
     private final T value;
