@@ -1,0 +1,87 @@
+title: MythicRod
+description: Custom fishing progression for modern Paper servers.
+url: https://xcutiboo.github.io
+baseurl: /MythicRod
+lang: en
+
+remote_theme: just-the-docs/just-the-docs@v0.10.1
+
+color_scheme: dark
+
+logo: /assets/logo.svg
+favicon_ico: /assets/favicon.ico
+
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 2
+  preview_words_before: 3
+  preview_words_after: 3
+  tokenizer_separator: /[\s\-_]+/
+  rel_url: true
+  button: false
+
+heading_anchors: true
+
+nav_external_links:
+  - title: GitHub
+    url: https://github.com/xcutiboo/MythicRod
+    hide_icon: false
+  - title: Releases
+    url: https://github.com/xcutiboo/MythicRod/releases
+    hide_icon: false
+  - title: Crowdin
+    url: https://crowdin.com/project/mythicrod
+    hide_icon: false
+  - title: Ko-fi
+    url: https://ko-fi.com/xcutiboo
+    hide_icon: false
+
+aux_links:
+  "View on GitHub":
+    - https://github.com/xcutiboo/MythicRod
+  "Ko-fi":
+    - https://ko-fi.com/xcutiboo
+
+aux_links_new_tab: true
+
+footer_content: 'MIT-licensed. <a href="https://github.com/xcutiboo/MythicRod">Source on GitHub</a>. Built by <a href="https://github.com/xcutiboo">xcutiboo</a>.'
+
+last_edit_timestamp: true
+gh_edit_link: true
+gh_edit_link_text: Edit this page on GitHub
+gh_edit_repository: https://github.com/xcutiboo/MythicRod
+gh_edit_branch: master
+gh_edit_source: docs
+gh_edit_view_mode: tree
+
+callouts_level: quiet
+callouts:
+  note:
+    title: Note
+    color: blue
+  warning:
+    title: Heads up
+    color: yellow
+  caution:
+    title: Caution
+    color: red
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+permalink: pretty
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

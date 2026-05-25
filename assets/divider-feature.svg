@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 72" width="1200" height="72" role="img" aria-labelledby="mr-feature-title">
+  <title id="mr-feature-title">MythicRod feature divider</title>
+  <desc>Gold gradient rule with a centred reel-ring motif, matched to the MythicRod brand palette.</desc>
+  <defs>
+    <linearGradient id="mr-feature-gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#B87924" stop-opacity="0"/>
+      <stop offset="18%" stop-color="#B87924" stop-opacity="0.55"/>
+      <stop offset="50%" stop-color="#F0C75A" stop-opacity="1"/>
+      <stop offset="82%" stop-color="#B87924" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#B87924" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="mr-feature-edge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#563008" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#835516" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#563008" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="mr-feature-orb" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF1A6"/>
+      <stop offset="60%" stop-color="#F0C75A"/>
+      <stop offset="100%" stop-color="#B87924"/>
+    </radialGradient>
+    <filter id="mr-feature-shadow" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="72" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#mr-feature-shadow)">
+    <rect x="0" y="34" width="1200" height="5" rx="2.5" fill="url(#mr-feature-edge)"/>
+    <rect x="0" y="35" width="1200" height="3" rx="1.5" fill="url(#mr-feature-gold)"/>
+  </g>
+
+  <g transform="translate(600 36)">
+    <circle cx="0" cy="0" r="14" fill="none" stroke="#835516" stroke-width="5"/>
+    <circle cx="0" cy="0" r="14" fill="none" stroke="url(#mr-feature-orb)" stroke-width="3"/>
+    <circle cx="0" cy="0" r="4" fill="#FFF1A6"/>
+  </g>
+
+  <g opacity="0.55">
+    <rect x="486" y="33" width="4" height="6" fill="#DCA13A"/>
+    <rect x="494" y="33" width="4" height="6" fill="#F0C75A"/>
+    <rect x="702" y="33" width="4" height="6" fill="#F0C75A"/>
+    <rect x="710" y="33" width="4" height="6" fill="#DCA13A"/>
+  </g>
+</svg>
