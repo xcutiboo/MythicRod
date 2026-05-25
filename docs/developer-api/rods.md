@@ -13,9 +13,23 @@ cannot rename a vanilla rod into a MythicRod rod.
 
 ## Creating a rod from your plugin
 
-If you want to hand out a MythicRod-compatible rod from your own code,
-use the API's item factory instead of building an `ItemStack` by hand.
-That route keeps your rod compatible with future internal changes:
+The cleanest path is `MythicRodAPI.createRod(tier)`. It returns the
+fully-tagged rod with display name, lore, glow, and unbreakable flag
+matching MythicRod's built-in presets. Available since `2026.2.0`.
+
+```java
+MythicRodAPI api = MythicRodServices.require();
+PlatformItem rod = api.createRod("advanced").orElseThrow();
+player.getInventory().addItem(((PaperPlatformItem) rod).getItemStack());
+```
+
+Valid tiers (case-insensitive): `basic`, `advanced`, `legendary`. An
+unknown tier returns a `Result.failure` rather than throwing.
+
+### Manual rod creation (legacy path)
+
+If you need to override the preset, build the rod through the item
+factory and write the PDC keys yourself:
 
 ```java
 MythicRodAPI api = MythicRodServices.require();
@@ -29,9 +43,8 @@ meta.getPersistentDataContainer().set(rodTier, PersistentDataType.STRING, "advan
 rod.setItemMeta(meta);
 ```
 
-This is rare. Most integrations should hand off to MythicRod's own
-`/mythicrod give` flow or use an `ExternalDropProvider` for tier-aware
-rewards.
+Reach for the manual path only when the built-in preset does not fit;
+otherwise prefer `createRod(tier)`.
 
 ## Detecting a MythicRod rod
 
