@@ -157,10 +157,12 @@ public class PaperMythicRodAPI implements MythicRodAPI {
             case "basic" -> rodFactory.createBasicRod();
             case "advanced" -> rodFactory.createAdvancedRod();
             case "legendary" -> rodFactory.createLegendaryRod();
+            case "mythic" -> rodFactory.createMythicRod();
             default -> null;
         };
         if (rod == null) {
-            return Result.failure("Unknown rod tier '" + tier + "'. Valid tiers: basic, advanced, legendary.");
+            return Result.failure("Unknown rod tier '" + tier
+                + "'. Valid tiers: basic, advanced, legendary, mythic.");
         }
         return Result.success(new PaperItem(rod));
     }

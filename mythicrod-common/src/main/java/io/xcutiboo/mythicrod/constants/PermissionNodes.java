@@ -24,4 +24,5 @@ public final class PermissionNodes {
 
     public static final String ROD_ADVANCED = "mythicrod.rod.advanced";
     public static final String ROD_LEGENDARY = "mythicrod.rod.legendary";
+    public static final String ROD_MYTHIC = "mythicrod.rod.mythic";
 }

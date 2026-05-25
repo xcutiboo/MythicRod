@@ -50,6 +50,7 @@ public class ConfigManager {
     private double basicRodLuckMultiplier = 1.0D;
     private double advancedRodLuckMultiplier = 1.25D;
     private double legendaryRodLuckMultiplier = 1.5D;
+    private double mythicRodLuckMultiplier = 2.0D;
     private int statsSaveInterval = 600;
     private String language = DEFAULT_LANGUAGE;
     private String profile = DEFAULT_PROFILE;
@@ -110,6 +111,7 @@ public class ConfigManager {
             basicRodLuckMultiplier = resolveRodLuckMultiplier("basic", 1.0D);
             advancedRodLuckMultiplier = resolveRodLuckMultiplier("advanced", 1.25D);
             legendaryRodLuckMultiplier = resolveRodLuckMultiplier("legendary", 1.5D);
+            mythicRodLuckMultiplier = resolveRodLuckMultiplier("mythic", 2.0D);
 
             prefix = config.getString("ui.prefix", DEFAULT_PREFIX);
             if (prefix == null || prefix.isEmpty()) {
@@ -198,6 +200,7 @@ public class ConfigManager {
         basicRodLuckMultiplier = 1.0D;
         advancedRodLuckMultiplier = 1.25D;
         legendaryRodLuckMultiplier = 1.5D;
+        mythicRodLuckMultiplier = 2.0D;
         language = DEFAULT_LANGUAGE;
         profile = DEFAULT_PROFILE;
         statsSaveInterval = 600;
@@ -288,6 +291,7 @@ public class ConfigManager {
         return switch (tier.trim().toLowerCase(Locale.ROOT)) {
             case "advanced" -> advancedRodLuckMultiplier;
             case "legendary" -> legendaryRodLuckMultiplier;
+            case "mythic" -> mythicRodLuckMultiplier;
             default -> basicRodLuckMultiplier;
         };
     }

@@ -83,6 +83,10 @@ features:
       basic: 1.0
       advanced: 1.25
       legendary: 1.5
+      # Mythic rod tier - top-of-tier reward. Gate behind a permission node
+      # (mythicrod.rod.mythic) so it stays a sink for prestige progression
+      # rather than something every player holds.
+      mythic: 2.0
 
   permissions:
     # Require specific permissions for certain drops
