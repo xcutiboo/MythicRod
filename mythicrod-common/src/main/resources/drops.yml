@@ -1,0 +1,206 @@
+# MythicRod drop tables.
+#
+# Compact entries use 'MATERIAL,WEIGHT,AMOUNT'.
+# Mapped entries can set material, weight, amount, custom_name, lore,
+# custom_model_data, enchantments, item_flags, glow, permission, and biomes.
+#
+# Weight is relative inside the eligible pool. A reward with weight 20 is twice
+# as likely as one with weight 10; it is not a fixed 20% chance.
+#
+# Run /mythicrod reload after editing.
+
+drops:
+  # Available to every player. Use steady, low-risk rewards here.
+  global:
+    - 'DIAMOND,5,1'
+    - 'IRON_INGOT,30,1'
+    - 'GOLD_INGOT,20,1'
+    - 'EMERALD,15,1'
+    - 'NETHERITE_INGOT,1,1'
+    - 'AMETHYST_SHARD,25,2'
+    - 'QUARTZ,35,3'
+    - 'LAPIS_LAZULI,20,2'
+
+  # Requires mythicrod.drops.rare when permission checks are enabled.
+  rare:
+    - 'ANCIENT_DEBRIS,3,1'
+    - 'NETHERITE_SCRAP,5,1'
+    - 'DIAMOND_BLOCK,1,1'
+    - 'NETHER_STAR,1,1'
+    - 'DRAGON_EGG,1,1'
+    - 'GOLDEN_APPLE,2,1'
+
+  # Mapped entries are useful for names, lore, enchantments, item flags,
+  # permissions, biome filters, glow, and custom model data.
+  legendary:
+    # Example: named weapon
+    excalibur:
+      material: NETHERITE_SWORD
+      weight: 1
+      amount: 1
+      name: '<aqua><bold>Excalibur</bold></aqua>'
+      lore:
+        - '<gray>A legendary sword pulled from the depths</gray>'
+        - '<gray>of the ancient lake.</gray>'
+        - ''
+        - '<aqua>Legendary Fishing Artifact</aqua>'
+      enchantments:
+        sharpness: 10
+        sweeping_edge: 3
+        unbreaking: 5
+        knockback: 2
+      item-flags:
+        - HIDE_ATTRIBUTES
+        - HIDE_ENCHANTS
+      glowing: true
+      permission: mythicrod.drops.legendary
+
+    # Example: named armor
+    neptunes_crown:
+      material: GOLDEN_HELMET
+      weight: 2
+      amount: 1
+      name: "<aqua><bold>Neptune's Crown</bold></aqua>"
+      lore:
+        - '<gray>The crown of the sea god himself.</gray>'
+        - '<gray>Grants the wearer water breathing.</gray>'
+        - ''
+        - '<aqua>Legendary Fishing Artifact</aqua>'
+      enchantments:
+        respiration: 10
+        protection: 4
+        unbreaking: 5
+        aqua_affinity: 1
+      item-flags:
+        - HIDE_ATTRIBUTES
+        - HIDE_ENCHANTS
+      glowing: true
+      permission: mythicrod.drops.legendary
+
+    # Example: named artifact
+    ancient_artifact:
+      material: AMETHYST_BLOCK
+      weight: 1
+      amount: 1
+      name: '<dark_purple><bold>Ancient Artifact</bold></dark_purple>'
+      lore:
+        - '<gray>An ancient artifact from a lost civilization.</gray>'
+        - '<gray>Its purpose is unknown, but it radiates magic.</gray>'
+        - ''
+        - '<dark_purple>Mystical Fishing Artifact</dark_purple>'
+      enchantments:
+        unbreaking: 5
+      glowing: true
+
+    # Example: enchanted book
+    mending_book:
+      material: ENCHANTED_BOOK
+      weight: 1
+      amount: 1
+      name: '<aqua><bold>Book of Mending</bold></aqua>'
+      lore:
+        - '<gray>A legendary tome containing</gray>'
+        - '<gray>the Mending enchantment.</gray>'
+        - ''
+        - '<aqua>Legendary Enchanted Book</aqua>'
+      enchantments:
+        mending: 1
+      glowing: true
+      permission: mythicrod.drops.legendary
+
+    # Example: combat book
+    sharpness_book:
+      material: ENCHANTED_BOOK
+      weight: 2
+      amount: 1
+      name: '<red><bold>Book of Sharpness</bold></red>'
+      lore:
+        - '<gray>A combat book pulled from the depths.</gray>'
+        - ''
+        - '<red>Rare Enchanted Book</red>'
+      enchantments:
+        sharpness: 5
+      glowing: true
+
+  # Biome categories join the eligible pool only when biome-specific drops are
+  # enabled. A category named biome_ocean applies minecraft:ocean to entries
+  # that do not define their own biomes list.
+  #
+  # Ocean rewards.
+  biome_ocean:
+    - 'TROPICAL_FISH,25,1'
+    - 'KELP,25,5'
+    - 'SEAGRASS,30,3'
+    - 'NAUTILUS_SHELL,15,1'
+    - 'HEART_OF_THE_SEA,5,1'
+    - 'PRISMARINE_SHARD,30,1'
+    - 'PRISMARINE_CRYSTALS,20,1'
+
+  # Desert rewards.
+  biome_desert:
+    - 'GOLD_NUGGET,30,3'
+    - 'DEAD_BUSH,40,1'
+    - 'CACTUS,30,1'
+    - 'RABBIT_HIDE,20,2'
+    - 'SAND,50,5'
+    - 'TERRACOTTA,15,1'
+
+  # Jungle rewards.
+  biome_jungle:
+    - 'COCOA_BEANS,30,2'
+    - 'BAMBOO,40,3'
+    - 'TROPICAL_FISH,25,1'
+    - 'FEATHER,20,2'
+    - 'MELON,20,1'
+    - 'VINES,35,2'
+
+  # Mushroom fields rewards.
+  biome_mushroom_fields:
+    - 'RED_MUSHROOM,30,3'
+    - 'BROWN_MUSHROOM,30,3'
+    - 'MYCELIUM,15,1'
+    - 'RED_MUSHROOM_BLOCK,12,1'
+    - 'MUSHROOM_STEM,20,2'
+
+  # Forest rewards.
+  biome_forest:
+    - 'OAK_LOG,40,2'
+    - 'APPLE,30,1'
+    - 'SWEET_BERRIES,25,2'
+    - 'HONEYCOMB,12,1'
+    - 'OAK_SAPLING,20,3'
+
+  # Swamp rewards.
+  biome_swamp:
+    - 'LILY_PAD,35,2'
+    - 'SLIME_BALL,25,1'
+    - 'MUD,30,3'
+    - 'MANGROVE_LOG,20,1'
+    - 'SLIME_BLOCK,5,1'
+# Reference
+#
+# Compact entry:
+#   - 'DIAMOND,10,1'
+#
+# Mapped entry:
+#   example_reward:
+#     material: DIAMOND_SWORD
+#     weight: 2
+#     amount: 1
+#     name: '<red><bold>Example Sword</bold></red>'
+#     lore:
+#       - '<gray>Short lore line</gray>'
+#     enchantments:
+#       sharpness: 5
+#       unbreaking: 3
+#     item-flags:
+#       - HIDE_ATTRIBUTES
+#       - HIDE_ENCHANTS
+#     glowing: true
+#
+# Notes:
+# - Material names are Bukkit Material enum names, usually all caps.
+# - MiniMessage is used for names and lore.
+# - Enchanted books use ENCHANTED_BOOK plus stored enchantments.
+# - If a reward never appears, check material/enchantment spelling, YAML
+#   indentation, permissions, biome restrictions, and /mythicrod reload output.
