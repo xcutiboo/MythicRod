@@ -2,6 +2,7 @@ package io.xcutiboo.mythicrod.paper.events;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 /// Fires once MythicRod has finished an atomic configuration and drop-table
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 ///
 /// The event is not cancellable. Reloads always complete before the event
 /// fires, so cancelling would have no meaningful effect.
+@ApiStatus.AvailableSince("2026.1.0")
 public final class MythicRodReloadEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();

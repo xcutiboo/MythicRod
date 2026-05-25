@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicesManager;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import io.xcutiboo.mythicrod.api.MythicRodAPI;
@@ -18,6 +19,7 @@ import io.xcutiboo.mythicrod.api.MythicRodAPI;
 /// Lookups are valid after MythicRod has enabled and before it disables. A
 /// missing service means MythicRod is not installed, not enabled yet, or is
 /// shutting down.
+@ApiStatus.AvailableSince("2026.1.0")
 public final class MythicRodServices {
 
     private MythicRodServices() {

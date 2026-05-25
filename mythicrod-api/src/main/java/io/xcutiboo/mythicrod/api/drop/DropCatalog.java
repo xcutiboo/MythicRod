@@ -3,6 +3,7 @@ package io.xcutiboo.mythicrod.api.drop;
 import java.util.List;
 import java.util.Set;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import io.xcutiboo.mythicrod.api.platform.PlatformDrop;
@@ -11,6 +12,7 @@ import io.xcutiboo.mythicrod.api.platform.PlatformDrop;
 ///
 /// The catalog reflects the plugin's active in-memory configuration. Returned
 /// collections are snapshots intended for inspection, not mutation.
+@ApiStatus.AvailableSince("2026.1.0")
 public interface DropCatalog {
 
     /// Returns all currently registered category keys.

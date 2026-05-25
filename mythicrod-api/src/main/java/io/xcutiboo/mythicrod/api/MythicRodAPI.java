@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import io.xcutiboo.mythicrod.api.PlayerStatSnapshot.StatType;
@@ -38,6 +39,7 @@ import io.xcutiboo.mythicrod.api.platform.PlatformItemFactory;
 ///
 /// Methods on this interface are stable unless the changelog calls out a major
 /// version break. Platform-specific implementation classes remain internal.
+@ApiStatus.AvailableSince("2026.1.0")
 public interface MythicRodAPI {
 
     /// Returns the running plugin version string, such as `"2026.1.0"`.
