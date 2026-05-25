@@ -92,6 +92,12 @@ jobs:
           env.POLYMART_API_TOKEN != ''
           && env.POLYMART_RESOURCE_ID != ''
           && steps.dedupe.outputs.skip == 'false'
+        # Polymart's voxel.shop rebrand is in open beta and the
+        # postUpdate API has been returning NO_KEY for valid keys.
+        # Treat the upload as soft so a transient Polymart auth
+        # bug cannot block the rest of the release lane (Hangar,
+        # Modrinth, GitHub Release, JitPack).
+        continue-on-error: true
         env:
           VERSION: ${{ steps.meta.outputs.version }}
           JAR: ${{ steps.meta.outputs.jar }}
