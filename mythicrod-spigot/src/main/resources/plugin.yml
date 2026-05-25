@@ -1,0 +1,8 @@
+name: MythicRod
+version: '${version}'
+main: io.xcutiboo.mythicrod.spigot.MythicRodSpigot
+api-version: '1.21'
+description: Skeleton Spigot build. The supported runtime is MythicRod-Paper.
+authors:
+  - xcutiboo
+website: https://github.com/xcutiboo/MythicRod
