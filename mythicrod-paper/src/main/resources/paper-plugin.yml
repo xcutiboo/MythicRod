@@ -1,0 +1,126 @@
+name: MythicRod
+version: '${version}'
+main: io.xcutiboo.mythicrod.paper.MythicRod
+api-version: '26.1.2'
+description: Custom fishing drops, biome-aware loot, statistics, and in-game administration for Paper.
+website: https://github.com/xcutiboo/mythicrod
+authors:
+  - xcutiboo
+
+# Worlds are available before MythicRod loads drops, listeners, and GUI services.
+load: POSTWORLD
+
+# MythicRod uses owner-aware Paper/Folia scheduler handoffs.
+folia-supported: true
+
+dependencies:
+  server:
+    Nexo:
+      load: BEFORE
+      required: false
+      join-classpath: true
+
+permissions:
+  mythicrod.*:
+    description: All MythicRod permissions
+    default: op
+    children:
+      mythicrod.command: true
+      mythicrod.gui: true
+      mythicrod.admin.*: true
+      mythicrod.stats.*: true
+      mythicrod.drops.*: true
+      mythicrod.rod.*: true
+
+  mythicrod.command:
+    description: Access to the main /mythicrod command
+    default: true
+
+  mythicrod.gui:
+    description: Access to the MythicRod GUI menu
+    default: true
+
+  mythicrod.admin.*:
+    description: All administrative permissions
+    default: op
+    children:
+      mythicrod.admin.reload: true
+      mythicrod.admin.give: true
+      mythicrod.admin.debug: true
+      mythicrod.admin.config: true
+
+  mythicrod.admin.config:
+    description: Allows editing custom drops and plugin settings
+    default: op
+
+  mythicrod.admin.reload:
+    description: Reload plugin configuration without restart
+    default: op
+
+  mythicrod.admin.give:
+    description: Give MythicRods to players
+    default: op
+
+  mythicrod.admin.debug:
+    description: Access debug information
+    default: op
+
+  mythicrod.stats.*:
+    description: All statistics permissions
+    default: true
+    children:
+      mythicrod.stats.view: true
+      mythicrod.stats.view.others: true
+      mythicrod.stats.leaderboard: true
+
+  mythicrod.stats.view:
+    description: View your own fishing statistics
+    default: true
+
+  mythicrod.stats.view.others:
+    description: View other players' fishing statistics
+    default: op
+
+  mythicrod.stats.leaderboard:
+    description: View the fishing leaderboard (top fishers)
+    default: true
+
+  mythicrod.drops.*:
+    description: All drop permissions
+    default: op
+    children:
+      mythicrod.drops.view: true
+      mythicrod.drops.global: true
+      mythicrod.drops.rare: true
+      mythicrod.drops.legendary: true
+
+  mythicrod.drops.view:
+    description: View available drops and categories
+    default: true
+
+  mythicrod.drops.global:
+    description: Receive drops from the global category
+    default: true
+
+  mythicrod.drops.rare:
+    description: Receive drops from the rare category (restricted)
+    default: op
+
+  mythicrod.drops.legendary:
+    description: Receive drops from the legendary category (restricted)
+    default: op
+
+  mythicrod.rod.*:
+    description: All rod tier permissions
+    default: op
+    children:
+      mythicrod.rod.advanced: true
+      mythicrod.rod.legendary: true
+
+  mythicrod.rod.advanced:
+    description: Use advanced rod tier
+    default: op
+
+  mythicrod.rod.legendary:
+    description: Use legendary rod tier
+    default: op
