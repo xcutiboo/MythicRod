@@ -1,0 +1,248 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+     width="512"
+     height="512"
+     viewBox="0 0 512 512"
+     role="img"
+     aria-labelledby="title desc"
+     shape-rendering="geometricPrecision">
+
+  <title id="title">MythicRod Official Plugin Icon</title>
+  <desc id="desc">
+    Official MythicRod plugin icon with polished dark background, hollow handle,
+    centered reel, connected scalloped string curves, vertical fishing line, and clean hook.
+  </desc>
+
+  <defs>
+    <!-- Background -->
+    <linearGradient id="bgBase" x1="54" y1="48" x2="458" y2="468" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2D353B"/>
+      <stop offset=".48" stop-color="#152738"/>
+      <stop offset="1" stop-color="#06111C"/>
+    </linearGradient>
+
+    <radialGradient id="bgTopGlow" cx="18%" cy="15%" r="42%">
+      <stop offset="0" stop-color="#FFF4B4" stop-opacity=".14"/>
+      <stop offset=".40" stop-color="#FFF4B4" stop-opacity=".038"/>
+      <stop offset="1" stop-color="#FFF4B4" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="bgDepth" cx="60%" cy="58%" r="72%">
+      <stop offset="0" stop-color="#1B3952" stop-opacity=".15"/>
+      <stop offset=".56" stop-color="#0A1726" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#000000" stop-opacity=".26"/>
+    </radialGradient>
+
+    <!-- Gold -->
+    <linearGradient id="goldFill" x1="78" y1="410" x2="414" y2="88" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B87924"/>
+      <stop offset=".38" stop-color="#DCA13A"/>
+      <stop offset=".73" stop-color="#F0C75A"/>
+      <stop offset="1" stop-color="#FFF1A6"/>
+    </linearGradient>
+
+    <linearGradient id="goldEdge" x1="78" y1="410" x2="414" y2="88" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#563008"/>
+      <stop offset=".56" stop-color="#835516"/>
+      <stop offset="1" stop-color="#B37B24"/>
+    </linearGradient>
+
+    <filter id="iconShadow"
+            filterUnits="userSpaceOnUse"
+            x="0"
+            y="0"
+            width="512"
+            height="512"
+            color-interpolation-filters="sRGB">
+      <feDropShadow dx="0"
+                    dy="8"
+                    stdDeviation="6"
+                    flood-color="#000000"
+                    flood-opacity=".28"/>
+    </filter>
+  </defs>
+
+  <!-- Layer 01: Background -->
+  <g id="layer-background" inkscape:groupmode="layer" inkscape:label="01 Background">
+    <g id="group-background-base" inkscape:label="01.01 Background Base">
+      <rect id="background-panel"
+            x="28"
+            y="28"
+            width="456"
+            height="456"
+            rx="84"
+            fill="url(#bgBase)"/>
+    </g>
+
+    <g id="group-background-lighting" inkscape:label="01.02 Background Lighting">
+      <rect id="background-top-glow"
+            x="28"
+            y="28"
+            width="456"
+            height="456"
+            rx="84"
+            fill="url(#bgTopGlow)"/>
+
+      <rect id="background-depth-vignette"
+            x="28"
+            y="28"
+            width="456"
+            height="456"
+            rx="84"
+            fill="url(#bgDepth)"/>
+    </g>
+
+    <g id="group-background-rims" inkscape:label="01.03 Background Rims">
+      <rect id="background-inner-rim"
+            x="42"
+            y="42"
+            width="428"
+            height="428"
+            rx="70"
+            fill="none"
+            stroke="#FFFFFF"
+            stroke-width="2"
+            stroke-opacity=".055"/>
+
+      <rect id="background-outer-rim"
+            x="28"
+            y="28"
+            width="456"
+            height="456"
+            rx="84"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-opacity=".18"/>
+    </g>
+  </g>
+
+  <!-- Layer 02: MythicRod Artwork -->
+  <g id="layer-mythicrod-artwork"
+     inkscape:groupmode="layer"
+     inkscape:label="02 MythicRod Artwork"
+     filter="url(#iconShadow)"
+     fill="none"
+     stroke-linecap="round"
+     stroke-linejoin="round">
+
+    <!-- 02.01 Lower Hollow Handle -->
+    <g id="group-lower-hollow-handle" inkscape:label="02.01 Lower Hollow Handle">
+      <rect id="lower-handle-edge"
+            x="93"
+            y="304"
+            width="150"
+            height="44"
+            rx="22"
+            transform="rotate(-45 168 326)"
+            stroke="url(#goldEdge)"
+            stroke-width="26"/>
+
+      <rect id="lower-handle-gold"
+            x="93"
+            y="304"
+            width="150"
+            height="44"
+            rx="22"
+            transform="rotate(-45 168 326)"
+            stroke="url(#goldFill)"
+            stroke-width="18"/>
+    </g>
+
+    <!-- 02.02 Connected Scalloped String Curves -->
+    <g id="group-connected-string-curves" inkscape:label="02.02 Connected Scalloped String Curves">
+      <path id="string-curve-1-edge"
+            d="M238 257
+               C254 290 290 286 300 195"
+            stroke="url(#goldEdge)"
+            stroke-width="26"/>
+
+      <path id="string-curve-1-gold"
+            d="M238 257
+               C254 290 290 286 300 195"
+            stroke="url(#goldFill)"
+            stroke-width="18"/>
+
+      <path id="string-curve-2-edge"
+            d="M300 195
+               C316 223 353 218 367 128"
+            stroke="url(#goldEdge)"
+            stroke-width="26"/>
+
+      <path id="string-curve-2-gold"
+            d="M300 195
+               C316 223 353 218 367 128"
+            stroke="url(#goldFill)"
+            stroke-width="18"/>
+    </g>
+
+    <!-- 02.03 Main Rod, Line, and Hook -->
+    <g id="group-rod-line-hook" inkscape:label="02.03 Rod Line Hook">
+      <path id="rod-line-hook-edge"
+            d="M231 264
+               L405 90
+               L405 247
+               C405 264 418 270 421 288
+               C425 311 409 331 388 333
+               C368 334 355 321 355 302
+               C355 291 362 283 374 278"
+            stroke="url(#goldEdge)"
+            stroke-width="26"/>
+
+      <path id="rod-line-hook-gold"
+            d="M231 264
+               L405 90
+               L405 247
+               C405 264 418 270 421 288
+               C425 311 409 331 388 333
+               C368 334 355 321 355 302
+               C355 291 362 283 374 278"
+            stroke="url(#goldFill)"
+            stroke-width="18"/>
+    </g>
+
+    <!-- 02.04 Reel Hole Cleanup -->
+    <g id="group-reel-hole-cleanup" inkscape:label="02.04 Reel Hole Cleanup">
+      <circle id="reel-hole-clean"
+              cx="203"
+              cy="291"
+              r="24"
+              fill="#0A1726"/>
+    </g>
+
+    <!-- 02.05 Reel Overlay -->
+    <g id="group-reel-overlay" inkscape:label="02.05 Reel Overlay">
+      <circle id="reel-ring-edge"
+              cx="203"
+              cy="291"
+              r="36"
+              stroke="url(#goldEdge)"
+              stroke-width="26"/>
+
+      <circle id="reel-ring-gold"
+              cx="203"
+              cy="291"
+              r="36"
+              stroke="url(#goldFill)"
+              stroke-width="18"/>
+    </g>
+
+    <!-- 02.06 Upper Handle Connector -->
+    <g id="group-upper-handle-connector" inkscape:label="02.06 Upper Handle Connector">
+      <path id="upper-handle-connector-edge"
+            d="M124 271
+               L154 241
+               L203 291"
+            stroke="url(#goldEdge)"
+            stroke-width="26"/>
+
+      <path id="upper-handle-connector-gold"
+            d="M124 271
+               L154 241
+               L203 291"
+            stroke="url(#goldFill)"
+            stroke-width="18"/>
+    </g>
+
+  </g>
+</svg>
