@@ -7,6 +7,7 @@ import java.util.logging.Level;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import io.xcutiboo.mythicrod.paper.MythicRod;
@@ -158,7 +159,7 @@ public class ConfigMenu extends BaseMenu {
         });
     }
 
-    private void cycleParticleForEvent(org.bukkit.event.inventory.InventoryClickEvent event) {
+    private void cycleParticleForEvent(InventoryClickEvent event) {
         boolean shift = event.isShiftClick();
         boolean right = event.isRightClick();
         if (shift && !right) {
@@ -281,7 +282,7 @@ public class ConfigMenu extends BaseMenu {
         return tr("gui.config.save_interval.infrequent");
     }
 
-    private int nextStatsInterval(int current, org.bukkit.event.inventory.InventoryClickEvent event) {
+    private int nextStatsInterval(int current, InventoryClickEvent event) {
         int change = event.isShiftClick() ? 300 : 60;
         if (event.isLeftClick()) return Math.min(3600, current + change);
         if (event.isRightClick()) return Math.max(60, current - change);
