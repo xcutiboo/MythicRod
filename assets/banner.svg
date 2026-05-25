@@ -1,0 +1,333 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+     width="1600"
+     height="500"
+     viewBox="0 0 1600 500"
+     role="img"
+     aria-labelledby="title desc"
+     shape-rendering="geometricPrecision">
+
+  <title id="title">MythicRod Banner</title>
+  <desc id="desc">
+    MythicRod banner with polished dark background, gold fishing rod emblem,
+    clean title text, practical subtitle, and refined accent details.
+  </desc>
+
+  <defs>
+    <linearGradient id="bannerBg" x1="90" y1="40" x2="1510" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2D353B"/>
+      <stop offset=".42" stop-color="#142536"/>
+      <stop offset="1" stop-color="#06111C"/>
+    </linearGradient>
+
+    <radialGradient id="bannerGlowLeft" cx="18%" cy="22%" r="56%">
+      <stop offset="0" stop-color="#FFF4B4" stop-opacity=".12"/>
+      <stop offset=".42" stop-color="#FFF4B4" stop-opacity=".032"/>
+      <stop offset="1" stop-color="#FFF4B4" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="bannerDepth" cx="80%" cy="54%" r="68%">
+      <stop offset="0" stop-color="#1D405D" stop-opacity=".14"/>
+      <stop offset=".55" stop-color="#102437" stop-opacity=".06"/>
+      <stop offset="1" stop-color="#000000" stop-opacity=".22"/>
+    </radialGradient>
+
+    <linearGradient id="goldFill" x1="80" y1="410" x2="414" y2="88" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B87924"/>
+      <stop offset=".38" stop-color="#DCA13A"/>
+      <stop offset=".73" stop-color="#F0C75A"/>
+      <stop offset="1" stop-color="#FFF1A6"/>
+    </linearGradient>
+
+    <linearGradient id="goldEdge" x1="80" y1="410" x2="414" y2="88" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#563008"/>
+      <stop offset=".56" stop-color="#835516"/>
+      <stop offset="1" stop-color="#B37B24"/>
+    </linearGradient>
+
+    <linearGradient id="titleGold" x1="520" y1="150" x2="1100" y2="255" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF1A6"/>
+      <stop offset=".32" stop-color="#F0C75A"/>
+      <stop offset=".72" stop-color="#DCA13A"/>
+      <stop offset="1" stop-color="#B87924"/>
+    </linearGradient>
+
+    <filter id="softShadow"
+            filterUnits="userSpaceOnUse"
+            x="0"
+            y="0"
+            width="1600"
+            height="500"
+            color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000000" flood-opacity=".32"/>
+    </filter>
+
+    <filter id="textShadow"
+            filterUnits="userSpaceOnUse"
+            x="0"
+            y="0"
+            width="1600"
+            height="500"
+            color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity=".32"/>
+    </filter>
+  </defs>
+
+  <!-- Layer 01: Background -->
+  <g id="layer-background" inkscape:groupmode="layer" inkscape:label="01 Background">
+    <rect id="background-panel"
+          x="24"
+          y="24"
+          width="1552"
+          height="452"
+          rx="64"
+          fill="url(#bannerBg)"/>
+
+    <rect id="background-left-glow"
+          x="24"
+          y="24"
+          width="1552"
+          height="452"
+          rx="64"
+          fill="url(#bannerGlowLeft)"/>
+
+    <rect id="background-depth"
+          x="24"
+          y="24"
+          width="1552"
+          height="452"
+          rx="64"
+          fill="url(#bannerDepth)"/>
+
+    <rect id="background-inner-rim"
+          x="42"
+          y="42"
+          width="1516"
+          height="416"
+          rx="50"
+          fill="none"
+          stroke="#FFFFFF"
+          stroke-width="2"
+          stroke-opacity=".055"/>
+
+    <rect id="background-outer-rim"
+          x="24"
+          y="24"
+          width="1552"
+          height="452"
+          rx="64"
+          fill="none"
+          stroke="#000000"
+          stroke-width="2"
+          stroke-opacity=".22"/>
+  </g>
+
+  <!-- Layer 02: Minimal Accent Details -->
+  <g id="layer-accent-details" inkscape:groupmode="layer" inkscape:label="02 Accent Details">
+    <g id="group-left-corner-pixels" inkscape:label="02.01 Left Corner Pixels" opacity=".10">
+      <rect x="82" y="76" width="12" height="12" fill="#FFF1A6"/>
+      <rect x="98" y="76" width="12" height="12" fill="#FFF1A6"/>
+      <rect x="82" y="92" width="12" height="12" fill="#FFF1A6"/>
+      <rect x="118" y="112" width="10" height="10" fill="#DCA13A"/>
+      <rect x="132" y="112" width="10" height="10" fill="#DCA13A"/>
+    </g>
+
+    <g id="group-right-corner-pixels" inkscape:label="02.02 Right Corner Pixels" opacity=".08">
+      <rect x="1450" y="86" width="14" height="14" fill="#FFF1A6"/>
+      <rect x="1468" y="86" width="14" height="14" fill="#FFF1A6"/>
+      <rect x="1468" y="104" width="14" height="14" fill="#DCA13A"/>
+    </g>
+  </g>
+
+  <!-- Layer 03: MythicRod Emblem -->
+  <g id="layer-mythicrod-emblem"
+     inkscape:groupmode="layer"
+     inkscape:label="03 MythicRod Emblem"
+     transform="translate(78 52) scale(.76)"
+     filter="url(#softShadow)"
+     fill="none"
+     stroke-linecap="round"
+     stroke-linejoin="round">
+
+    <g id="group-emblem-backing" inkscape:label="03.01 Emblem Backing">
+      <rect id="emblem-backing-panel"
+            x="12"
+            y="12"
+            width="488"
+            height="488"
+            rx="76"
+            fill="#07111C"
+            opacity=".34"/>
+
+      <rect id="emblem-backing-rim"
+            x="28"
+            y="28"
+            width="456"
+            height="456"
+            rx="64"
+            fill="none"
+            stroke="#FFFFFF"
+            stroke-opacity=".05"
+            stroke-width="3"/>
+    </g>
+
+    <g id="group-emblem-lower-handle" inkscape:label="03.02 Lower Hollow Handle">
+      <rect id="emblem-lower-handle-edge"
+            x="93"
+            y="304"
+            width="150"
+            height="44"
+            rx="22"
+            transform="rotate(-45 168 326)"
+            stroke="url(#goldEdge)"
+            stroke-width="26"/>
+
+      <rect id="emblem-lower-handle-gold"
+            x="93"
+            y="304"
+            width="150"
+            height="44"
+            rx="22"
+            transform="rotate(-45 168 326)"
+            stroke="url(#goldFill)"
+            stroke-width="18"/>
+    </g>
+
+    <g id="group-emblem-string-curves" inkscape:label="03.03 Connected String Curves">
+      <path id="emblem-string-curve-1-edge"
+            d="M238 257 C254 290 290 286 300 195"
+            stroke="url(#goldEdge)"
+            stroke-width="26"/>
+
+      <path id="emblem-string-curve-1-gold"
+            d="M238 257 C254 290 290 286 300 195"
+            stroke="url(#goldFill)"
+            stroke-width="18"/>
+
+      <path id="emblem-string-curve-2-edge"
+            d="M300 195 C316 223 353 218 367 128"
+            stroke="url(#goldEdge)"
+            stroke-width="26"/>
+
+      <path id="emblem-string-curve-2-gold"
+            d="M300 195 C316 223 353 218 367 128"
+            stroke="url(#goldFill)"
+            stroke-width="18"/>
+    </g>
+
+    <g id="group-emblem-rod-line-hook" inkscape:label="03.04 Rod Line Hook">
+      <path id="emblem-rod-line-hook-edge"
+            d="M231 264
+               L405 90
+               L405 247
+               C405 264 418 270 421 288
+               C425 311 409 331 388 333
+               C368 334 355 321 355 302
+               C355 291 362 283 374 278"
+            stroke="url(#goldEdge)"
+            stroke-width="26"/>
+
+      <path id="emblem-rod-line-hook-gold"
+            d="M231 264
+               L405 90
+               L405 247
+               C405 264 418 270 421 288
+               C425 311 409 331 388 333
+               C368 334 355 321 355 302
+               C355 291 362 283 374 278"
+            stroke="url(#goldFill)"
+            stroke-width="18"/>
+    </g>
+
+    <g id="group-emblem-reel-hole-cleanup" inkscape:label="03.05 Reel Hole Cleanup">
+      <circle id="emblem-reel-hole-clean"
+              cx="203"
+              cy="291"
+              r="24"
+              fill="#07111C"
+              opacity=".88"/>
+    </g>
+
+    <g id="group-emblem-reel-overlay" inkscape:label="03.06 Reel Overlay">
+      <circle id="emblem-reel-ring-edge"
+              cx="203"
+              cy="291"
+              r="36"
+              stroke="url(#goldEdge)"
+              stroke-width="26"/>
+
+      <circle id="emblem-reel-ring-gold"
+              cx="203"
+              cy="291"
+              r="36"
+              stroke="url(#goldFill)"
+              stroke-width="18"/>
+    </g>
+
+    <g id="group-emblem-upper-handle-connector" inkscape:label="03.07 Upper Handle Connector">
+      <path id="emblem-upper-handle-connector-edge"
+            d="M124 271 L154 241 L203 291"
+            stroke="url(#goldEdge)"
+            stroke-width="26"/>
+
+      <path id="emblem-upper-handle-connector-gold"
+            d="M124 271 L154 241 L203 291"
+            stroke="url(#goldFill)"
+            stroke-width="18"/>
+    </g>
+  </g>
+
+  <!-- Layer 04: Banner Text -->
+  <g id="layer-banner-text"
+     inkscape:groupmode="layer"
+     inkscape:label="04 Banner Text"
+     filter="url(#textShadow)">
+
+    <g id="group-product-name" inkscape:label="04.01 Product Name">
+      <text id="title-text"
+            x="535"
+            y="222"
+            fill="url(#titleGold)"
+            font-family="'Sora', 'Space Grotesk', 'Outfit', 'Inter', system-ui, sans-serif"
+            font-size="108"
+            font-weight="700"
+            letter-spacing="-3">
+        MythicRod
+      </text>
+    </g>
+
+    <g id="group-product-subtitle" inkscape:label="04.02 Product Subtitle">
+      <text id="subtitle-text"
+            x="541"
+            y="284"
+            fill="#D8E4EC"
+            fill-opacity=".86"
+            font-family="'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace"
+            font-size="26"
+            font-weight="500"
+            letter-spacing="1">
+        Paper fishing • drops • rods • stats
+      </text>
+    </g>
+  </g>
+
+  <!-- Layer 05: Bottom Accent Rule -->
+  <g id="layer-bottom-accent"
+     inkscape:groupmode="layer"
+     inkscape:label="05 Bottom Accent"
+     fill="none"
+     stroke-linecap="round">
+
+    <path id="bottom-rule-shadow"
+          d="M545 336 H1055"
+          stroke="#000000"
+          stroke-width="7"
+          stroke-opacity=".25"/>
+
+    <path id="bottom-rule-gold"
+          d="M545 336 H1055"
+          stroke="url(#goldFill)"
+          stroke-width="3"
+          stroke-opacity=".82"/>
+  </g>
+</svg>
