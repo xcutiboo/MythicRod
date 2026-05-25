@@ -413,7 +413,6 @@ public class FishingListener implements Listener {
         }
     }
 
-    @SuppressWarnings("unused")
     private Consumer<ScheduledTask> foliaTask(Runnable action) {
         return task -> action.run();
     }

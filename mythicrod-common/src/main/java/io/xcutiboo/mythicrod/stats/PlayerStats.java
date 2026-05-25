@@ -54,7 +54,7 @@ public final class PlayerStats {
     public int getAdvancedRodUses()  { return advancedRodUses.get(); }
     public int getLegendaryRodUses() { return legendaryRodUses.get(); }
 
-    /// Returns the epoch-millisecond timestamp of the last catch, or {@code 0} if never.
+    /// Returns the epoch-millisecond timestamp of the last catch, or `0` if never.
     public long getLastFished()      { return lastFished.get(); }
 
     /// Returns non-zero catch counts by rarity tier, ordered from rarest to common.

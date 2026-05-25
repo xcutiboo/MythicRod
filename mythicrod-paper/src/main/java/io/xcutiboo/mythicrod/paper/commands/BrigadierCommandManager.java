@@ -69,6 +69,19 @@ public class BrigadierCommandManager {
     private static final String KEY_LIMIT = "limit";
     private static final String KEY_CATEGORY = "category";
     private static final String KEY_DROPS = "drops";
+    private static final String ARG_IDENTIFIER = "identifier";
+    private static final String ARG_WEIGHT = "weight";
+    private static final String ARG_AMOUNT = "amount";
+    private static final String ARG_FIELD = "field";
+    private static final String ARG_VALUE = "value";
+    private static final String ARG_BIOME = "biome";
+    private static final String ARG_LOCALE = "locale";
+    private static final String ARG_STATUS = "status";
+    private static final String ARG_CATEGORIES = "categories";
+    private static final String TIER_ADVANCED = "advanced";
+    private static final String TR_GENERAL_ENABLED = "general.enabled";
+    private static final String TR_GENERAL_DISABLED = "general.disabled";
+    private static final String TR_DROP_NOT_FOUND = "command.drop.not-found";
     private static final String TR_GENERAL_ERROR = "general.error";
     private static final String TR_PLAYER_ONLY = "general.player_only";
     private static final String KEY_ERROR = "error";
@@ -187,7 +200,7 @@ public class BrigadierCommandManager {
                 .executes(this::executeDrops)
                 .then(Commands.literal("preview")
                     .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
-                    .then(Commands.argument("biome", StringArgumentType.greedyString())
+                    .then(Commands.argument(ARG_BIOME, StringArgumentType.greedyString())
                         .suggests(this::suggestBiomes)
                         .executes(this::executeDropsPreview)))
                 .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
@@ -198,27 +211,27 @@ public class BrigadierCommandManager {
                 .then(Commands.literal("add")
                     .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
                         .suggests(this::suggestDropCategories)
-                        .then(Commands.argument("identifier", StringArgumentType.string())
-                            .then(Commands.argument("weight", IntegerArgumentType.integer(1, 10000))
-                                .then(Commands.argument("amount", IntegerArgumentType.integer(1, 64))
+                        .then(Commands.argument(ARG_IDENTIFIER, StringArgumentType.string())
+                            .then(Commands.argument(ARG_WEIGHT, IntegerArgumentType.integer(1, 10000))
+                                .then(Commands.argument(ARG_AMOUNT, IntegerArgumentType.integer(1, 64))
                                     .executes(this::executeDropAdd))))))
                 .then(Commands.literal("remove")
                     .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
                         .suggests(this::suggestDropCategories)
-                        .then(Commands.argument("identifier", StringArgumentType.string())
+                        .then(Commands.argument(ARG_IDENTIFIER, StringArgumentType.string())
                             .executes(this::executeDropRemove))))
                 .then(Commands.literal("set")
                     .then(Commands.argument(KEY_CATEGORY, StringArgumentType.word())
                         .suggests(this::suggestDropCategories)
-                        .then(Commands.argument("identifier", StringArgumentType.string())
-                            .then(Commands.argument("field", StringArgumentType.word())
+                        .then(Commands.argument(ARG_IDENTIFIER, StringArgumentType.string())
+                            .then(Commands.argument(ARG_FIELD, StringArgumentType.word())
                                 .suggests(this::suggestDropFields)
-                                .then(Commands.argument("value", StringArgumentType.greedyString())
+                                .then(Commands.argument(ARG_VALUE, StringArgumentType.greedyString())
                                     .executes(this::executeDropSet)))))))
             .then(Commands.literal("debug")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
                 .executes(this::executeDebug))
-            .then(Commands.literal("status")
+            .then(Commands.literal(ARG_STATUS)
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
                 .executes(this::executeStatus))
             .then(Commands.literal("validate")
@@ -227,7 +240,7 @@ public class BrigadierCommandManager {
             .then(Commands.literal("testroll")
                 .requires(source -> source.getSender().hasPermission(PermissionNodes.ADMIN_DEBUG))
                 .executes(this::executeTestRoll)
-                .then(Commands.argument("biome", StringArgumentType.string())
+                .then(Commands.argument(ARG_BIOME, StringArgumentType.string())
                     .suggests(this::suggestBiomes)
                     .executes(this::executeTestRoll)
                     .then(Commands.argument(KEY_COUNT, IntegerArgumentType.integer(1, 10000))
@@ -319,7 +332,7 @@ public class BrigadierCommandManager {
                     .suggests(this::suggestRewardDeliveryModes)
                     .executes(this::executeDeliveryModeConfig)))
             .then(Commands.literal("language")
-                .then(Commands.argument("locale", StringArgumentType.word())
+                .then(Commands.argument(ARG_LOCALE, StringArgumentType.word())
                     .suggests(this::suggestAvailableLanguages)
                     .executes(this::executeLanguageConfig)))
             .then(Commands.literal("stats-save-interval")
@@ -419,8 +432,8 @@ public class BrigadierCommandManager {
 
     private ItemStack buildRodForTier(String tier) {
         return switch (tier.toLowerCase(Locale.ROOT)) {
-            case "basic" -> rodFactory.createBasicRod();
-            case "advanced" -> rodFactory.createAdvancedRod();
+            case TIER_BASIC -> rodFactory.createBasicRod();
+            case TIER_ADVANCED -> rodFactory.createAdvancedRod();
             case TIER_LEGENDARY -> rodFactory.createLegendaryRod();
             default -> null;
         };
@@ -527,12 +540,12 @@ public class BrigadierCommandManager {
         sendMessage(sender, tr(sender, "command.config.line",
             Map.of(
                 "setting", tr(sender, settingKey),
-                "value", value
+                ARG_VALUE, value
             )));
     }
 
     private String configStatus(CommandSender sender, boolean enabled) {
-        return tr(sender, enabled ? "general.enabled" : "general.disabled");
+        return tr(sender, enabled ? TR_GENERAL_ENABLED : TR_GENERAL_DISABLED);
     }
 
     private int executeBooleanConfig(
@@ -554,7 +567,7 @@ public class BrigadierCommandManager {
             sendMessage(sender, tr(sender, "command.config.boolean-set",
                 Map.of(
                     "setting", tr(sender, settingKey),
-                    "value", configStatus(sender, newValue)
+                    ARG_VALUE, configStatus(sender, newValue)
                 )));
             playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
@@ -608,13 +621,13 @@ public class BrigadierCommandManager {
         CommandSender sender = context.getSource().getSender();
         ConfigManager config = plugin.getConfigManager();
         String previousLocale = config.getLanguage();
-        String requested = StringArgumentType.getString(context, "locale");
+        String requested = StringArgumentType.getString(context, ARG_LOCALE);
         List<String> available = plugin.getLanguageManager().getAvailableLanguages();
 
         if (!available.contains(requested) || !config.setLanguage(requested)) {
             sendMessage(sender, tr(sender, "command.config.invalid-language",
                 Map.of(
-                    "locale", requested,
+                    ARG_LOCALE, requested,
                     "available", String.join(", ", available)
                 )));
             playErrorSound(sender);
@@ -631,13 +644,13 @@ public class BrigadierCommandManager {
                 plugin.getGUIManager().invalidateOpenMenusForReload();
             }
             sendMessage(sender, tr(sender, "command.config.language-set",
-                Map.of("locale", requested)));
+                Map.of(ARG_LOCALE, requested)));
             playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
         } catch (IOException | RuntimeException e) {
             config.setLanguage(previousLocale);
-            sendMessage(sender, tr(sender, "command.config.save-failed",
-                Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
+            sendMessage(sender, tr(sender, TR_CONFIG_SAVE_FAILED,
+                Map.of(KEY_ERROR, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())));
             playErrorSound(sender);
             plugin.getLogger().log(Level.SEVERE, "Failed to update language", e);
             return 0;
@@ -1073,7 +1086,7 @@ public class BrigadierCommandManager {
         sendMessage(sender, tr(sender, "drops.category-not-found",
             Map.of(KEY_CATEGORY, category)));
         sendMessage(sender, tr(sender, "drops.available-categories",
-            Map.of("categories", String.join(", ", sortedDropCategoryIds()))));
+            Map.of(ARG_CATEGORIES, String.join(", ", sortedDropCategoryIds()))));
         sendMessage(sender, tr(sender, "drops.category-help"));
     }
 
@@ -1095,8 +1108,8 @@ public class BrigadierCommandManager {
             sendMessage(sender, tr(sender, "drops.drop-entry",
                 Map.of(
                     "name", name,
-                    "weight", weight,
-                    "amount", String.valueOf(drop.getAmount())
+                    ARG_WEIGHT, weight,
+                    ARG_AMOUNT, String.valueOf(drop.getAmount())
                 )));
         }
     }
@@ -1135,8 +1148,8 @@ public class BrigadierCommandManager {
         @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
         SuggestionsBuilder builder
     ) {
-        builder.suggest("basic");
-        builder.suggest("advanced");
+        builder.suggest(TIER_BASIC);
+        builder.suggest(TIER_ADVANCED);
         builder.suggest(TIER_LEGENDARY);
         return builder.buildFuture();
     }
@@ -1544,7 +1557,7 @@ public class BrigadierCommandManager {
             Player player = requirePlayer(sender);
             if (player == null) return 0;
 
-            String biomeArg = optionalStringArg(context, "biome");
+            String biomeArg = optionalStringArg(context, ARG_BIOME);
             int count = Math.clamp(optionalIntArg(context, KEY_COUNT, 100), 1, 10000);
             String biome = resolveTestRollBiome(player, biomeArg);
 
@@ -1604,7 +1617,7 @@ public class BrigadierCommandManager {
         @SuppressWarnings("unused") CommandContext<CommandSourceStack> context,
         SuggestionsBuilder builder
     ) {
-        for (String f : List.of("weight", "amount", "permission", "glow", "name")) {
+        for (String f : List.of(ARG_WEIGHT, ARG_AMOUNT, "permission", "glow", "name")) {
             builder.suggest(f);
         }
         return builder.buildFuture();
@@ -1614,9 +1627,9 @@ public class BrigadierCommandManager {
         CommandSender sender = context.getSource().getSender();
         try {
             String category = StringArgumentType.getString(context, KEY_CATEGORY).toLowerCase(Locale.ROOT);
-            String identifier = StringArgumentType.getString(context, "identifier").trim();
-            int weight = IntegerArgumentType.getInteger(context, "weight");
-            int amount = IntegerArgumentType.getInteger(context, "amount");
+            String identifier = StringArgumentType.getString(context, ARG_IDENTIFIER).trim();
+            int weight = IntegerArgumentType.getInteger(context, ARG_WEIGHT);
+            int amount = IntegerArgumentType.getInteger(context, ARG_AMOUNT);
 
             io.xcutiboo.mythicrod.drops.EditableDropFields fields =
                 new io.xcutiboo.mythicrod.drops.EditableDropFields(
@@ -1626,13 +1639,13 @@ public class BrigadierCommandManager {
             CustomDrop drop = plugin.getDropManager().addDrop(category, fields);
             if (drop == null) {
                 sendMessage(sender, tr(sender, "command.drop.invalid",
-                    Map.of("identifier", identifier)));
+                    Map.of(ARG_IDENTIFIER, identifier)));
                 playErrorSound(sender);
                 return 0;
             }
             plugin.getDropManager().saveDrops();
             sendMessage(sender, tr(sender, "command.drop.added",
-                Map.of("identifier", identifier, "category", category)));
+                Map.of(ARG_IDENTIFIER, identifier, KEY_CATEGORY, category)));
             playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
@@ -1647,24 +1660,24 @@ public class BrigadierCommandManager {
         CommandSender sender = context.getSource().getSender();
         try {
             String category = StringArgumentType.getString(context, KEY_CATEGORY).toLowerCase(Locale.ROOT);
-            String identifier = StringArgumentType.getString(context, "identifier").trim();
+            String identifier = StringArgumentType.getString(context, ARG_IDENTIFIER).trim();
             CustomDrop target = findDropInCategory(category, identifier);
             if (target == null) {
-                sendMessage(sender, tr(sender, "command.drop.not-found",
-                    Map.of("identifier", identifier, "category", category)));
+                sendMessage(sender, tr(sender, TR_DROP_NOT_FOUND,
+                    Map.of(ARG_IDENTIFIER, identifier, KEY_CATEGORY, category)));
                 playErrorSound(sender);
                 return 0;
             }
             boolean removed = plugin.getDropManager().deleteDrop(target, category);
             if (!removed) {
-                sendMessage(sender, tr(sender, "command.drop.not-found",
-                    Map.of("identifier", identifier, "category", category)));
+                sendMessage(sender, tr(sender, TR_DROP_NOT_FOUND,
+                    Map.of(ARG_IDENTIFIER, identifier, KEY_CATEGORY, category)));
                 playErrorSound(sender);
                 return 0;
             }
             plugin.getDropManager().saveDrops();
             sendMessage(sender, tr(sender, "command.drop.removed",
-                Map.of("identifier", identifier, "category", category)));
+                Map.of(ARG_IDENTIFIER, identifier, KEY_CATEGORY, category)));
             playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
@@ -1679,14 +1692,14 @@ public class BrigadierCommandManager {
         CommandSender sender = context.getSource().getSender();
         try {
             String category = StringArgumentType.getString(context, KEY_CATEGORY).toLowerCase(Locale.ROOT);
-            String identifier = StringArgumentType.getString(context, "identifier").trim();
-            String field = StringArgumentType.getString(context, "field").toLowerCase(Locale.ROOT);
-            String value = StringArgumentType.getString(context, "value");
+            String identifier = StringArgumentType.getString(context, ARG_IDENTIFIER).trim();
+            String field = StringArgumentType.getString(context, ARG_FIELD).toLowerCase(Locale.ROOT);
+            String value = StringArgumentType.getString(context, ARG_VALUE);
 
             CustomDrop target = findDropInCategory(category, identifier);
             if (target == null) {
-                sendMessage(sender, tr(sender, "command.drop.not-found",
-                    Map.of("identifier", identifier, "category", category)));
+                sendMessage(sender, tr(sender, TR_DROP_NOT_FOUND,
+                    Map.of(ARG_IDENTIFIER, identifier, KEY_CATEGORY, category)));
                 playErrorSound(sender);
                 return 0;
             }
@@ -1699,21 +1712,21 @@ public class BrigadierCommandManager {
 
             try {
                 switch (field) {
-                    case "weight" -> weight = Integer.parseInt(value.trim());
-                    case "amount" -> amount = Integer.parseInt(value.trim());
+                    case ARG_WEIGHT -> weight = Integer.parseInt(value.trim());
+                    case ARG_AMOUNT -> amount = Integer.parseInt(value.trim());
                     case "name" -> customName = value;
                     case "permission" -> permission = value.isBlank() ? null : value.trim();
                     case "glow" -> glow = Boolean.parseBoolean(value.trim());
                     default -> {
                         sendMessage(sender, tr(sender, "command.drop.unknown-field",
-                            Map.of("field", field)));
+                            Map.of(ARG_FIELD, field)));
                         playErrorSound(sender);
                         return 0;
                     }
                 }
             } catch (NumberFormatException _) {
                 sendMessage(sender, tr(sender, "command.drop.bad-value",
-                    Map.of("field", field, "value", value)));
+                    Map.of(ARG_FIELD, field, ARG_VALUE, value)));
                 playErrorSound(sender);
                 return 0;
             }
@@ -1727,14 +1740,14 @@ public class BrigadierCommandManager {
                 );
             boolean updated = plugin.getDropManager().updateDrop(target, category, next);
             if (!updated) {
-                sendMessage(sender, tr(sender, "command.drop.not-found",
-                    Map.of("identifier", identifier, "category", category)));
+                sendMessage(sender, tr(sender, TR_DROP_NOT_FOUND,
+                    Map.of(ARG_IDENTIFIER, identifier, KEY_CATEGORY, category)));
                 playErrorSound(sender);
                 return 0;
             }
             plugin.getDropManager().saveDrops();
             sendMessage(sender, tr(sender, "command.drop.updated",
-                Map.of("identifier", identifier, "field", field, "value", value)));
+                Map.of(ARG_IDENTIFIER, identifier, ARG_FIELD, field, ARG_VALUE, value)));
             playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
         } catch (RuntimeException e) {
@@ -1762,7 +1775,7 @@ public class BrigadierCommandManager {
             String tier = StringArgumentType.getString(context, "tier").toLowerCase(Locale.ROOT);
             String permission = switch (tier) {
                 case TIER_BASIC -> PermissionNodes.GUI;
-                case "advanced" -> PermissionNodes.ROD_ADVANCED;
+                case TIER_ADVANCED -> PermissionNodes.ROD_ADVANCED;
                 case TIER_LEGENDARY -> PermissionNodes.ROD_LEGENDARY;
                 default -> null;
             };
@@ -1904,19 +1917,19 @@ public class BrigadierCommandManager {
     private int executeDropsPreview(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
         try {
-            String biome = StringArgumentType.getString(context, "biome").trim();
+            String biome = StringArgumentType.getString(context, ARG_BIOME).trim();
             NamespacedKey biomeKey = parseRegistryKey(biome);
             if (biomeKey == null
                     || RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME).get(biomeKey) == null) {
                 sendMessage(sender, tr(sender, "command.drops-preview.invalid-biome",
-                    Map.of("biome", biome)));
+                    Map.of(ARG_BIOME, biome)));
                 playErrorSound(sender);
                 return 0;
             }
             String biomeId = biomeKey.asString();
 
             sendMessage(sender, tr(sender, "command.drops-preview.header",
-                Map.of("biome", biomeId)));
+                Map.of(ARG_BIOME, biomeId)));
 
             int rows = 0;
             long totalWeight = 0L;
@@ -1949,15 +1962,15 @@ public class BrigadierCommandManager {
             for (EligibleDrop entry : eligible) {
                 if (rows++ >= 12) {
                     sendMessage(sender, tr(sender, "command.drops-preview.truncated",
-                        Map.of("count", String.valueOf(eligible.size() - 12))));
+                        Map.of(KEY_COUNT, String.valueOf(eligible.size() - 12))));
                     break;
                 }
                 double share = totalWeight == 0 ? 0.0 : (entry.drop().getWeight() * 100.0 / totalWeight);
                 sendMessage(sender, tr(sender, "command.drops-preview.row",
                     Map.of(
-                        "category", entry.category(),
-                        "identifier", entry.drop().getIdentifier(),
-                        "weight", String.valueOf(entry.drop().getWeight()),
+                        KEY_CATEGORY, entry.category(),
+                        ARG_IDENTIFIER, entry.drop().getIdentifier(),
+                        ARG_WEIGHT, String.valueOf(entry.drop().getWeight()),
                         "share", String.format(Locale.ROOT, "%.1f", share)
                     )));
             }
@@ -1966,8 +1979,8 @@ public class BrigadierCommandManager {
             } else {
                 sendMessage(sender, tr(sender, "command.drops-preview.footer",
                     Map.of(
-                        "count", String.valueOf(eligible.size()),
-                        "weight", String.valueOf(totalWeight))));
+                        KEY_COUNT, String.valueOf(eligible.size()),
+                        ARG_WEIGHT, String.valueOf(totalWeight))));
             }
             playSuccessSound(sender);
             return Command.SINGLE_SUCCESS;
@@ -2015,15 +2028,15 @@ public class BrigadierCommandManager {
                 Map.of("mode", mode, "minecraft", paperVersion)));
             sendMessage(sender, tr(sender, "command.status.drops",
                 Map.of(
-                    "categories", String.valueOf(categoryCount),
-                    "drops", String.valueOf(dropCount))));
+                    ARG_CATEGORIES, String.valueOf(categoryCount),
+                    KEY_DROPS, String.valueOf(dropCount))));
             sendMessage(sender, tr(sender, "command.status.language",
                 Map.of(
                     "active", activeLocale,
                     "loaded", String.valueOf(locales.size()),
                     "list", String.join(", ", locales))));
             sendMessage(sender, tr(sender, "command.status.nexo",
-                Map.of("status", tr(sender, nexoOn ? "general.enabled" : "general.disabled"))));
+                Map.of(ARG_STATUS, tr(sender, nexoOn ? TR_GENERAL_ENABLED : TR_GENERAL_DISABLED))));
             sendMessage(sender, tr(sender, "command.status.stats",
                 Map.of("players", String.valueOf(trackedPlayers))));
             return Command.SINGLE_SUCCESS;
@@ -2055,13 +2068,13 @@ public class BrigadierCommandManager {
                 : 0L;
             sendMessage(sender, tr(sender, "command.debug.runtime",
                 Map.of(
-                    "categories", String.valueOf(categoryCount),
+                    ARG_CATEGORIES, String.valueOf(categoryCount),
                     KEY_DROPS, String.valueOf(dropCount),
                     "players", String.valueOf(trackedPlayers),
                     "catches", String.valueOf(totalCatches)
                 )));
             sendMessage(sender, tr(sender, "command.debug.folia-support",
-                Map.of("status", tr(sender, plugin.isFoliaRuntime() ? "general.enabled" : "general.disabled"))));
+                Map.of(ARG_STATUS, tr(sender, plugin.isFoliaRuntime() ? TR_GENERAL_ENABLED : TR_GENERAL_DISABLED))));
 
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
