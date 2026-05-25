@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 36" width="1200" height="36" role="img" aria-labelledby="mr-div-title">
+  <title id="mr-div-title">MythicRod section divider</title>
+  <defs>
+    <linearGradient id="mr-divider-gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#B87924" stop-opacity="0"/>
+      <stop offset="22%" stop-color="#DCA13A" stop-opacity="0.65"/>
+      <stop offset="50%" stop-color="#F0C75A" stop-opacity="1"/>
+      <stop offset="78%" stop-color="#DCA13A" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#B87924" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="mr-divider-shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFF1A6" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#B87924" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="16" width="1200" height="3" rx="1.5" fill="url(#mr-divider-gold)"/>
+  <g transform="translate(600 18)">
+    <rect x="-7" y="-7" width="14" height="14" transform="rotate(45)" fill="url(#mr-divider-shine)"/>
+    <rect x="-3" y="-3" width="6" height="6" transform="rotate(45)" fill="#FFF1A6"/>
+  </g>
+</svg>
