@@ -10,8 +10,11 @@ import org.jetbrains.annotations.NotNull;
 
 import io.xcutiboo.mythicrod.api.PlayerStatSnapshot.StatType;
 import io.xcutiboo.mythicrod.api.drop.DropCatalog;
+import io.xcutiboo.mythicrod.api.platform.PlatformDrop;
 import io.xcutiboo.mythicrod.api.platform.PlatformItem;
 import io.xcutiboo.mythicrod.api.platform.PlatformItemFactory;
+
+import org.jetbrains.annotations.Nullable;
 
 /// Public integration contract for MythicRod.
 ///
@@ -144,6 +147,29 @@ public interface MythicRodAPI {
             @NotNull StatType statType,
             int limit
     );
+
+    /// Returns the drops the given online player would be eligible to roll at
+    /// the given biome, after biome filters and permission filters are applied.
+    ///
+    /// Returns an empty list when the player is offline or no drops are
+    /// eligible. The returned list is an immutable snapshot of the current
+    /// drop table - subsequent reloads do not retroactively change it.
+    ///
+    /// Intended for minigame UIs, tutorial overlays, and "what could I catch
+    /// here?" inspections. The actual roll is still resolved at catch time and
+    /// can be biased or replaced by `MythicRodRewardRollEvent`.
+    ///
+    /// @param playerId UUID of the player to check eligibility for. Must
+    ///                 belong to a currently-online player.
+    /// @param biomeKey Biome key such as `"minecraft:ocean"`, or `null` to
+    ///                 ignore biome filters.
+    /// @return immutable list of eligible drops. Empty when the player is
+    ///         offline or has no eligible drops.
+    @ApiStatus.AvailableSince("2026.2.0")
+    @NotNull
+    List<? extends PlatformDrop> previewEligibleDrops(
+            @NotNull UUID playerId,
+            @Nullable String biomeKey);
 
     /// Flushes all in-memory player statistics to persistent storage.
     ///
