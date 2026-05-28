@@ -1,6 +1,9 @@
 package io.xcutiboo.mythicrod.paper.util;
 
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.Color;
@@ -37,6 +40,13 @@ public final class TierVisualEffects {
     private static final int   HELIX_POINTS     = 3;    // particles per tick.
     private static final double HELIX_RADIUS    = 0.7;
     private static final double HELIX_LIFT      = 0.12; // y rise per tick.
+    private static final long  HELIX_COOLDOWN_MS = 4_000L;
+
+    /// Per-player timestamp of the last helix animation. Used to throttle
+    /// the heavy cue so back-to-back legendary catches don't bury one
+    /// celebration under the next. The map is bounded by online-player
+    /// count and entries naturally fall out of relevance after logout.
+    private static final Map<UUID, Long> LAST_HELIX = new ConcurrentHashMap<>();
 
     private TierVisualEffects() {
     }
@@ -52,14 +62,31 @@ public final class TierVisualEffects {
             case "rare"     -> rare(player, at);
             case "legendary" -> {
                 legendaryBurst(player, at);
-                helix(plugin, player, LEGENDARY, MYTHIC);
+                if (claimHelixSlot(player)) {
+                    helix(plugin, player, LEGENDARY, MYTHIC);
+                }
             }
             case "mythic", "mythical" -> {
                 mythicBurst(player, at);
-                helix(plugin, player, MYTHIC, COMMON);
+                if (claimHelixSlot(player)) {
+                    helix(plugin, player, MYTHIC, COMMON);
+                }
             }
             default -> common(player, at);
         }
+    }
+
+    /// Returns true at most once per HELIX_COOLDOWN_MS per player.
+    /// Throttles the heavy cue so back-to-back top-tier catches do
+    /// not pile helix animations on top of each other.
+    private static boolean claimHelixSlot(Player player) {
+        long now = System.currentTimeMillis();
+        Long previous = LAST_HELIX.get(player.getUniqueId());
+        if (previous != null && now - previous < HELIX_COOLDOWN_MS) {
+            return false;
+        }
+        LAST_HELIX.put(player.getUniqueId(), now);
+        return true;
     }
 
     private static void common(Player player, Location at) {
