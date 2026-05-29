@@ -47,7 +47,7 @@ public final class MythicRodStatsUpdateEvent extends Event {
         return playerId;
     }
 
-    /// Rarity tier that was incremented: one of {@code common}, {@code uncommon}, {@code rare}, {@code legendary}.
+    /// Rarity tier that was incremented: one of `common`, `uncommon`, `rare`, `legendary`.
     @NotNull
     public String getTier() {
         return tier;

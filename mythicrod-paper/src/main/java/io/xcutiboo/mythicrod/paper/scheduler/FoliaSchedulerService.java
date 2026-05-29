@@ -268,12 +268,10 @@ public class FoliaSchedulerService implements PlatformScheduler {
         return platformTask;
     }
 
-    @SuppressWarnings("unused")
     private Consumer<ScheduledTask> foliaTask(Runnable task) {
         return scheduledTask -> task.run();
     }
 
-    @SuppressWarnings("unused")
     private Consumer<ScheduledTask> foliaOneShot(AtomicReference<PaperTask> taskRef, Runnable task) {
         return scheduledTask -> runOneShot(taskRef, task);
     }
