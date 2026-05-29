@@ -84,7 +84,7 @@ public final class UpdateChecker {
             } else {
                 log.debug("Update check: GitHub returned HTTP {} for the latest-release endpoint.", resp.statusCode());
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
             Thread.currentThread().interrupt();
         } catch (RuntimeException | IOException e) {
             log.debug("Update check failed: {}", e.getMessage());
@@ -97,7 +97,7 @@ public final class UpdateChecker {
         }
         int[] cur = parse(currentVersion);
         int[] rem = parse(latest);
-        if (cur == null || rem == null) {
+        if (cur.length == 0 || rem.length == 0) {
             return !latest.equals(currentVersion);
         }
         for (int i = 0; i < cur.length; i++) {
@@ -109,7 +109,7 @@ public final class UpdateChecker {
 
     private static int[] parse(String version) {
         Matcher m = VERSION.matcher(version);
-        if (!m.find()) return null;
+        if (!m.find()) return new int[0];
         return new int[] {
             Integer.parseInt(m.group(1)),
             Integer.parseInt(m.group(2)),
@@ -128,7 +128,7 @@ public final class UpdateChecker {
                     () -> { if (!cancelled) runCheck(); },
                     INITIAL_DELAY_SECONDS * 20L,
                     REPEAT_INTERVAL_SECONDS * 20L);
-            } catch (UnsupportedOperationException folia) {
+            } catch (UnsupportedOperationException _) {
                 // Folia does not have a global Bukkit scheduler; fall back to the async scheduler.
                 plugin.getServer().getAsyncScheduler().runAtFixedRate(
                     plugin,

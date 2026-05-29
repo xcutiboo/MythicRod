@@ -32,20 +32,18 @@ import io.xcutiboo.mythicrod.stats.PlayerStats;
 
 /// Manages in-memory player fishing statistics with Caffeine TTL-bounded caching.
 ///
-/// <h2>Thread Safety</h2>
-/// <ul>
-///   <li>The active-players cache uses Caffeine and is safe for concurrent access.</li>
-///   <li>The dirty set uses {@link ConcurrentHashMap} as a set.</li>
-///   <li>{@link #saveAll()} is intended to be called from the async scheduler.</li>
-///   <li>{@link #getStats(UUID)} and {@link #recordCatch} may be called from
-///       any entity region thread.</li>
-/// </ul>
+/// ## Thread Safety
+///   - The active-players cache uses Caffeine and is safe for concurrent access.
+///   - The dirty set uses {@link ConcurrentHashMap} as a set.
+///   - {@link #saveAll()} is intended to be called from the async scheduler.
+///   - {@link #getStats(UUID)} and {@link #recordCatch} may be called from
+///       any entity region thread.
 ///
-/// <h2>Cache Design</h2>
+/// ## Cache Design
 /// Stats for online players are kept indefinitely while they are active.
 /// After login/access, entries expire from the cache after
 /// {@value #EXPIRE_AFTER_ACCESS_MINUTES} minutes of no access.
-/// This prevents {@code OutOfMemoryError} from unbounded accumulation.
+/// This prevents `OutOfMemoryError` from unbounded accumulation.
 public final class StatisticsManager {
 
     private static final int EXPIRE_AFTER_ACCESS_MINUTES = 30;
@@ -106,11 +104,11 @@ public final class StatisticsManager {
     }
 
     /// Path to the statistics YAML file inside the plugin data folder.
-    /// All player stats are stored here under {@code players.<uuid>.*}.
+    /// All player stats are stored here under `players.<uuid>.*`.
     private static final String STATS_FILENAME = "statistics.yml";
 
     /// Live reference to the statistics YAML configuration.
-    /// Guarded by {@code this} for write access; readers see either the old
+    /// Guarded by `this` for write access; readers see either the old
     /// reference or the new one swapped during reload, never a half-built object.
     @SuppressWarnings("java:S3077")
     private volatile PlatformConfiguration statsConfig;
@@ -141,7 +139,7 @@ public final class StatisticsManager {
         return totalCatchesGlobal.get();
     }
 
-    /// Returns the top {@code limit} players by total catches.
+    /// Returns the top `limit` players by total catches.
     /// Used by GUI menus that do not have async context.
     ///
     /// @param limit Max entries to return.
@@ -173,14 +171,14 @@ public final class StatisticsManager {
         });
     }
 
-    /// Returns the {@link PlayerStats} for the given UUID, or {@code null}
+    /// Returns the {@link PlayerStats} for the given UUID, or `null`
     /// if no entry has been created for this player yet.
     ///
     /// Unlike {@link #getOrCreate}, this does not create a new entry.
     /// Used by the API layer for read-only queries.
     ///
     /// @param uuid Player UUID.
-    /// @return Existing stats, or {@code null}.
+    /// @return Existing stats, or `null`.
     @Nullable
     public PlayerStats getStats(@NotNull UUID uuid) {
         PlayerStats cachedStats = statsCache.getIfPresent(uuid);
@@ -238,7 +236,7 @@ public final class StatisticsManager {
     /// the next persistence flush wipes the on-disk row.
     ///
     /// @param uuid Player UUID.
-    /// @return {@code true} if a stats entry existed to reset; {@code false} when
+    /// @return `true` if a stats entry existed to reset; `false` when
     ///         no in-memory or on-disk entry was present.
     public boolean resetStats(@NotNull UUID uuid) {
         PlayerStats inMemory = statsCache.getIfPresent(uuid);
@@ -332,10 +330,10 @@ public final class StatisticsManager {
         statsCache.invalidate(uuid);
     }
 
-    /// Persists a single player's stats to the {@code statistics.yml} file.
+    /// Persists a single player's stats to the `statistics.yml` file.
     ///
     /// Must be called from an async thread, never from the main server thread.
-    /// All writes are guarded by a {@code synchronized} block on {@code this} so
+    /// All writes are guarded by a `synchronized` block on `this` so
     /// concurrent saves from the Caffeine eviction listener don't corrupt the file.
     private boolean persistStats(@NotNull UUID uuid, @NotNull PlayerStats stats) {
         try {
@@ -461,7 +459,7 @@ public final class StatisticsManager {
         return persistedStats;
     }
 
-    /// Loads (or creates) the {@code statistics.yml} config from disk.
+    /// Loads (or creates) the `statistics.yml` config from disk.
     private @NotNull PlatformConfiguration loadStatsConfig() {
         File statsFile = new File(runtime.getDataFolder(), STATS_FILENAME);
         if (!runtime.getDataFolder().exists()) {
