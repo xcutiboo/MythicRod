@@ -1,6 +1,7 @@
 package io.xcutiboo.mythicrod.paper.item;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -76,6 +77,25 @@ public class RodFactory {
         );
     }
 
+    public ItemStack createMythicRod() {
+        return createRod(
+            "mythic",
+            "<gradient:#FF55FF:#AA00AA:#FFAA00><bold>MythicRod</bold></gradient>",
+            new String[]{
+                "<gray>Prestige rod. Gate behind a",
+                "<gray>permission node, reward grinders.",
+                "",
+                "<gold>Tier: <gradient:#FF55FF:#FFAA00>Mythic</gradient>",
+                "<dark_gray>✦✦✦✦ " + formatMultiplier("mythic") + LORE_RARE_LUCK_SUFFIX,
+                "<dark_gray>✦✦✦✦ Requires mythic rod access",
+                "<dark_gray>✦✦✦✦ Top of the loot ladder",
+                "<dark_gray>✦✦✦✦ Unbreakable"
+            },
+            true,
+            true
+        );
+    }
+
     /// Creates a rod item and stores the MythicRod marker plus tier in its PDC.
     public ItemStack createRod(String tier, String name, String[] lore) {
         return createRod(tier, name, lore, false, false);
@@ -121,6 +141,6 @@ public class RodFactory {
         double multiplier = plugin.getConfigManager() != null
             ? plugin.getConfigManager().getRodLuckMultiplier(tier)
             : 1.0D;
-        return String.format(java.util.Locale.ROOT, "%.2f", multiplier);
+        return String.format(Locale.ROOT, "%.2f", multiplier);
     }
 }

@@ -1,6 +1,6 @@
 package io.xcutiboo.mythicrod.constants;
 
-/// Permission node constants mirrored in {@code paper-plugin.yml}.
+/// Permission node constants mirrored in `paper-plugin.yml`.
 public final class PermissionNodes {
     private PermissionNodes() {}
 
@@ -24,4 +24,5 @@ public final class PermissionNodes {
 
     public static final String ROD_ADVANCED = "mythicrod.rod.advanced";
     public static final String ROD_LEGENDARY = "mythicrod.rod.legendary";
+    public static final String ROD_MYTHIC = "mythicrod.rod.mythic";
 }

@@ -83,6 +83,10 @@ features:
       basic: 1.0
       advanced: 1.25
       legendary: 1.5
+      # Mythic rod tier - top-of-tier reward. Gate behind a permission node
+      # (mythicrod.rod.mythic) so it stays a sink for prestige progression
+      # rather than something every player holds.
+      mythic: 2.0
 
   permissions:
     # Require specific permissions for certain drops
@@ -104,7 +108,7 @@ features:
 # TIMERS: Performance intervals (in seconds)
 ################################################################################
 timers:
-  # Save player statistics to disk (range: 60-3600s)
+  # Flush in-memory stats to disk every N seconds (clamped to 60-3600s).
   # Recommended:
   #   lightweight:  300-600s (5-10 min)
   #   balanced:     600-1200s (10-20 min)
