@@ -5,12 +5,16 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import io.xcutiboo.mythicrod.api.PlayerStatSnapshot.StatType;
 import io.xcutiboo.mythicrod.api.drop.DropCatalog;
+import io.xcutiboo.mythicrod.api.platform.PlatformDrop;
 import io.xcutiboo.mythicrod.api.platform.PlatformItem;
 import io.xcutiboo.mythicrod.api.platform.PlatformItemFactory;
+
+import org.jetbrains.annotations.Nullable;
 
 /// Public integration contract for MythicRod.
 ///
@@ -38,6 +42,7 @@ import io.xcutiboo.mythicrod.api.platform.PlatformItemFactory;
 ///
 /// Methods on this interface are stable unless the changelog calls out a major
 /// version break. Platform-specific implementation classes remain internal.
+@ApiStatus.AvailableSince("2026.1.0")
 public interface MythicRodAPI {
 
     /// Returns the running plugin version string, such as `"2026.1.0"`.
@@ -142,6 +147,52 @@ public interface MythicRodAPI {
             @NotNull StatType statType,
             int limit
     );
+
+    /// Creates a MythicRod fishing rod of the given tier, fully tagged with
+    /// MythicRod's PDC marker and tier metadata so the catch listener and
+    /// statistics pipeline pick it up.
+    ///
+    /// Valid tier names are `"basic"`, `"advanced"`, `"legendary"`, and
+    /// `"mythic"`, matched case-insensitively. The rod's display name, lore,
+    /// glow, and unbreakable flag follow MythicRod's built-in presets for that
+    /// tier.
+    ///
+    /// Prefer this over building an `ItemStack` and writing PDC keys by hand:
+    /// future internal changes to the rod marker stay invisible to the caller.
+    ///
+    /// @param tier `"basic"`, `"advanced"`, `"legendary"`, or `"mythic"`
+    ///             (case-insensitive).
+    /// @return success result with the tagged rod, or failure when the tier is
+    ///         unknown.
+    @ApiStatus.AvailableSince("2026.1.0")
+    @NotNull
+    Result<PlatformItem> createRod(@NotNull String tier);
+
+    /// Returns the drops the given online player would be eligible to roll at
+    /// the given biome, after biome filters and permission filters are applied.
+    ///
+    /// Returns an empty list when the player is offline or no drops are
+    /// eligible. The returned list is an immutable snapshot of the current
+    /// drop table - subsequent reloads do not retroactively change it.
+    ///
+    /// Intended for minigame UIs, tutorial overlays, and "what could I catch
+    /// here?" inspections. The actual roll is still resolved at catch time and
+    /// can be biased or replaced by `MythicRodRewardRollEvent`.
+    ///
+    /// @param playerId UUID of the player to check eligibility for. Must
+    ///                 belong to a currently-online player.
+    /// @param biomeKey Biome key such as `"minecraft:ocean"`, or `null` to
+    ///                 ignore biome filters.
+    /// @return immutable list of eligible drops. Empty when the player is
+    ///         offline or has no eligible drops.
+    @ApiStatus.AvailableSince("2026.1.0")
+    @NotNull
+    @SuppressWarnings("java:S1452")
+    // The wildcard mirrors DropCatalog#getDrops so MythicRod can return its
+    // concrete CustomDrop list without forcing a defensive copy on every call.
+    List<? extends PlatformDrop> previewEligibleDrops(
+            @NotNull UUID playerId,
+            @Nullable String biomeKey);
 
     /// Flushes all in-memory player statistics to persistent storage.
     ///

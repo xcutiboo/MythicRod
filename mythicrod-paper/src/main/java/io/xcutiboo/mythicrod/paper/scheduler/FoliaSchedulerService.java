@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -58,7 +59,7 @@ public class FoliaSchedulerService implements PlatformScheduler {
             try {
                 task.cancel();
             } catch (RuntimeException e) {
-                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                plugin.getLogger().log(Level.WARNING,
                     "Failed to cancel a scheduled MythicRod task", e);
             }
         }
@@ -267,12 +268,10 @@ public class FoliaSchedulerService implements PlatformScheduler {
         return platformTask;
     }
 
-    @SuppressWarnings("unused")
     private Consumer<ScheduledTask> foliaTask(Runnable task) {
         return scheduledTask -> task.run();
     }
 
-    @SuppressWarnings("unused")
     private Consumer<ScheduledTask> foliaOneShot(AtomicReference<PaperTask> taskRef, Runnable task) {
         return scheduledTask -> runOneShot(taskRef, task);
     }

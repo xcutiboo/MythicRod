@@ -15,6 +15,7 @@ public class RodMenu extends BaseMenu {
     private static final String TIER_BASIC = "basic";
     private static final String TIER_ADVANCED = "advanced";
     private static final String TIER_LEGENDARY = "legendary";
+    private static final String TIER_MYTHIC = "mythic";
     private static final String CTX_MULTIPLIER = "multiplier";
     private static final String TR_MULTIPLIER = "gui.rod.multiplier";
     private static final String TR_ALREADY_SELECTED = "gui.rod.already_selected";
@@ -46,6 +47,7 @@ public class RodMenu extends BaseMenu {
         placeBasicTier(player, currentTier);
         placeAdvancedTier(player, currentTier);
         placeLegendaryTier(player, currentTier);
+        placeMythicTier(player, currentTier);
         placeVisualEffectsToggle(player, globalEffectsEnabled, reducedEffects);
         placeBackButton(player);
         placeCloseButton(player);
@@ -121,6 +123,26 @@ public class RodMenu extends BaseMenu {
             "gui.rod.legendary.label", "gui.rod.legendary.selected", "gui.rod.legendary.locked"));
     }
 
+    private void placeMythicTier(Player player, String currentTier) {
+        ItemStack mythicRod = new ItemBuilder(Material.FISHING_ROD)
+                .name(tr("gui.rod.mythic.name"))
+                .glow(currentTier.equals(TIER_MYTHIC))
+                .lore(
+                        tr("gui.rod.mythic.lore1"),
+                        "",
+                        tr("gui.rod.mythic.lore2"),
+                        tr(TR_MULTIPLIER, Map.of(CTX_MULTIPLIER, formatMultiplier(TIER_MYTHIC))),
+                        tr("gui.rod.mythic.lore3"),
+                        tr("gui.rod.mythic.lore4"),
+                        "",
+                        currentTier.equals(TIER_MYTHIC) ? tr("gui.rod.mythic.equipped") : tr("gui.rod.mythic.click")
+                )
+                .build();
+        setItem(16, mythicRod, () -> selectGatedTier(
+            player, currentTier, TIER_MYTHIC, PermissionNodes.ROD_MYTHIC,
+            "gui.rod.mythic.label", "gui.rod.mythic.selected", "gui.rod.mythic.locked"));
+    }
+
     private void selectGatedTier(Player player, String currentTier, String targetTier,
                                   String permission, String labelKey, String selectedKey, String lockedKey) {
         if (currentTier.equals(targetTier)) {
@@ -153,7 +175,7 @@ public class RodMenu extends BaseMenu {
                 )
                 .glow(globalEffectsEnabled && !reducedEffects)
                 .build();
-        setItem(16, visualEffects, () -> {
+        setItem(22, visualEffects, () -> {
             playClickSound();
             if (!globalEffectsEnabled) {
                 playErrorSound();

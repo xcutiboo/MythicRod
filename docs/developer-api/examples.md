@@ -120,4 +120,38 @@ public Optional<String> rodTier(ItemStack rod) {
 }
 ```
 
+## Minigame: "what could I catch here?" preview
+
+`previewEligibleDrops(UUID, biomeKey)` returns the drop table after
+biome and permission filters. Use it in tutorial overlays, fishing
+spot UIs, or scoreboard tickers without running an actual catch.
+
+```java
+import io.xcutiboo.mythicrod.api.MythicRodAPI;
+import io.xcutiboo.mythicrod.api.platform.PlatformDrop;
+import io.xcutiboo.mythicrod.paper.api.MythicRodServices;
+import org.bukkit.entity.Player;
+
+public void showPreview(Player player) {
+    String biomeKey = player.getWorld()
+        .getBiome(player.getLocation())
+        .getKey()
+        .toString();
+
+    MythicRodServices.find().ifPresent(api -> {
+        var eligible = api.previewEligibleDrops(player.getUniqueId(), biomeKey);
+        int total = eligible.stream().mapToInt(PlatformDrop::getWeight).sum();
+        eligible.forEach(drop -> {
+            double share = total == 0 ? 0.0 : (drop.getWeight() * 100.0 / total);
+            player.sendMessage("§7- " + drop.getIdentifier()
+                + " §8(" + String.format("%.1f", share) + "%§8)");
+        });
+    });
+}
+```
+
+Pass `null` as the biome to ignore biome filters. The list is an
+immutable snapshot; reloads do not retroactively change a returned
+list.
+
 [← Developer API](../developer-api.md)

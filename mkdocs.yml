@@ -93,6 +93,7 @@ nav:
   - Rods: rods.md
   - Loot tables: loot-tables.md
   - Troubleshooting: troubleshooting.md
+  - Placeholders: placeholders.md
   - Localization:
       - Overview: localization.md
       - Crowdin workflow: localization/crowdin.md

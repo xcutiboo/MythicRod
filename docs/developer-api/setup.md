@@ -1,21 +1,43 @@
 # Setup
 
-## Gradle (Kotlin DSL)
+The cleanest way to depend on MythicRod is through JitPack, which
+builds the `mythicrod-api` artifact straight from the public GitHub
+tag. No file copies, no jar wrangling.
+
+## Gradle (Kotlin DSL) - JitPack
 
 ```kotlin
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://jitpack.io")
 }
 
+dependencies {
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.64-stable")
+    // JitPack treats the api module as the project artifact, so pin
+    // the repo not a submodule. Available from v2026.1.1 onwards.
+    compileOnly("com.github.xcutiboo:MythicRod:v2026.1.1")
+}
+```
+
+The first resolution for a new MythicRod tag triggers a one-time
+JitPack build (1-5 minutes). Subsequent consumers get the cached
+artifact. For development you can also pin
+`com.github.xcutiboo:MythicRod:master-SNAPSHOT`.
+
+## Gradle (Kotlin DSL) - jar drop
+
+If you cannot reach JitPack from your build host, drop the released
+MythicRod jar into your project's `libs/` folder and keep it
+`compileOnly`. Never shade or relocate it.
+
+```kotlin
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.1.2.build.64-stable")
     compileOnly(files("libs/MythicRod-Paper-2026.1.0.jar"))
 }
 ```
-
-Drop the released MythicRod jar into your project's `libs/` folder.
-Keep it `compileOnly`. Never shade or relocate it.
 
 ## Gradle (Groovy)
 
@@ -60,7 +82,9 @@ dependencies:
       required: false
 ```
 
-Handle the missing-service case cleanly when MythicRod is optional.
+If MythicRod is an optional dependency, return early when the
+service lookup is null. A server admin may have removed MythicRod
+between restarts even when the declared load order says otherwise.
 
 ## Plugin version compatibility
 

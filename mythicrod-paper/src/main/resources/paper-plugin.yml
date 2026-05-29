@@ -19,6 +19,10 @@ dependencies:
       load: BEFORE
       required: false
       join-classpath: true
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+      join-classpath: true
 
 permissions:
   mythicrod.*:
@@ -116,6 +120,7 @@ permissions:
     children:
       mythicrod.rod.advanced: true
       mythicrod.rod.legendary: true
+      mythicrod.rod.mythic: true
 
   mythicrod.rod.advanced:
     description: Use advanced rod tier
@@ -123,4 +128,8 @@ permissions:
 
   mythicrod.rod.legendary:
     description: Use legendary rod tier
+    default: op
+
+  mythicrod.rod.mythic:
+    description: Use mythic rod tier (top of the loot ladder)
     default: op

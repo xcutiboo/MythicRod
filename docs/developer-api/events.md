@@ -1,14 +1,35 @@
 # Paper events
 
-MythicRod publishes four Paper events. All live under
+MythicRod publishes five Paper events. All live under
 `io.xcutiboo.mythicrod.paper.events`.
 
 | Event | Cancellable | Thread |
 | --- | --- | --- |
+| `MythicRodBiteEvent` | yes | player-owner |
 | `MythicRodRewardRollEvent` | no | player-owner |
 | `MythicRodFishCatchEvent` | yes | player-owner |
 | `MythicRodStatsUpdateEvent` | no | stats writer |
 | `MythicRodReloadEvent` | no | reload-caller |
+
+## `MythicRodBiteEvent`
+
+Fires when a fish bites a MythicRod rod (`PlayerFishEvent.State.BITE`).
+Only fires for rods MythicRod recognises - vanilla rods never trigger
+it. Use this for skill-check minigames, custom bite cues, or to
+short-circuit the catch when the player is missing a buff item.
+
+```java
+@EventHandler(ignoreCancelled = true)
+public void onBite(MythicRodBiteEvent event) {
+    Player player = event.getPlayer();
+    Location at = event.getHook().getLocation();
+    player.spawnParticle(Particle.BUBBLE_POP, at, 8, 0.3, 0.1, 0.3, 0);
+    skillCheck.start(player, () -> event.setCancelled(true));
+}
+```
+
+Cancelling the event cancels the underlying `PlayerFishEvent`, so the
+catch never resolves.
 
 ## `MythicRodRewardRollEvent`
 

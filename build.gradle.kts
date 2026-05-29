@@ -34,6 +34,9 @@ subprojects {
         maven("https://repo.papermc.io/repository/maven-public/") {
             name = "papermc"
         }
+        maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") {
+            name = "placeholderapi"
+        }
     }
 
     java {

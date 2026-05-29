@@ -1,5 +1,6 @@
 package io.xcutiboo.mythicrod.api;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,6 +23,7 @@ import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 /// Use `MythicRodAPI#getItemFactory()` or `MythicRodAPI#createItem(String, int)`
 /// to construct MythicRod-compatible items instead of depending on Paper
 /// implementation classes directly.
+@ApiStatus.AvailableSince("2026.1.0")
 public interface ExternalDropProvider {
 
     /// Returns the stable key for this provider.

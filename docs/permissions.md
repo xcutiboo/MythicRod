@@ -15,6 +15,7 @@
 | `mythicrod.drops.legendary` | `op` | Receive `legendary` drops |
 | `mythicrod.rod.advanced` | `op` | Use the advanced rod tier |
 | `mythicrod.rod.legendary` | `op` | Use the legendary rod tier |
+| `mythicrod.rod.mythic` | `op` | Use the mythic rod tier (top of the loot ladder) |
 | `mythicrod.admin.reload` | `op` | Reload runtime data |
 | `mythicrod.admin.give` | `op` | Give MythicRod items |
 | `mythicrod.admin.config` | `op` | Edit drops, config, run `stats reset` |

@@ -51,7 +51,7 @@ command:
     locked: '<red>✗ <dark_red>You lack permission for tier <yellow>%tier%<dark_red>.'
   give:
     tier-missing: '<red>✗ <dark_red>Tier cannot be empty.'
-    invalid-tier: '<red>✗ <dark_red>Invalid tier <yellow>%tier%<dark_red>. Use <yellow>basic<dark_red>, <yellow>advanced<dark_red>, or <yellow>legendary<dark_red>.'
+    invalid-tier: '<red>✗ <dark_red>Invalid tier <yellow>%tier%<dark_red>. Use <yellow>basic<dark_red>, <yellow>advanced<dark_red>, <yellow>legendary<dark_red>, or <yellow>mythic<dark_red>.'
     rod-creation-failed: '<red>✗ <dark_red>Failed to create the requested MythicRod.'
     target-offline: '<red>✗ <dark_red>Player <yellow>%player%<dark_red> went offline.'
     inventory-full: '<red>✗ <dark_red>Player <yellow>%player%<dark_red> has no free inventory slot for this MythicRod.'
@@ -90,7 +90,10 @@ command:
     drops: '<gray>Drops: <white>%drops%</white> across <white>%categories%</white> categories'
     language: '<gray>Language: <white>%active%</white> (<white>%loaded%</white> loaded: <white>%list%</white>)'
     nexo: '<gray>Nexo integration: %status%'
+    placeholderapi: '<gray>PlaceholderAPI: %status%'
+    providers: '<gray>External drop providers: <white>%count%'
     stats: '<gray>Tracked players: <white>%players%'
+    catches: '<gray>Total catches: <white>%count%'
   debug:
     header: '<gold><bold>=== MythicRod Debug Info ===</bold></gold>'
     runtime: '<gray>Runtime: <white>%drops%<gray> drops in <white>%categories%<gray> categories, <white>%players%<gray> tracked players, <white>%catches%<gray> catches since reload'
@@ -760,6 +763,17 @@ gui:
       click: '<yellow>▶ Click to make this your default'
       selected: '<green>✓ Default fishing tier set to Legendary. <dark_gray>Cast with a vanilla rod to use it.'
       locked: '<red>✗ You need permission to use the Legendary tier.'
+    mythic:
+      label: 'Mythic'
+      name: '<gradient:#FF55FF:#FFAA00><bold>Mythic Rod'
+      lore1: '<gray>Prestige tier - top of the loot ladder'
+      lore2: '<gray>Active when you cast with a vanilla rod'
+      lore3: '<dark_gray>Requires mythicrod.rod.mythic'
+      lore4: '<yellow>Gate this for endgame grinders only'
+      equipped: '<green>✓ Your default tier'
+      click: '<yellow>▶ Click to make this your default'
+      selected: '<green>✓ Default fishing tier set to Mythic. <dark_gray>Cast with a vanilla rod to use it.'
+      locked: '<red>✗ You need permission to use the Mythic tier.'
     effects:
       name: '<light_purple><bold>Visual Effects'
       lore1: '<gray>Controls personal particles for'
