@@ -1,6 +1,8 @@
 package io.xcutiboo.mythicrod.paper.platform;
 
 import org.bukkit.Location;
+import org.bukkit.Server;
+import org.bukkit.World;
 
 import io.xcutiboo.mythicrod.api.platform.PlatformLocation;
 
@@ -24,11 +26,11 @@ public final class PaperLocation {
         );
     }
 
-    public static Location toBukkit(PlatformLocation platformLocation, org.bukkit.Server server) {
+    public static Location toBukkit(PlatformLocation platformLocation, Server server) {
         if (platformLocation == null) {
             return null;
         }
-        org.bukkit.World world = server.getWorld(platformLocation.getWorldName());
+        World world = server.getWorld(platformLocation.getWorldName());
         if (world == null) {
             return null;
         }

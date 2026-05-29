@@ -1,9 +1,11 @@
 package io.xcutiboo.mythicrod.paper.gui.menus;
 
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import io.xcutiboo.mythicrod.paper.MythicRod;
@@ -147,7 +149,7 @@ public class MainHubMenu extends BaseMenu {
         setItem(33, item, this::onReloadClick);
     }
 
-    private void onReloadClick(org.bukkit.event.inventory.InventoryClickEvent event) {
+    private void onReloadClick(InventoryClickEvent event) {
         if (!event.isShiftClick()) {
             playErrorSound();
             sendMessage(tr("gui.main.reload_confirm"));
@@ -168,7 +170,7 @@ public class MainHubMenu extends BaseMenu {
         } catch (Exception e) {
             playErrorSound();
             sendMessage(tr("gui.main.reload_failed"));
-            plugin.getLogger().log(java.util.logging.Level.SEVERE, "Error reloading from GUI", e);
+            plugin.getLogger().log(Level.SEVERE, "Error reloading from GUI", e);
         }
     }
 
