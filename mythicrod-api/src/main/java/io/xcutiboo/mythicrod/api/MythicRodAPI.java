@@ -148,6 +148,24 @@ public interface MythicRodAPI {
             int limit
     );
 
+    /// Creates a MythicRod fishing rod of the given tier, fully tagged with
+    /// MythicRod's PDC marker and tier metadata so the catch listener and
+    /// statistics pipeline pick it up.
+    ///
+    /// Valid tier names are `"basic"`, `"advanced"`, and `"legendary"`, matched
+    /// case-insensitively. The rod's display name, lore, glow, and unbreakable
+    /// flag follow MythicRod's built-in presets for that tier.
+    ///
+    /// Prefer this over building an `ItemStack` and writing PDC keys by hand:
+    /// future internal changes to the rod marker stay invisible to the caller.
+    ///
+    /// @param tier `"basic"`, `"advanced"`, or `"legendary"` (case-insensitive).
+    /// @return success result with the tagged rod, or failure when the tier is
+    ///         unknown.
+    @ApiStatus.AvailableSince("2026.2.0")
+    @NotNull
+    Result<PlatformItem> createRod(@NotNull String tier);
+
     /// Returns the drops the given online player would be eligible to roll at
     /// the given biome, after biome filters and permission filters are applied.
     ///

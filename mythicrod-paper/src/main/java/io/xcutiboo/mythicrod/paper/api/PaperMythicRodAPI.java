@@ -20,16 +20,20 @@ import org.jetbrains.annotations.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import io.xcutiboo.mythicrod.api.ExternalDropProvider;
 import io.xcutiboo.mythicrod.api.MythicRodAPI;
 import io.xcutiboo.mythicrod.api.PlayerStatSnapshot;
+import io.xcutiboo.mythicrod.api.Result;
 import io.xcutiboo.mythicrod.api.drop.DropCatalog;
 import io.xcutiboo.mythicrod.api.platform.PlatformDrop;
 import io.xcutiboo.mythicrod.api.platform.PlatformItem;
 import io.xcutiboo.mythicrod.api.platform.PlatformItemFactory;
 import io.xcutiboo.mythicrod.api.platform.PlatformPlayer;
 import io.xcutiboo.mythicrod.api.platform.PlatformScheduler;
+import io.xcutiboo.mythicrod.paper.item.RodFactory;
+import io.xcutiboo.mythicrod.paper.platform.PaperItem;
 import io.xcutiboo.mythicrod.paper.platform.PaperPlayer;
 import io.xcutiboo.mythicrod.drops.CustomDrop;
 import io.xcutiboo.mythicrod.drops.DropConfigurationRecord;
@@ -67,6 +71,7 @@ public class PaperMythicRodAPI implements MythicRodAPI {
     private final StatisticsManager statisticsManager;
     private final PlatformScheduler scheduler;
     private final PlatformItemFactory itemFactory;
+    private final RodFactory rodFactory;
 
     private final ConcurrentHashMap<String, ExternalDropProvider> externalProviders =
             new ConcurrentHashMap<>();
@@ -77,13 +82,15 @@ public class PaperMythicRodAPI implements MythicRodAPI {
             @NotNull DropManager dropManager,
             @NotNull StatisticsManager statisticsManager,
             @NotNull PlatformScheduler scheduler,
-            @NotNull PlatformItemFactory itemFactory) {
+            @NotNull PlatformItemFactory itemFactory,
+            @NotNull RodFactory rodFactory) {
         this.version = version;
         this.logger = logger;
         this.dropManager = dropManager;
         this.statisticsManager = statisticsManager;
         this.scheduler = scheduler;
         this.itemFactory = itemFactory;
+        this.rodFactory = rodFactory;
     }
 
     /// Internal reward-selection result used by the Paper fishing pipeline.
@@ -141,6 +148,21 @@ public class PaperMythicRodAPI implements MythicRodAPI {
     @NotNull
     public List<ExternalDropProvider> getExternalDropProviders() {
         return List.copyOf(externalProviders.values());
+    }
+
+    @Override
+    @NotNull
+    public Result<PlatformItem> createRod(@NotNull String tier) {
+        ItemStack rod = switch (tier.toLowerCase(Locale.ROOT)) {
+            case "basic" -> rodFactory.createBasicRod();
+            case "advanced" -> rodFactory.createAdvancedRod();
+            case "legendary" -> rodFactory.createLegendaryRod();
+            default -> null;
+        };
+        if (rod == null) {
+            return Result.failure("Unknown rod tier '" + tier + "'. Valid tiers: basic, advanced, legendary.");
+        }
+        return Result.success(new PaperItem(rod));
     }
 
     @Override
