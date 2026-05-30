@@ -51,7 +51,7 @@ command:
     locked: '<red>✗ <dark_red>ティア <yellow>%tier%<dark_red> を使用する権限がありません。'
   give:
     tier-missing: '<red>✗ <dark_red>ティアを空にはできません。'
-    invalid-tier: '<red>✗ <dark_red>無効なティア <yellow>%tier%<dark_red> です。<yellow>basic<dark_red>、<yellow>advanced<dark_red>、<yellow>legendary<dark_red> を使用してください。'
+    invalid-tier: '<red>✗ <dark_red>無効なティア <yellow>%tier%<dark_red> です。<yellow>basic<dark_red>、<yellow>advanced<dark_red>、<yellow>legendary<dark_red>、<yellow>mythic<dark_red> を使用してください。'
     rod-creation-failed: '<red>✗ <dark_red>指定された MythicRod を作成できませんでした。'
     target-offline: '<red>✗ <dark_red>プレイヤー <yellow>%player%<dark_red> はオフラインになりました。'
     inventory-full: '<red>✗ <dark_red>プレイヤー <yellow>%player%<dark_red> のインベントリに MythicRod を受け取る空き枠がありません。'
@@ -758,6 +758,17 @@ gui:
       click: '<yellow>▶ クリックしてデフォルトに設定'
       selected: '<green>✓ <gray>デフォルトの釣りティアを レジェンダリー に設定しました。<dark_gray>通常のロッドで釣ると適用されます。'
       locked: '<red>✗ <dark_red>レジェンダリーティアを使う権限がありません。'
+    mythic:
+      label: 'ミシック'
+      name: '<gradient:#FF55FF:#FFAA00><bold>ミシックロッド'
+      lore1: '<gray>プレステージティア - 最上位の釣果'
+      lore2: '<gray>通常のロッドでキャストするときに有効'
+      lore3: '<dark_gray>mythicrod.rod.mythic が必要'
+      lore4: '<yellow>エンドゲーム勢向けにゲートしてください'
+      equipped: '<green>✓ デフォルトティア'
+      click: '<yellow>▶ クリックしてデフォルトに設定'
+      selected: '<green>✓ <gray>デフォルトの釣りティアを ミシック に設定しました。<dark_gray>通常のロッドで釣ると適用されます。'
+      locked: '<red>✗ <dark_red>ミシックティアを使う権限がありません。'
     effects:
       name: '<light_purple><bold>表示演出'
       lore1: '<gray>メニューと釣果演出の'

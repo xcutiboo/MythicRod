@@ -152,14 +152,16 @@ public interface MythicRodAPI {
     /// MythicRod's PDC marker and tier metadata so the catch listener and
     /// statistics pipeline pick it up.
     ///
-    /// Valid tier names are `"basic"`, `"advanced"`, and `"legendary"`, matched
-    /// case-insensitively. The rod's display name, lore, glow, and unbreakable
-    /// flag follow MythicRod's built-in presets for that tier.
+    /// Valid tier names are `"basic"`, `"advanced"`, `"legendary"`, and
+    /// `"mythic"`, matched case-insensitively. The rod's display name, lore,
+    /// glow, and unbreakable flag follow MythicRod's built-in presets for that
+    /// tier.
     ///
     /// Prefer this over building an `ItemStack` and writing PDC keys by hand:
     /// future internal changes to the rod marker stay invisible to the caller.
     ///
-    /// @param tier `"basic"`, `"advanced"`, or `"legendary"` (case-insensitive).
+    /// @param tier `"basic"`, `"advanced"`, `"legendary"`, or `"mythic"`
+    ///             (case-insensitive).
     /// @return success result with the tagged rod, or failure when the tier is
     ///         unknown.
     @ApiStatus.AvailableSince("2026.2.0")

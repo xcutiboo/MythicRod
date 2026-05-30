@@ -27,19 +27,20 @@ class PaperMythicRodAPICreateRodTest {
         assertTrue(result.getError().contains("basic"));
         assertTrue(result.getError().contains("advanced"));
         assertTrue(result.getError().contains("legendary"));
+        assertTrue(result.getError().contains("mythic"));
     }
 
     @Test
-    void unknownTierIsCaseInsensitiveOnTheReportedInput() {
+    void unknownTierEchoesTheOriginalCasingInTheErrorMessage() {
         PaperMythicRodAPI api = new PaperMythicRodAPI(
             "test-version",
             java.util.logging.Logger.getAnonymousLogger(),
             null, null, null, null, null
         );
 
-        Result<PlatformItem> result = api.createRod("MYTHIC");
+        Result<PlatformItem> result = api.createRod("Diamond-Tier");
 
         assertFalse(result.isSuccess());
-        assertTrue(result.getError().contains("MYTHIC"));
+        assertTrue(result.getError().contains("Diamond-Tier"));
     }
 }

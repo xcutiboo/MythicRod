@@ -6,7 +6,7 @@ PersistentDataContainer keys:
 | Key | Type | Meaning |
 | --- | --- | --- |
 | `mythicrod:custom_rod` | byte (1) | This item is a MythicRod rod |
-| `mythicrod:rod_tier` | string | One of `basic`, `advanced`, `legendary` |
+| `mythicrod:rod_tier` | string | One of `basic`, `advanced`, `legendary`, `mythic` |
 
 The display name or lore is never used as identity. A survival player
 cannot rename a vanilla rod into a MythicRod rod.
@@ -23,8 +23,9 @@ PlatformItem rod = api.createRod("advanced").orElseThrow();
 player.getInventory().addItem(((PaperPlatformItem) rod).getItemStack());
 ```
 
-Valid tiers (case-insensitive): `basic`, `advanced`, `legendary`. An
-unknown tier returns a `Result.failure` rather than throwing.
+Valid tiers (case-insensitive): `basic`, `advanced`, `legendary`,
+`mythic`. An unknown tier returns a `Result.failure` rather than
+throwing.
 
 ### Manual rod creation (legacy path)
 

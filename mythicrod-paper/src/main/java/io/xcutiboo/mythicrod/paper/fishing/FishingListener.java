@@ -58,6 +58,7 @@ public class FishingListener implements Listener {
     private static final String TIER_BASIC = "basic";
     private static final String TIER_ADVANCED = "advanced";
     private static final String TIER_LEGENDARY = "legendary";
+    private static final String TIER_MYTHIC = "mythic";
 
     private final MythicRod plugin;
     private final RodFactory rodFactory;
@@ -203,6 +204,7 @@ public class FishingListener implements Listener {
         return switch (normalizeRodTier(tier)) {
             case TIER_ADVANCED -> player != null && player.hasPermission(PermissionNodes.ROD_ADVANCED);
             case TIER_LEGENDARY -> player != null && player.hasPermission(PermissionNodes.ROD_LEGENDARY);
+            case TIER_MYTHIC -> player != null && player.hasPermission(PermissionNodes.ROD_MYTHIC);
             case TIER_BASIC -> true;
             default -> false;
         };
