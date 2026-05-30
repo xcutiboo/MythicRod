@@ -1,8 +1,9 @@
 name: Publish to Hangar
 
 on:
-  push:
-    tags: ['v*']
+  # Publish only on a real GitHub release. Bare tag pushes do not fire this.
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:

@@ -13,6 +13,7 @@ dependencies {
 
     compileOnly(libs.paper.api)
     compileOnly(libs.lombok)
+    compileOnly(libs.placeholderapi)
 
     annotationProcessor(libs.lombok)
 
@@ -47,8 +48,9 @@ tasks {
         archiveBaseName.set("MythicRod-Paper")
         archiveClassifier.set("")
 
-        // Paper provides Adventure; bStats is the only bundled runtime library.
+        // Paper provides Adventure; bStats + Caffeine are bundled runtime libs.
         relocate("org.bstats", "io.xcutiboo.mythicrod.shaded.bstats")
+        relocate("com.github.benmanes.caffeine", "io.xcutiboo.mythicrod.shaded.caffeine")
 
         // Include common module and all dependencies
         configurations = listOf(project.configurations.runtimeClasspath.get())
@@ -58,6 +60,10 @@ tasks {
         minimize {
             // Keep bStats; reflection means minimize cannot see the entry points.
             exclude(dependency("org.bstats:.*:.*"))
+            // Caffeine generates cache strategy classes (SSLA, SSLR, SSMS, ...)
+            // via reflection at runtime. minimize() drops them as "unused"
+            // unless the entire artifact is held.
+            exclude(dependency("com.github.ben-manes.caffeine:.*:.*"))
         }
     }
 
