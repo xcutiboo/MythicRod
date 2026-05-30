@@ -3,38 +3,6 @@
 Project history starts here. Earlier prototype builds are gone, so this file
 is just the timeline going forward.
 
-## 2026.2.0
-
-API surface additions for plugin builders, plus a fourth rod tier and
-the usual round of code-health cleanup.
-
-- **New API: `MythicRodAPI.createRod(tier)`** — one-call rod creation for
-  external plugins. Returns a fully-tagged `PlatformItem` (display name,
-  lore, glow, unbreakable flag from the built-in presets). Replaces the
-  manual `NamespacedKey` + PDC dance from earlier docs. Valid tiers:
-  `basic`, `advanced`, `legendary`, `mythic`.
-- **New API: `MythicRodAPI.previewEligibleDrops(UUID, biomeKey)`** — show
-  a player what they would be eligible to roll at a given biome without
-  firing a catch. Useful for minigame UIs, tutorial overlays,
-  fishing-spot HUDs. Returns an immutable snapshot filtered by biome and
-  permission.
-- **New mythic rod tier** — gated behind `mythicrod.rod.mythic`, default
-  luck multiplier 2.0. Sits above legendary as the prestige tier.
-  Configurable in `config.yml` under `features.rods.luck-multipliers`.
-- **Visual polish** — per-player throttle on the legendary/mythic helix
-  animation (one helix per player per 4 seconds), removed the duplicate
-  weight-based catch-effects block that was double-firing alongside the
-  tier helper, hook bobber splash + bubble cue trimmed to one tier
-  particle plus one sound.
-- **Code health** — extracted repeated string literals into named
-  constants in `BrigadierCommandManager`, converted HTML in markdown
-  javadocs to actual markdown (Java 23 `///` style), imported six
-  inline fully-qualified names, removed three stale
-  `@SuppressWarnings`, pinned pip versions and forced
-  `--only-binary` on the pages workflow.
-- **Docs** — new `rods.md` createRod section, new minigame example in
-  `examples.md`, mythic tier added to the permissions table.
-
 ## 2026.1.0
 
 Fresh start. The plugin was rebuilt from scratch as a multi-module project

@@ -152,6 +152,6 @@ public void showPreview(Player player) {
 
 Pass `null` as the biome to ignore biome filters. The list is an
 immutable snapshot; reloads do not retroactively change a returned
-list. Available since `2026.2.0`.
+list.
 
 [← Developer API](../developer-api.md)

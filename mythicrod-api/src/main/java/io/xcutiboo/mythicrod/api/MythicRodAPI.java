@@ -164,7 +164,7 @@ public interface MythicRodAPI {
     ///             (case-insensitive).
     /// @return success result with the tagged rod, or failure when the tier is
     ///         unknown.
-    @ApiStatus.AvailableSince("2026.2.0")
+    @ApiStatus.AvailableSince("2026.1.0")
     @NotNull
     Result<PlatformItem> createRod(@NotNull String tier);
 
@@ -185,7 +185,7 @@ public interface MythicRodAPI {
     ///                 ignore biome filters.
     /// @return immutable list of eligible drops. Empty when the player is
     ///         offline or has no eligible drops.
-    @ApiStatus.AvailableSince("2026.2.0")
+    @ApiStatus.AvailableSince("2026.1.0")
     @NotNull
     @SuppressWarnings("java:S1452")
     // The wildcard mirrors DropCatalog#getDrops so MythicRod can return its

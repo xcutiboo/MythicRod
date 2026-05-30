@@ -15,7 +15,7 @@ cannot rename a vanilla rod into a MythicRod rod.
 
 The cleanest path is `MythicRodAPI.createRod(tier)`. It returns the
 fully-tagged rod with display name, lore, glow, and unbreakable flag
-matching MythicRod's built-in presets. Available since `2026.2.0`.
+matching MythicRod's built-in presets.
 
 ```java
 MythicRodAPI api = MythicRodServices.require();
