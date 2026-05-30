@@ -440,6 +440,7 @@ public class BrigadierCommandManager {
             case TIER_BASIC -> rodFactory.createBasicRod();
             case TIER_ADVANCED -> rodFactory.createAdvancedRod();
             case TIER_LEGENDARY -> rodFactory.createLegendaryRod();
+            case "mythic" -> rodFactory.createMythicRod();
             default -> null;
         };
     }
@@ -1156,6 +1157,7 @@ public class BrigadierCommandManager {
         builder.suggest(TIER_BASIC);
         builder.suggest(TIER_ADVANCED);
         builder.suggest(TIER_LEGENDARY);
+        builder.suggest("mythic");
         return builder.buildFuture();
     }
 

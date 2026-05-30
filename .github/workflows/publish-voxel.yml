@@ -1,4 +1,4 @@
-name: Publish to Polymart
+name: Publish to Voxel
 
 on:
   # Publish only on a real GitHub release. Bare tag pushes do not fire this.
@@ -13,8 +13,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      POLYMART_API_TOKEN: ${{ secrets.POLYMART_API_TOKEN }}
-      POLYMART_RESOURCE_ID: ${{ vars.POLYMART_RESOURCE_ID }}
+      VOXEL_API_TOKEN: ${{ secrets.VOXEL_API_TOKEN }}
+      VOXEL_RESOURCE_ID: ${{ vars.VOXEL_RESOURCE_ID }}
 
     steps:
       - name: Checkout repository
@@ -38,17 +38,17 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Skip when not configured
-        if: env.POLYMART_API_TOKEN == '' || env.POLYMART_RESOURCE_ID == ''
+        if: env.VOXEL_API_TOKEN == '' || env.VOXEL_RESOURCE_ID == ''
         run: |
-          echo "POLYMART_API_TOKEN secret or POLYMART_RESOURCE_ID variable is not set; skipping Polymart publish."
+          echo "VOXEL_API_TOKEN secret or VOXEL_RESOURCE_ID variable is not set; skipping Voxel publish."
           exit 0
 
       - name: Build shadow jar
-        if: env.POLYMART_API_TOKEN != '' && env.POLYMART_RESOURCE_ID != ''
+        if: env.VOXEL_API_TOKEN != '' && env.VOXEL_RESOURCE_ID != ''
         run: ./gradlew :mythicrod-paper:shadowJar --stacktrace --no-daemon
 
       - name: Resolve release metadata
-        if: env.POLYMART_API_TOKEN != '' && env.POLYMART_RESOURCE_ID != ''
+        if: env.VOXEL_API_TOKEN != '' && env.VOXEL_RESOURCE_ID != ''
         id: meta
         env:
           REF_NAME: ${{ github.ref_name }}
@@ -72,32 +72,30 @@ jobs:
             echo "snapshot=$snapshot"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Check Polymart for an existing version
-        if: env.POLYMART_API_TOKEN != '' && env.POLYMART_RESOURCE_ID != ''
+      - name: Check Voxel for an existing version
+        if: env.VOXEL_API_TOKEN != '' && env.VOXEL_RESOURCE_ID != ''
         id: dedupe
         env:
           VERSION: ${{ steps.meta.outputs.version }}
         run: |
           set -euo pipefail
-          existing=$(curl -fsSL "https://api.voxel.shop/v1/getResourceUpdates?resource_id=${POLYMART_RESOURCE_ID}" \
+          existing=$(curl -fsSL "https://api.voxel.shop/v1/getResourceUpdates?resource_id=${VOXEL_RESOURCE_ID}" \
             | jq -r --arg v "$VERSION" '.response.updates[]? | select(.version == $v) | .id' | head -1)
           if [[ -n "$existing" ]]; then
-            echo "Polymart already has update id $existing for version $VERSION; skipping upload."
+            echo "Voxel already has update id $existing for version $VERSION; skipping upload."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Upload version to Polymart
+      - name: Upload version to Voxel
         if: |
-          env.POLYMART_API_TOKEN != ''
-          && env.POLYMART_RESOURCE_ID != ''
+          env.VOXEL_API_TOKEN != ''
+          && env.VOXEL_RESOURCE_ID != ''
           && steps.dedupe.outputs.skip == 'false'
-        # Polymart's voxel.shop rebrand is in open beta and the
-        # postUpdate API has been returning NO_KEY for valid keys.
-        # Treat the upload as soft so a transient Polymart auth
-        # bug cannot block the rest of the release lane (Hangar,
-        # Modrinth, GitHub Release, JitPack).
+        # Soft-fail kept while the resource sits in Voxel review queue;
+        # the API rejects updates to non-approved products. Once
+        # approved, the doPostUpdate call goes through normally.
         continue-on-error: true
         env:
           VERSION: ${{ steps.meta.outputs.version }}
@@ -111,9 +109,9 @@ jobs:
           if [[ -z "$message" ]]; then
             message="See https://github.com/xcutiboo/MythicRod/releases/tag/v${VERSION}"
           fi
-          response=$(curl -fsS -X POST "https://api.voxel.shop/v1/postUpdate" \
-            -F "api_key=${POLYMART_API_TOKEN}" \
-            -F "resource_id=${POLYMART_RESOURCE_ID}" \
+          response=$(curl -fsS -X POST "https://api.voxel.shop/v1/doPostUpdate" \
+            -F "api_key=${VOXEL_API_TOKEN}" \
+            -F "resource_id=${VOXEL_RESOURCE_ID}" \
             -F "version=${VERSION}" \
             -F "title=MythicRod ${VERSION}" \
             -F "message=${message}" \
@@ -123,7 +121,7 @@ jobs:
           echo "$response"
           status=$(echo "$response" | jq -r '.response.success // false')
           if [[ "$status" != "true" ]]; then
-            echo "Polymart rejected the upload."
+            echo "Voxel rejected the upload."
             echo "$response" | jq -r '.response.errors[]?' || true
             exit 1
           fi
