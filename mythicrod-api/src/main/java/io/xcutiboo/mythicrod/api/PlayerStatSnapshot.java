@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 /// @param basicRodUses number of casts made with a basic rod
 /// @param advancedRodUses number of casts made with an advanced rod
 /// @param legendaryRodUses number of casts made with a legendary rod
+/// @param mythicRodUses number of casts made with a mythic rod
 /// @param lastFished timestamp of the player's most recent catch, or `Instant.EPOCH`
 ///                   if they have never fished
 /// @param snapshotTime when this snapshot was taken
@@ -40,6 +41,7 @@ public record PlayerStatSnapshot(
         int basicRodUses,
         int advancedRodUses,
         int legendaryRodUses,
+        int mythicRodUses,
         @NotNull Instant lastFished,
         @NotNull Instant snapshotTime
 ) {
@@ -62,6 +64,7 @@ public record PlayerStatSnapshot(
         requireNonNegative("basicRodUses", basicRodUses);
         requireNonNegative("advancedRodUses", advancedRodUses);
         requireNonNegative("legendaryRodUses", legendaryRodUses);
+        requireNonNegative("mythicRodUses", mythicRodUses);
     }
 
     private static void requireNonNegative(String name, int value) {
@@ -80,7 +83,7 @@ public record PlayerStatSnapshot(
         return new PlayerStatSnapshot(
                 playerUuid, playerName,
                 0, 0, 0, 0, 0,
-                0, 0, 0,
+                0, 0, 0, 0,
                 Instant.EPOCH,
                 Instant.now()
         );

@@ -517,6 +517,7 @@ public class PaperMythicRodAPI implements MythicRodAPI {
                 stats.getBasicRodUses(),
                 stats.getAdvancedRodUses(),
                 stats.getLegendaryRodUses(),
+                stats.getMythicRodUses(),
                 lastFished,
                 Instant.now()
         );

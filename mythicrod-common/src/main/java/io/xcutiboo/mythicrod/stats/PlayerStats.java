@@ -30,6 +30,7 @@ public final class PlayerStats {
     private final AtomicInteger basicRodUses     = new AtomicInteger(0);
     private final AtomicInteger advancedRodUses  = new AtomicInteger(0);
     private final AtomicInteger legendaryRodUses = new AtomicInteger(0);
+    private final AtomicInteger mythicRodUses    = new AtomicInteger(0);
 
     private final AtomicLong lastFished = new AtomicLong(0L);
 
@@ -53,6 +54,7 @@ public final class PlayerStats {
     public int getBasicRodUses()     { return basicRodUses.get(); }
     public int getAdvancedRodUses()  { return advancedRodUses.get(); }
     public int getLegendaryRodUses() { return legendaryRodUses.get(); }
+    public int getMythicRodUses()    { return mythicRodUses.get(); }
 
     /// Returns the epoch-millisecond timestamp of the last catch, or `0` if never.
     public long getLastFished()      { return lastFished.get(); }
@@ -81,6 +83,7 @@ public final class PlayerStats {
     public void incrementBasicRodUses()     { basicRodUses.incrementAndGet(); }
     public void incrementAdvancedRodUses()  { advancedRodUses.incrementAndGet(); }
     public void incrementLegendaryRodUses() { legendaryRodUses.incrementAndGet(); }
+    public void incrementMythicRodUses()    { mythicRodUses.incrementAndGet(); }
 
     /// Records the current timestamp as the last fishing time.
     public void markFished()                { lastFished.set(System.currentTimeMillis()); }
@@ -96,6 +99,7 @@ public final class PlayerStats {
         basicRodUses.set(0);
         advancedRodUses.set(0);
         legendaryRodUses.set(0);
+        mythicRodUses.set(0);
         lastFished.set(0L);
     }
 
@@ -112,6 +116,7 @@ public final class PlayerStats {
         basicRodUses.set(snapshot.basic());
         advancedRodUses.set(snapshot.advanced());
         legendaryRodUses.set(snapshot.legendaryRod());
+        mythicRodUses.set(snapshot.mythicRod());
         lastFished.set(snapshot.lastFishedMs());
     }
 
@@ -126,6 +131,7 @@ public final class PlayerStats {
         int basic,
         int advanced,
         int legendaryRod,
+        int mythicRod,
         long lastFishedMs
     ) {}
 

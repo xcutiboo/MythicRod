@@ -58,6 +58,7 @@ public final class StatisticsManager {
     private static final String FIELD_ROD_BASIC = ".rod_basic";
     private static final String FIELD_ROD_ADVANCED = ".rod_advanced";
     private static final String FIELD_ROD_LEGENDARY = ".rod_legendary";
+    private static final String FIELD_ROD_MYTHIC = ".rod_mythic";
     private static final String FIELD_LAST_FISHED = ".last_fished";
 
     private final MythicRodRuntime runtime;
@@ -225,6 +226,7 @@ public final class StatisticsManager {
     public void recordRodUse(@NotNull UUID uuid, @NotNull String rodTier) {
         PlayerStats stats = getOrCreate(uuid);
         switch (rodTier.toLowerCase(Locale.ROOT)) {
+            case "mythic"    -> stats.incrementMythicRodUses();
             case "legendary" -> stats.incrementLegendaryRodUses();
             case "advanced"  -> stats.incrementAdvancedRodUses();
             default          -> stats.incrementBasicRodUses();
@@ -367,6 +369,7 @@ public final class StatisticsManager {
         cfg.set(base + FIELD_ROD_BASIC,      stats.getBasicRodUses());
         cfg.set(base + FIELD_ROD_ADVANCED,   stats.getAdvancedRodUses());
         cfg.set(base + FIELD_ROD_LEGENDARY,  stats.getLegendaryRodUses());
+        cfg.set(base + FIELD_ROD_MYTHIC,     stats.getMythicRodUses());
         cfg.set(base + FIELD_LAST_FISHED,    stats.getLastFished());
     }
 
@@ -391,6 +394,7 @@ public final class StatisticsManager {
         int rodBasic;
         int rodAdvanced;
         int rodLegendary;
+        int rodMythic;
         long lastFishedMs;
 
         synchronized (this) {
@@ -410,6 +414,7 @@ public final class StatisticsManager {
             rodBasic     = cfg.getInt(base + FIELD_ROD_BASIC, 0);
             rodAdvanced  = cfg.getInt(base + FIELD_ROD_ADVANCED, 0);
             rodLegendary = cfg.getInt(base + FIELD_ROD_LEGENDARY, 0);
+            rodMythic    = cfg.getInt(base + FIELD_ROD_MYTHIC, 0);
             lastFishedMs = (long) cfg.getDouble(base + FIELD_LAST_FISHED, 0.0D);
         }
 
@@ -417,7 +422,7 @@ public final class StatisticsManager {
         PlayerStats playerStats = new PlayerStats(uuid, name);
         playerStats.loadFromPersisted(new PlayerStats.PersistedSnapshot(
             total, common, uncommon, rare, legendary,
-            rodBasic, rodAdvanced, rodLegendary, lastFishedMs));
+            rodBasic, rodAdvanced, rodLegendary, rodMythic, lastFishedMs));
         return playerStats;
     }
 
