@@ -57,12 +57,15 @@ jobs:
           fi
           slug="MythicRod"
           jwt=$(curl -fsS -X POST \
-            -H "Content-Type: application/json" \
-            -d "{\"apiKey\": \"${HANGAR_API_TOKEN}\"}" \
-            "https://hangar.papermc.io/api/v1/authenticate" \
+            "https://hangar.papermc.io/api/v1/authenticate?apiKey=${HANGAR_API_TOKEN}" \
             | jq -r .token)
-          curl -fsS -X DELETE -H "Authorization: $jwt" \
+          if [[ -z "$jwt" || "$jwt" == "null" ]]; then
+            echo "Hangar authenticate did not return a JWT; skipping delete."
+            exit 0
+          fi
+          curl -sS -X DELETE -H "Authorization: $jwt" \
             "https://hangar.papermc.io/api/v1/projects/${slug}/versions/${version}" \
+            -o /dev/null -w 'Hangar DELETE HTTP %{http_code}\n' \
             || echo "Hangar version delete returned non-zero (may already be absent)"
 
       - name: Upload version to Hangar
