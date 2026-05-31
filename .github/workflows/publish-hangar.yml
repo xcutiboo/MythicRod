@@ -5,6 +5,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      force_replace:
+        description: Delete the existing version first, then upload fresh.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -39,6 +44,26 @@ jobs:
       - name: Build shadow jar
         if: env.HANGAR_API_TOKEN != ''
         run: ./gradlew :mythicrod-paper:build --stacktrace --no-daemon
+
+      - name: Replace existing Hangar version
+        if: env.HANGAR_API_TOKEN != '' && github.event_name == 'workflow_dispatch' && inputs.force_replace
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="${VERSION#v}"
+          if [[ -z "$version" || "$version" == "$VERSION" ]]; then
+            version=$(./gradlew -q :mythicrod-paper:properties | awk -F': *' '/^version:/{print $2; exit}')
+          fi
+          slug="MythicRod"
+          jwt=$(curl -fsS -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"apiKey\": \"${HANGAR_API_TOKEN}\"}" \
+            "https://hangar.papermc.io/api/v1/authenticate" \
+            | jq -r .token)
+          curl -fsS -X DELETE -H "Authorization: $jwt" \
+            "https://hangar.papermc.io/api/v1/projects/${slug}/versions/${version}" \
+            || echo "Hangar version delete returned non-zero (may already be absent)"
 
       - name: Upload version to Hangar
         if: env.HANGAR_API_TOKEN != ''
