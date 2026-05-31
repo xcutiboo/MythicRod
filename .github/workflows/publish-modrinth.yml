@@ -67,11 +67,21 @@ jobs:
           case "$version" in
             *-rc*|*-beta*|*-alpha*|*-snapshot*) channel="beta" ;;
           esac
-          # Manual dispatches only sync the project body; skip version upload to avoid duplicates.
+          # Skip the jar upload on plain workflow_dispatch (without force_replace),
+          # so manual runs only refresh the project body. Release and tag pushes
+          # always upload; workflow_dispatch with force_replace=true also uploads.
           jar_publish="true"
-          if [[ "$EVENT_NAME" != "push" ]]; then
-            jar_publish="false"
-          fi
+          case "$EVENT_NAME" in
+            push|release) jar_publish="true" ;;
+            workflow_dispatch)
+              if [[ "${{ inputs.force_replace }}" == "true" ]]; then
+                jar_publish="true"
+              else
+                jar_publish="false"
+              fi
+              ;;
+            *) jar_publish="false" ;;
+          esac
           {
             echo "version=$version"
             echo "jar=$jar"
